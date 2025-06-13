@@ -61,7 +61,7 @@
   * @{
   */
 
-#define FLASH_DESC_STR      "@Internal Flash   /0x08000000/03*016Ka,01*016Kg,01*064Kg,07*128Kg,04*016Kg,01*064Kg,07*128Kg"
+#define FLASH_DESC_STR      "@QSPI Flash   /0x90000000/64*128Kg"
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
 
