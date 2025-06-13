@@ -270,8 +270,10 @@ static uint8_t USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
   USBD_DFU_HandleTypeDef *hdfu;
 
+  static USBD_DFU_HandleTypeDef _hdfu = { 0 };
+
   /* Allocate Audio structure */
-  hdfu = (USBD_DFU_HandleTypeDef *)USBD_malloc(sizeof(USBD_DFU_HandleTypeDef));
+  hdfu = &_hdfu;// (USBD_DFU_HandleTypeDef *)USBD_malloc(sizeof(USBD_DFU_HandleTypeDef));
 
   if (hdfu == NULL)
   {
@@ -333,7 +335,7 @@ static uint8_t USBD_DFU_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
   /* DeInit  physical Interface components and Hardware Layer */
   ((USBD_DFU_MediaTypeDef *)pdev->pUserData[pdev->classId])->DeInit();
-  USBD_free(pdev->pClassDataCmsit[pdev->classId]);
+  // USBD_free(pdev->pClassDataCmsit[pdev->classId]);
   pdev->pClassDataCmsit[pdev->classId] = NULL;
   pdev->pClassData = NULL;
 
