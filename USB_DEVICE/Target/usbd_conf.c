@@ -630,6 +630,27 @@ USBD_StatusTypeDef USBD_LL_SetTestMode(USBD_HandleTypeDef *pdev, uint8_t testmod
   return USBD_OK;
 }
 #endif /* USBD_HS_TESTMODE_ENABLE */
+/**
+  * @brief  Static single allocation.
+  * @param  size: Size of allocated memory
+  * @retval None
+  */
+void *USBD_static_malloc(uint32_t size)
+{
+  UNUSED(size);
+  static uint32_t mem[(sizeof(USBD_DFU_HandleTypeDef)/4)+1];/* On 32-bit boundary */
+  return mem;
+}
+
+/**
+  * @brief  Dummy memory free
+  * @param  p: Pointer to allocated  memory address
+  * @retval None
+  */
+void USBD_static_free(void *p)
+{
+  UNUSED(p);
+}
 
 /**
   * @brief  Delays routine for the USB device library.
