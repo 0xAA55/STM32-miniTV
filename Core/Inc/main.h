@@ -67,7 +67,7 @@ void BSP_LCD_SignalTransferDone(uint32_t Instance);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-extern Pixel Framebuffer[240][320];
+extern volatile Pixel Framebuffer[240][320];
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -68,7 +68,7 @@ DMA_HandleTypeDef hdma_spi2_rx;
 TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
-Pixel Framebuffer[240][320];
+volatile Pixel Framebuffer[240][320];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -174,9 +174,9 @@ int main(void)
     	for (int x = 0; x < 320; x++)
     	{
     		Pixel c;
-    		c.R = ((x * 255 / 320) + cur_tick) & 0xFF;
-    		c.G = ((y * 255 / 240) + cur_tick) & 0xFF;
-    		c.B = cur_tick & 0xFF;
+        c.R = rand();
+        c.G = rand();
+        c.B = rand();
     		Framebuffer[y][x] = c;
     	}
     }
