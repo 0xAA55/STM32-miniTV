@@ -170,6 +170,7 @@ int main(void)
     for (int y = 0; y < 240; y++)
     {
       BSP_LCD_WaitForTransferToBeDone(0);
+      LCD_CS_HIGH();
     	for (int x = 0; x < 320; x++)
     	{
     		Pixel c;
