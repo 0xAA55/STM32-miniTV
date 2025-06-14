@@ -169,7 +169,7 @@ int main(void)
     uint32_t cur_tick = HAL_GetTick();
     for (int y = 0; y < 240; y++)
     {
-      // BSP_LCD_WaitForTransferToBeDone(0);
+      BSP_LCD_WaitForTransferToBeDone(0);
     	for (int x = 0; x < 320; x++)
     	{
     		Pixel c;
@@ -179,7 +179,7 @@ int main(void)
     		Framebuffer[y][x] = c;
     	}
       SCB_CleanDCache();
-      BSP_LCD_WriteData(0, (void*)Framebuffer[y], sizeof Framebuffer[y]);
+      BSP_LCD_WriteDataDMA(0, (void*)Framebuffer[y], sizeof Framebuffer[y]);
     }
     /* USER CODE END WHILE */
 
