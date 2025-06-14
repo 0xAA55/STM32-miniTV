@@ -32,12 +32,19 @@ extern "C" {
 #include "lcd_io.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef struct Pixel_s
+{
+	uint8_t R;
+	uint8_t G;
+	uint8_t B;
+} Pixel;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -60,7 +67,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-
+extern Pixel Framebuffer[240][320];
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
