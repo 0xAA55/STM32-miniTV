@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd_io.h"
+#include "lcd_os.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,7 +92,13 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void BSP_LCD_SignalTransferDone(uint32_t Instance)
+{
+  if (Instance < LCD_INSTANCES_NBR)
+  {
+    LCD_OS_Unlock(Instance);
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -150,16 +157,18 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  BSP_LCD_Init(LCD_INSTANCES_NBR, LCD_ORIENTATION_LANDSCAPE);
-  BSP_LCD_DisplayOn(LCD_INSTANCES_NBR);
-  BSP_LCD_SetDisplayWindow(LCD_INSTANCES_NBR, 0, 0, 320, 240);
+  // GND RST SCL DC CS SDA SDO GND VDD LEDA LEDK
+
+  BSP_LCD_Init(0, LCD_ORIENTATION_LANDSCAPE);
+  BSP_LCD_DisplayOn(0);
+  // BSP_LCD_SetDisplayWindow(0, 0, 0, 320, 240);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	uint32_t cur_tick = HAL_GetTick();
+    uint32_t cur_tick = HAL_GetTick();
     for (int y = 0; y < 240; y++)
     {
     	for (int x = 0; x < 320; x++)
@@ -171,7 +180,18 @@ int main(void)
     		Framebuffer[y][x] = c;
     	}
     }
-    BSP_LCD_WriteDataDMA(LCD_INSTANCES_NBR, (void*)Framebuffer, sizeof Framebuffer);
+    SCB_CleanInvalidateDCache();
+    BSP_LCD_WriteDataDMA(0, (void*)Framebuffer, sizeof Framebuffer);
+    BSP_LCD_WaitForTransferToBeDone(0);
+    switch (cur_tick % 500)
+    {
+    case 0:
+    	BSP_LCD_DisplayOn(0);
+    	break;
+    case 250:
+    	BSP_LCD_DisplayOff(0);
+    	break;
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
