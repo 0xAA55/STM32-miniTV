@@ -158,10 +158,8 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   // GND RST SCL DC CS SDA SDO GND VDD LEDA LEDK
-
   BSP_LCD_Init(0, LCD_ORIENTATION_LANDSCAPE);
   BSP_LCD_DisplayOn(0);
-  // BSP_LCD_SetDisplayWindow(0, 0, 0, 320, 240);
   /* USER CODE END 2 */
 
   /* Infinite loop */
