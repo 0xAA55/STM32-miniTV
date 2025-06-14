@@ -404,7 +404,7 @@ static void SPI1_MspInit(SPI_HandleTypeDef* spiHandle)
 
   __HAL_LINKDMA(spiHandle,hdmatx,hdma_spi1_tx);
 
-    hdma_spi1_rx.Instance = DMA1_Stream3;
+    hdma_spi1_rx.Instance = DMA1_Stream1;
     hdma_spi1_rx.Init.Request = DMA_REQUEST_SPI1_RX;
     hdma_spi1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_spi1_rx.Init.PeriphInc = DMA_PINC_DISABLE;

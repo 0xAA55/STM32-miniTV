@@ -122,7 +122,7 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
 
     /* DAC1 DMA Init */
     /* DAC1_CH1 Init */
-    hdma_dac1_ch1.Instance = DMA1_Stream1;
+    hdma_dac1_ch1.Instance = DMA1_Stream5;
     hdma_dac1_ch1.Init.Request = DMA_REQUEST_DAC1;
     hdma_dac1_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_dac1_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -140,7 +140,7 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     __HAL_LINKDMA(hdac,DMA_Handle1,hdma_dac1_ch1);
 
     /* DAC1_CH2 Init */
-    hdma_dac1_ch2.Instance = DMA1_Stream2;
+    hdma_dac1_ch2.Instance = DMA1_Stream4;
     hdma_dac1_ch2.Init.Request = DMA_REQUEST_DAC2;
     hdma_dac1_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_dac1_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -669,7 +669,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     /* SPI2 DMA Init */
     /* SPI2_TX Init */
-    hdma_spi2_tx.Instance = DMA1_Stream4;
+    hdma_spi2_tx.Instance = DMA1_Stream2;
     hdma_spi2_tx.Init.Request = DMA_REQUEST_SPI2_TX;
     hdma_spi2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_spi2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -687,7 +687,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     __HAL_LINKDMA(hspi,hdmatx,hdma_spi2_tx);
 
     /* SPI2_RX Init */
-    hdma_spi2_rx.Instance = DMA1_Stream5;
+    hdma_spi2_rx.Instance = DMA1_Stream3;
     hdma_spi2_rx.Init.Request = DMA_REQUEST_SPI2_RX;
     hdma_spi2_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_spi2_rx.Init.PeriphInc = DMA_PINC_DISABLE;
