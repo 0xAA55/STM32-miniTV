@@ -164,6 +164,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int frame_counter = 0;
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
@@ -174,9 +175,9 @@ int main(void)
     	for (int x = 0; x < 320; x++)
     	{
     		Pixel c;
-        c.R = rand();
-        c.G = rand();
-        c.B = rand();
+        c.R = x + frame_counter;
+        c.G = y + frame_counter;
+        c.B = cur_tick / 10;
     		Framebuffer[y][x] = c;
     	}
       SCB_CleanDCache();
