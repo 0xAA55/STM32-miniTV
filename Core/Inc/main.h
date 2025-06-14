@@ -61,7 +61,7 @@ typedef struct Pixel_s
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void BSP_LCD_SignalTransferDone(uint32_t Instance);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
