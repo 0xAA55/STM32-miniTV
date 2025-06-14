@@ -393,9 +393,10 @@ int32_t BSP_LCD_WriteData(uint32_t Instance, uint8_t *pData, uint32_t Length)
     if(IOCtx.SendData)
     {
       /* Set the SPI in 16-bit mode to match endianess */
-      hLCDSPI.Init.DataSize = SPI_DATASIZE_16BIT;
-      HAL_SPI_Init(&hLCDSPI);
-      if(IOCtx.SendData(pData, (Length / 2)) < 0)
+      // hLCDSPI.Init.DataSize = SPI_DATASIZE_16BIT;
+      // HAL_SPI_Init(&hLCDSPI);
+      // ** No, don't set SPI in 16-bit mode and reinitialize the SPI peripheral, fuck you. **
+      if(IOCtx.SendData(pData, Length) < 0)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
