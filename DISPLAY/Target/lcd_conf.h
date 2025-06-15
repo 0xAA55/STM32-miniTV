@@ -34,11 +34,11 @@
 
 /* Exported types ------------------------------------------------------------*/
 /* BUS IO Instance handler */
-extern  SPI_HandleTypeDef                   hspi1;
+extern  SPI_HandleTypeDef                   hspi6;
 
 /* DMA Instance handlers */
-extern  DMA_HandleTypeDef                   hdma_spi1_rx;
-extern  DMA_HandleTypeDef                   hdma_spi1_tx;
+extern  DMA_HandleTypeDef                   hdma_spi6_rx;
+extern  DMA_HandleTypeDef                   hdma_spi6_tx;
 
 /* USER CODE BEGIN ET */
 
@@ -49,20 +49,20 @@ extern  DMA_HandleTypeDef                   hdma_spi1_tx;
 #define LCD_INSTANCES_NBR                   1U
 
 /* BUS IO Instance handlers */
-#define hLCDSPI                             hspi1
+#define hLCDSPI                             hspi6
 
-#define hLCDDMA_rx                          hdma_spi1_rx
-#define hLCDDMA_tx                          hdma_spi1_tx
+#define hLCDDMA_rx                          hdma_spi6_rx
+#define hLCDDMA_tx                          hdma_spi6_tx
 
 /* BUS IO functions */
-#define LCD_SPI_Init                        BSP_SPI1_Init
-#define LCD_SPI_DeInit                      BSP_SPI1_DeInit
-#define LCD_SPI_Send                        BSP_SPI1_Send
-#define LCD_SPI_Recv                        BSP_SPI1_Recv
-#define LCD_SPI_SendRecv                    BSP_SPI1_SendRecv
-#define LCD_SPI_Send_DMA                    BSP_SPI1_Send_DMA
-#define LCD_SPI_Recv_DMA                    BSP_SPI1_Recv_DMA
-#define LCD_SPI_SendRecv_DMA                BSP_SPI1_SendRecv_DMA
+#define LCD_SPI_Init                        BSP_SPI6_Init
+#define LCD_SPI_DeInit                      BSP_SPI6_DeInit
+#define LCD_SPI_Send                        BSP_SPI6_Send
+#define LCD_SPI_Recv                        BSP_SPI6_Recv
+#define LCD_SPI_SendRecv                    BSP_SPI6_SendRecv
+#define LCD_SPI_Send_DMA                    BSP_SPI6_Send_DMA
+#define LCD_SPI_Recv_DMA                    BSP_SPI6_Recv_DMA
+#define LCD_SPI_SendRecv_DMA                BSP_SPI6_SendRecv_DMA
 
 /* CS Pin mapping */
 #define LCD_CS_GPIO_PORT                    GPIOD
