@@ -99,6 +99,13 @@ void BSP_LCD_SignalTransferDone(uint32_t Instance)
     LCD_OS_Unlock(Instance);
   }
 }
+Pixel MakePixel(uint8_t R, uint8_t G, uint8_t B)
+{
+  return
+      ((Pixel)R >> 3) |
+      (((Pixel)G >> 2) << 5) |
+      (((Pixel)B >> 3) << 11);
+}
 /* USER CODE END 0 */
 
 /**
@@ -174,11 +181,10 @@ int main(void)
       LCD_CS_HIGH();
     	for (int x = 0; x < 320; x++)
     	{
-    		Pixel c;
-        c.R = x + frame_counter;
-        c.G = y + frame_counter;
-        c.B = cur_tick / 10;
-    		Framebuffer[y][x] = c;
+        uint8_t R = x + frame_counter;
+        uint8_t G = y + frame_counter;
+        uint8_t B = cur_tick / 10;
+        Framebuffer[y][x] = MakePixel(R, G, B);
     	}
       SCB_CleanDCache();
       BSP_LCD_WriteDataDMA(0, (void*)Framebuffer[y], sizeof Framebuffer[y]);

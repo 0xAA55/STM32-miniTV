@@ -198,7 +198,7 @@ typedef struct
  */
 #define ILI9341_FORMAT_RBG565                0x55U /* Pixel format chosen is RGB565 : 16 bpp */
 #define ILI9341_FORMAT_RBG666                0x66U /* Pixel format chosen is RGB666 : 18 bpp */
-#define ILI9341_FORMAT_DEFAULT               ILI9341_FORMAT_RBG666
+#define ILI9341_FORMAT_DEFAULT               ILI9341_FORMAT_RBG565
 /**
   * @}
   */
