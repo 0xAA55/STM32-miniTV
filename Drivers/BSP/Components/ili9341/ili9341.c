@@ -306,7 +306,7 @@ int32_t ILI9341_DeInit(ILI9341_Object_t *pObj)
 int32_t ILI9341_ReadID(ILI9341_Object_t *pObj, uint32_t *Id)
 {
   int32_t ret;
-  uint8_t data[4] = {ILI9341_READ_ID4, 0, 0, 0 };
+  uint8_t __IO data[4] = {ILI9341_READ_ID4, 0, 0, 0 };
 
   if(ili9341_recv_data(&pObj->Ctx, (uint8_t *)data, 4) != ILI9341_OK)
   {
@@ -328,7 +328,7 @@ int32_t ILI9341_ReadID(ILI9341_Object_t *pObj, uint32_t *Id)
   */
 int32_t ILI9341_DisplayOn(ILI9341_Object_t *pObj)
 {
-  uint8_t reg = ILI9341_DISPLAY_ON;
+  uint8_t __IO reg = ILI9341_DISPLAY_ON;
 
   return ili9341_write_reg(&pObj->Ctx, &reg, 1);
 }
@@ -340,7 +340,7 @@ int32_t ILI9341_DisplayOn(ILI9341_Object_t *pObj)
   */
 int32_t ILI9341_DisplayOff(ILI9341_Object_t *pObj)
 {
-  uint8_t reg = ILI9341_DISPLAY_OFF;
+  uint8_t __IO reg = ILI9341_DISPLAY_OFF;
 
   return ili9341_write_reg(&pObj->Ctx, &reg, 1);
 }
@@ -355,8 +355,8 @@ int32_t ILI9341_DisplayOff(ILI9341_Object_t *pObj)
 int32_t ILI9341_SetOrientation(ILI9341_Object_t *pObj, uint32_t Orientation)
 {
   int32_t ret;
-  uint8_t parameter;
-  uint8_t reg;
+  uint8_t __IO parameter;
+  uint8_t __IO reg;
 
   parameter = (uint8_t)OrientationTab[Orientation];
   reg = ILI9341_MAC;
@@ -447,8 +447,8 @@ int32_t ILI9341_GetYSize(ILI9341_Object_t *pObj, uint32_t *YSize)
 int32_t ILI9341_SetDisplayWindow(ILI9341_Object_t *pObj, uint32_t Xpos, uint32_t Ypos, uint32_t Width, uint32_t Height)
 {
   int32_t ret;
-  uint8_t parameter[4];
-  uint8_t reg = ILI9341_CASET;
+  uint8_t __IO parameter[4];
+  uint8_t __IO reg = ILI9341_CASET;
 
   /* Column addr set, 4 args, no delay: XSTART = Xpos, XEND = (Xpos + Width - 1) */
   ret = ili9341_write_reg(&pObj->Ctx, &reg, 1);
