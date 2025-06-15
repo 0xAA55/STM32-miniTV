@@ -38,7 +38,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef uint16_t Pixel;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -55,8 +55,7 @@ typedef uint16_t Pixel;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void BSP_LCD_SignalTransferDone(uint32_t Instance);
-Pixel MakePixel(uint8_t R, uint8_t G, uint8_t B);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

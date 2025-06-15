@@ -23,8 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd_io.h"
-#include "lcd_os.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,20 +89,7 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void BSP_LCD_SignalTransferDone(uint32_t Instance)
-{
-  if (Instance < LCD_INSTANCES_NBR)
-  {
-    LCD_OS_Unlock(Instance);
-  }
-}
-Pixel MakePixel(uint8_t R, uint8_t G, uint8_t B)
-{
-  return
-      ((Pixel)R >> 3) |
-      (((Pixel)G >> 2) << 5) |
-      (((Pixel)B >> 3) << 11);
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -164,8 +149,7 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   // GND RST SCL DC CS SDA SDO GND VDD LEDA LEDK
-  BSP_LCD_Init(0, LCD_ORIENTATION_LANDSCAPE);
-  BSP_LCD_DisplayOn(0);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -186,7 +170,6 @@ int main(void)
         Framebuffer[y][x] = MakePixel(R, G, B);
     	}
       SCB_CleanDCache();
-      BSP_LCD_WriteDataDMA(0, (void*)Framebuffer[y], sizeof Framebuffer[y]);
     }
     /* USER CODE END WHILE */
 
@@ -814,7 +797,6 @@ void MPU_Config(void)
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER5;
   MPU_InitStruct.BaseAddress = 0x30000000;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_64KB;
   MPU_InitStruct.AccessPermission = MPU_REGION_PRIV_RW;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
@@ -823,6 +805,7 @@ void MPU_Config(void)
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER6;
   MPU_InitStruct.BaseAddress = 0x38000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_64KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
