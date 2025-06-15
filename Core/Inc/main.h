@@ -61,6 +61,16 @@ Pixel MakePixel(uint8_t R, uint8_t G, uint8_t B);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BUTTON_USER_Pin GPIO_PIN_13
+#define BUTTON_USER_GPIO_Port GPIOC
+#define SDMMC1_DETECT_Pin GPIO_PIN_15
+#define SDMMC1_DETECT_GPIO_Port GPIOD
+#define LCD_CS_Pin GPIO_PIN_3
+#define LCD_CS_GPIO_Port GPIOD
+#define LCD_RST_Pin GPIO_PIN_4
+#define LCD_RST_GPIO_Port GPIOD
+#define LCD_DC_Pin GPIO_PIN_4
+#define LCD_DC_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 extern volatile Pixel Framebuffer[240][320];
