@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ili9341.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,14 +59,18 @@ MDMA_HandleTypeDef hmdma_quadspi_fifo_th;
 
 SD_HandleTypeDef hsd1;
 
+SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi2_tx;
 DMA_HandleTypeDef hdma_spi2_rx;
 
 TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
-volatile Pixel Framebuffer[240][320];
+LCD hlcd;
+Pixel565 Framebuffer[240][320];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,6 +88,7 @@ static void MX_TIM6_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_QUADSPI_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -147,9 +153,22 @@ int main(void)
   MX_QUADSPI_Init();
   MX_USB_DEVICE_Init();
   MX_SPI2_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   // GND RST SCL DC CS SDA SDO GND VDD LEDA LEDK
-
+  LCD_Init
+  (
+    &hlcd,
+    &hspi1,
+    &hdma_spi1_tx,
+    &hdma_spi1_rx,
+    LCD_MakePin(LCD_RST_GPIO_Port, LCD_RST_Pin),
+    LCD_MakePin(LCD_CS_GPIO_Port, LCD_CS_Pin),
+    LCD_MakePin(LCD_DC_GPIO_Port, LCD_DC_Pin),
+    LCD_RGB565,
+    LCD_Landscape
+  );
+  LCD_Config(&hlcd);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,18 +177,17 @@ int main(void)
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
-    for (int y = 0; y < 240; y++)
+    for (int y = 0; y < hlcd.yres; y++)
     {
-      BSP_LCD_WaitForTransferToBeDone(0);
-      LCD_CS_HIGH();
-    	for (int x = 0; x < 320; x++)
+    	for (int x = 0; x < hlcd.xres; x++)
     	{
         uint8_t R = x + frame_counter;
         uint8_t G = y + frame_counter;
         uint8_t B = cur_tick / 10;
-        Framebuffer[y][x] = MakePixel(R, G, B);
+        Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
       SCB_CleanDCache();
+      LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer[y], hlcd.xres);
     }
     /* USER CODE END WHILE */
 
@@ -467,6 +485,54 @@ static void MX_SDMMC1_SD_Init(void)
 }
 
 /**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 0x0;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+  hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+  hspi1.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi1.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi1.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+  hspi1.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi1.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+  hspi1.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
+  hspi1.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+  HAL_SPI_MspInit(&hspi1);
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
   * @brief SPI2 Initialization Function
   * @param None
   * @retval None
@@ -509,7 +575,7 @@ static void MX_SPI2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI2_Init 2 */
-
+  HAL_SPI_MspInit(&hspi2);
   /* USER CODE END SPI2_Init 2 */
 
 }
