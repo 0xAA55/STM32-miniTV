@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
+#include "graphics.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -201,6 +202,7 @@ int main(void)
   );
   LCD_Config(&hlcd);
   HAL_ADC_Start(&hadc1);
+  Graphics_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -209,6 +211,7 @@ int main(void)
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
+    char buf[128];
     if (!pwr_pin_up)
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
@@ -226,6 +229,8 @@ int main(void)
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
+    sprintf(buf, "电池:%d", GetPowerPercentage());
+    DrawTextOpaque(10, 10, buf, MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
     SCB_CleanDCache();
     LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
     frame_counter += 1;
