@@ -214,19 +214,20 @@ int main(void)
         pwr_pin_up = 1;
       }
     }
-    uint32_t cur_tick = HAL_GetTick();
     for (int y = 0; y < hlcd.yres; y++)
     {
     	for (int x = 0; x < hlcd.xres; x++)
     	{
         uint8_t R = x + frame_counter;
         uint8_t G = y + frame_counter;
-        uint8_t B = cur_tick / 10;
+        uint8_t B = frame_counter;
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
-      SCB_CleanDCache();
-      LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer[y], hlcd.xres);
+    SCB_CleanDCache();
+    LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
+    frame_counter += 1;
+
     if (pwr_pin_up && HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_RESET)
     {
       HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
