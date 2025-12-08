@@ -42,12 +42,16 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 
 static void Pin_Low(LCD_Pin *pin)
 {
-  pin->gpio->BSRR = pin->pin_bit;
+  pin->gpio->BSRR = pin->pin_bit << 16;
+  // HAL_GPIO_WritePin(pin->gpio, pin->pin_bit, GPIO_PIN_RESET);
 }
 
 static void Pin_High(LCD_Pin *pin)
 {
-  pin->gpio->BSRR = pin->pin_bit << 16;
+  pin->gpio->BSRR = pin->pin_bit;
+  // HAL_GPIO_WritePin(pin->gpio, pin->pin_bit, GPIO_PIN_SET);
+}
+
 }
 
 HAL_StatusTypeDef LCD_Init
