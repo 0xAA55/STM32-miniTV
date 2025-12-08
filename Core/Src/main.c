@@ -207,6 +207,7 @@ int main(void)
   int frame_counter = 0;
   while (1)
   {
+    uint32_t cur_tick = HAL_GetTick();
     if (!pwr_pin_up)
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
@@ -218,9 +219,9 @@ int main(void)
     {
     	for (int x = 0; x < hlcd.xres; x++)
     	{
-        uint8_t R = x + frame_counter;
-        uint8_t G = y + frame_counter;
-        uint8_t B = frame_counter;
+        uint8_t R = x + cur_tick;
+        uint8_t G = y + cur_tick;
+        uint8_t B = cur_tick;
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
