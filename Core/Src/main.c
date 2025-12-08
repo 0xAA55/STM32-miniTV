@@ -97,7 +97,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  int pwr_pin_up = 0;
   /* USER CODE END 1 */
 
   /* MPU Configuration--------------------------------------------------------*/
@@ -170,6 +170,13 @@ int main(void)
   int frame_counter = 0;
   while (1)
   {
+    if (!pwr_pin_up)
+    {
+      if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
+      {
+        pwr_pin_up = 1;
+      }
+    }
     uint32_t cur_tick = HAL_GetTick();
     for (int y = 0; y < hlcd.yres; y++)
     {
@@ -180,8 +187,12 @@ int main(void)
         uint8_t B = cur_tick / 10;
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
+    }
       SCB_CleanDCache();
       LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer[y], hlcd.xres);
+    if (pwr_pin_up && HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_RESET)
+    {
+      HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
     }
     /* USER CODE END WHILE */
 
