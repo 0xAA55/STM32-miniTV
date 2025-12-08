@@ -35,10 +35,8 @@
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
 
-
 char *__env[1] = { 0 };
 char **environ = __env;
-
 
 /* Functions */
 void initialise_monitor_handles()
@@ -95,15 +93,14 @@ int _close(int file)
   return -1;
 }
 
-
-int _fstat(int file, struct stat *st)
+__attribute__((used)) int _fstat(int file, struct stat *st)
 {
   (void)file;
   st->st_mode = S_IFCHR;
   return 0;
 }
 
-int _isatty(int file)
+__attribute__((used)) int _isatty(int file)
 {
   (void)file;
   return 1;
