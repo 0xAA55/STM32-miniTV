@@ -64,6 +64,7 @@ TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN PV */
 LCD hlcd;
 Pixel565 Framebuffer[240][320];
+uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
