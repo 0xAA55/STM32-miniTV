@@ -307,13 +307,12 @@ void MDMA_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  /* USER CODE BEGIN BDMA_Channel1_IRQn 0 */
-
-  /* USER CODE END BDMA_Channel1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_lpuart1_rx);
-  /* USER CODE BEGIN BDMA_Channel1_IRQn 1 */
-
-  /* USER CODE END BDMA_Channel1_IRQn 1 */
+  if (hadc == &hadc1)
+  {
+    BAT_ADC_VAL = HAL_ADC_GetValue(&hadc1);
+    BAT_ADC_Sampling = 0;
+  }
 }
 /* USER CODE END 1 */

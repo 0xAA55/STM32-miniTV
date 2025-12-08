@@ -86,7 +86,43 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+volatile uint32_t BAT_ADC_VAL = 0;
+volatile int BAT_ADC_Sampling = 0;
+int GetBatteryVolatage(uint32_t adc_val)
+{
+  int adc_voltage = (int)((adc_val * 3300) >> 16);
+  return adc_voltage * 7 / 5;
+}
+int BatteryVolatageToPowerPercentage(int voltage)
+{
+  if (voltage >= 3700)
+    return (voltage - 3700) * 80 / (4118 - 3700) + 20;
+  else
+    return (voltage - 3000) * 20 / (3700 - 3000);
+}
+int GetPowerPercentage()
+{
+  int ret;
+  if (BAT_ADC_VAL == 0 && BAT_ADC_Sampling == 0)
+  {
+    BAT_ADC_Sampling = 1;
+    HAL_ADC_Start_IT(&hadc1);
+    while(BAT_ADC_Sampling) __WFI();
+    ret = BatteryVolatageToPowerPercentage(GetBatteryVolatage(BAT_ADC_VAL));
+    BAT_ADC_Sampling = 1;
+    HAL_ADC_Start_IT(&hadc1);
+  }
+  else
+  {
+    ret = BatteryVolatageToPowerPercentage(GetBatteryVolatage(BAT_ADC_VAL));
+    if (!BAT_ADC_Sampling)
+    {
+      BAT_ADC_Sampling = 1;
+      HAL_ADC_Start_IT(&hadc1);
+    }
+  }
+  return ret;
+}
 /* USER CODE END 0 */
 
 /**
@@ -163,6 +199,7 @@ int main(void)
     LCD_Landscape
   );
   LCD_Config(&hlcd);
+  HAL_ADC_Start(&hadc1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

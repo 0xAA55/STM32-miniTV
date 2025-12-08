@@ -109,7 +109,8 @@ void Error_Handler(void);
 #define SDMMC_CKIN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+extern volatile uint32_t BAT_ADC_VAL;
+extern volatile int BAT_ADC_Sampling;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
