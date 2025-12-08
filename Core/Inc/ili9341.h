@@ -65,7 +65,7 @@ typedef struct LCD_s
   int cur_window_y;
   int cur_window_r;
   int cur_window_b;
-  int is_dma_active;
+  volatile int is_dma_active;
 }LCD;
 
 typedef struct LCD_GPIO_s
