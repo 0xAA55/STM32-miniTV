@@ -90,6 +90,8 @@ int main(int argc, char** argv)
     stream.avail_in = (mz_uint32)srcfile_size;
     stream.next_out = compress_buffer;
     stream.avail_out = (mz_uint32)srcfile_size;
+    stream.zalloc = my_alloc_func;
+    stream.zfree = my_free_func;
 
     status = mz_deflateInit(&stream, 10);
     if (status != MZ_OK)
