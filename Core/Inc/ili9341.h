@@ -66,6 +66,8 @@ typedef struct LCD_s
   int cur_window_r;
   int cur_window_b;
   volatile int is_dma_active;
+  uint8_t *dma_pointer;
+  size_t dma_bytes_to_go;
 }LCD;
 
 typedef struct LCD_GPIO_s
@@ -90,6 +92,8 @@ HAL_StatusTypeDef LCD_Init
 );
 
 HAL_StatusTypeDef LCD_Config(LCD *hlcd);
+HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
+HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
 HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient);
 HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode);
 HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y);
