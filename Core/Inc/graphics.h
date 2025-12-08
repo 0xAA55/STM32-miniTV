@@ -15,6 +15,7 @@ typedef uint16_t Pixel565;
 extern Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
 extern Pixel565 Framebuffer[240][320];
 
+void Graphics_Init();
 void DrawText(int x, int y, const char* text, Pixel565 TextColor);
 void DrawTextOpaque(int x, int y, const char* text, Pixel565 TextColor, Pixel565 BgColor);
 
