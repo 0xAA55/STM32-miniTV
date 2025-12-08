@@ -34,7 +34,7 @@
   */
 #define HAL_MODULE_ENABLED
 
-  /* #define HAL_ADC_MODULE_ENABLED   */
+  #define HAL_ADC_MODULE_ENABLED
 /* #define HAL_FDCAN_MODULE_ENABLED   */
 /* #define HAL_FMAC_MODULE_ENABLED   */
 /* #define HAL_CEC_MODULE_ENABLED   */
@@ -42,7 +42,7 @@
 /* #define HAL_CORDIC_MODULE_ENABLED   */
 /* #define HAL_CRC_MODULE_ENABLED   */
 /* #define HAL_CRYP_MODULE_ENABLED   */
-#define HAL_DAC_MODULE_ENABLED
+/* #define HAL_DAC_MODULE_ENABLED   */
 /* #define HAL_DCMI_MODULE_ENABLED   */
 /* #define HAL_DMA2D_MODULE_ENABLED   */
 /* #define HAL_ETH_MODULE_ENABLED   */
@@ -59,7 +59,7 @@
 #define HAL_JPEG_MODULE_ENABLED
 /* #define HAL_OPAMP_MODULE_ENABLED   */
 /* #define HAL_OSPI_MODULE_ENABLED   */
-/* #define HAL_I2S_MODULE_ENABLED   */
+#define HAL_I2S_MODULE_ENABLED
 /* #define HAL_SMBUS_MODULE_ENABLED   */
 /* #define HAL_IWDG_MODULE_ENABLED   */
 /* #define HAL_LPTIM_MODULE_ENABLED   */
@@ -75,7 +75,7 @@
 #define HAL_SPI_MODULE_ENABLED
 /* #define HAL_SWPMI_MODULE_ENABLED   */
 #define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
+/* #define HAL_UART_MODULE_ENABLED   */
 /* #define HAL_USART_MODULE_ENABLED   */
 /* #define HAL_IRDA_MODULE_ENABLED   */
 /* #define HAL_SMARTCARD_MODULE_ENABLED   */

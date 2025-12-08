@@ -55,20 +55,14 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern DMA_HandleTypeDef hdma_dac1_ch1;
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
+extern ADC_HandleTypeDef hadc1;
+extern DMA_HandleTypeDef hdma_spi2_tx;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_nf;
 extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
-extern DMA_HandleTypeDef hdma_lpuart1_tx;
-extern DMA_HandleTypeDef hdma_lpuart1_rx;
-extern MDMA_HandleTypeDef hmdma_quadspi_fifo_th;
-extern QSPI_HandleTypeDef hqspi;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_spi2_tx;
-extern DMA_HandleTypeDef hdma_spi2_rx;
 extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -255,31 +249,17 @@ void DMA1_Stream2_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles DMA1 stream3 global interrupt.
+  * @brief This function handles ADC1 and ADC2 global interrupts.
   */
-void DMA1_Stream3_IRQHandler(void)
+void ADC_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
+  /* USER CODE BEGIN ADC_IRQn 0 */
 
-  /* USER CODE END DMA1_Stream3_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi2_rx);
-  /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
+  /* USER CODE END ADC_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC_IRQn 1 */
 
-  /* USER CODE END DMA1_Stream3_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA1 stream4 global interrupt.
-  */
-void DMA1_Stream4_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
-
-  /* USER CODE END DMA1_Stream4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_dac1_ch1);
-  /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
-
-  /* USER CODE END DMA1_Stream4_IRQn 1 */
+  /* USER CODE END ADC_IRQn 1 */
 }
 
 /**
@@ -297,45 +277,17 @@ void SPI1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles SPI2 global interrupt.
+  * @brief This function handles USB On The Go HS global interrupt.
   */
-void SPI2_IRQHandler(void)
+void OTG_HS_IRQHandler(void)
 {
-  /* USER CODE BEGIN SPI2_IRQn 0 */
+  /* USER CODE BEGIN OTG_HS_IRQn 0 */
 
-  /* USER CODE END SPI2_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi2);
-  /* USER CODE BEGIN SPI2_IRQn 1 */
+  /* USER CODE END OTG_HS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_HS);
+  /* USER CODE BEGIN OTG_HS_IRQn 1 */
 
-  /* USER CODE END SPI2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles QUADSPI global interrupt.
-  */
-void QUADSPI_IRQHandler(void)
-{
-  /* USER CODE BEGIN QUADSPI_IRQn 0 */
-
-  /* USER CODE END QUADSPI_IRQn 0 */
-  HAL_QSPI_IRQHandler(&hqspi);
-  /* USER CODE BEGIN QUADSPI_IRQn 1 */
-
-  /* USER CODE END QUADSPI_IRQn 1 */
-}
-
-/**
-  * @brief This function handles USB On The Go FS global interrupt.
-  */
-void OTG_FS_IRQHandler(void)
-{
-  /* USER CODE BEGIN OTG_FS_IRQn 0 */
-
-  /* USER CODE END OTG_FS_IRQn 0 */
-  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
-  /* USER CODE BEGIN OTG_FS_IRQn 1 */
-
-  /* USER CODE END OTG_FS_IRQn 1 */
+  /* USER CODE END OTG_HS_IRQn 1 */
 }
 
 /**
@@ -348,30 +300,13 @@ void MDMA_IRQHandler(void)
   /* USER CODE END MDMA_IRQn 0 */
   HAL_MDMA_IRQHandler(&hmdma_jpeg_infifo_nf);
   HAL_MDMA_IRQHandler(&hmdma_jpeg_outfifo_ne);
-  HAL_MDMA_IRQHandler(&hmdma_quadspi_fifo_th);
   /* USER CODE BEGIN MDMA_IRQn 1 */
 
   /* USER CODE END MDMA_IRQn 1 */
 }
 
-/**
-  * @brief This function handles BDMA channel0 global interrupt.
-  */
-void BDMA_Channel0_IRQHandler(void)
-{
-  /* USER CODE BEGIN BDMA_Channel0_IRQn 0 */
+/* USER CODE BEGIN 1 */
 
-  /* USER CODE END BDMA_Channel0_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_lpuart1_tx);
-  /* USER CODE BEGIN BDMA_Channel0_IRQn 1 */
-
-  /* USER CODE END BDMA_Channel0_IRQn 1 */
-}
-
-/**
-  * @brief This function handles BDMA channel1 global interrupt.
-  */
-void BDMA_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN BDMA_Channel1_IRQn 0 */
 
@@ -381,7 +316,4 @@ void BDMA_Channel1_IRQHandler(void)
 
   /* USER CODE END BDMA_Channel1_IRQn 1 */
 }
-
-/* USER CODE BEGIN 1 */
-
 /* USER CODE END 1 */

@@ -59,12 +59,44 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BUTTON_USER_Pin GPIO_PIN_13
-#define BUTTON_USER_GPIO_Port GPIOC
 #define LCD_SDO_Pin GPIO_PIN_6
 #define LCD_SDO_GPIO_Port GPIOA
+#define LCD_SDA_Pin GPIO_PIN_7
+#define LCD_SDA_GPIO_Port GPIOA
+#define BAT_PERC_Pin GPIO_PIN_4
+#define BAT_PERC_GPIO_Port GPIOC
+#define PWCTRL_Pin GPIO_PIN_9
+#define PWCTRL_GPIO_Port GPIOE
+#define ENC1_PWR_SW_Pin GPIO_PIN_10
+#define ENC1_PWR_SW_GPIO_Port GPIOE
+#define ENC1_A_Pin GPIO_PIN_11
+#define ENC1_A_GPIO_Port GPIOE
+#define ENC1_B_Pin GPIO_PIN_12
+#define ENC1_B_GPIO_Port GPIOE
+#define ENC2_SW_Pin GPIO_PIN_13
+#define ENC2_SW_GPIO_Port GPIOE
+#define ENC2_A_Pin GPIO_PIN_14
+#define ENC2_A_GPIO_Port GPIOE
+#define ENC2_B_Pin GPIO_PIN_15
+#define ENC2_B_GPIO_Port GPIOE
+#define BAT_CHRG_Pin GPIO_PIN_14
+#define BAT_CHRG_GPIO_Port GPIOB
+#define BAT_FULL_Pin GPIO_PIN_15
+#define BAT_FULL_GPIO_Port GPIOB
 #define SDMMC1_DETECT_Pin GPIO_PIN_15
 #define SDMMC1_DETECT_GPIO_Port GPIOD
+#define SDMMC_D0_Pin GPIO_PIN_8
+#define SDMMC_D0_GPIO_Port GPIOC
+#define SDMMC_D1_Pin GPIO_PIN_9
+#define SDMMC_D1_GPIO_Port GPIOC
+#define SDMMC_D2_Pin GPIO_PIN_10
+#define SDMMC_D2_GPIO_Port GPIOC
+#define SDMMC_D3_Pin GPIO_PIN_11
+#define SDMMC_D3_GPIO_Port GPIOC
+#define SDMMC_CK_Pin GPIO_PIN_12
+#define SDMMC_CK_GPIO_Port GPIOC
+#define SDMMC_CMD_Pin GPIO_PIN_2
+#define SDMMC_CMD_GPIO_Port GPIOD
 #define LCD_CS_Pin GPIO_PIN_3
 #define LCD_CS_GPIO_Port GPIOD
 #define LCD_RST_Pin GPIO_PIN_4
@@ -73,8 +105,8 @@ void Error_Handler(void);
 #define LCD_SCK_GPIO_Port GPIOB
 #define LCD_DC_Pin GPIO_PIN_4
 #define LCD_DC_GPIO_Port GPIOB
-#define LCD_SDI_Pin GPIO_PIN_5
-#define LCD_SDI_GPIO_Port GPIOB
+#define SDMMC_CKIN_Pin GPIO_PIN_8
+#define SDMMC_CKIN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
