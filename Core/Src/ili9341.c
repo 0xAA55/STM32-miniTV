@@ -56,9 +56,7 @@ HAL_StatusTypeDef LCD_Init
   SPI_HandleTypeDef *hspi,
   DMA_HandleTypeDef *hdma_spi_tx,
   DMA_HandleTypeDef *hdma_spi_rx,
-  LCD_Pin pin_rst,
-  LCD_Pin pin_cs,
-  LCD_Pin pin_dc,
+  const LCD_GPIO *gpio,
   LCD_Color_Mode color_mode,
   LCD_Orient orient
 )
@@ -66,9 +64,12 @@ HAL_StatusTypeDef LCD_Init
   hlcd->hspi = hspi;
   hlcd->hdma_spi_tx = hdma_spi_tx;
   hlcd->hdma_spi_rx = hdma_spi_rx;
-  hlcd->pin_rst = pin_rst;
-  hlcd->pin_cs = pin_cs;
-  hlcd->pin_dc = pin_dc;
+  hlcd->pin_rst = gpio->pin_rst;
+  hlcd->pin_cs = gpio->pin_cs;
+  hlcd->pin_dc = gpio->pin_dc;
+  hlcd->pin_sck = gpio->pin_sck;
+  hlcd->pin_mosi = gpio->pin_mosi;
+  hlcd->pin_miso = gpio->pin_miso;
   hlcd->color_mode = color_mode;
   hlcd->orient = orient;
   hlcd->is_dma_active = 0;

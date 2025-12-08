@@ -54,6 +54,9 @@ typedef struct LCD_s
   LCD_Pin pin_rst;
   LCD_Pin pin_cs;
   LCD_Pin pin_dc;
+  LCD_Pin pin_sck;
+  LCD_Pin pin_mosi;
+  LCD_Pin pin_miso;
   LCD_Color_Mode color_mode;
   LCD_Orient orient;
   int xres;
@@ -65,15 +68,23 @@ typedef struct LCD_s
   int is_dma_active;
 }LCD;
 
+typedef struct LCD_GPIO_s
+{
+  LCD_Pin pin_rst;
+  LCD_Pin pin_cs;
+  LCD_Pin pin_dc;
+  LCD_Pin pin_sck;
+  LCD_Pin pin_mosi;
+  LCD_Pin pin_miso;
+}LCD_GPIO;
+
 HAL_StatusTypeDef LCD_Init
 (
   LCD *hlcd,
   SPI_HandleTypeDef *hspi,
   DMA_HandleTypeDef *hdma_spi_tx,
   DMA_HandleTypeDef *hdma_spi_rx,
-  LCD_Pin pin_rst,
-  LCD_Pin pin_cs,
-  LCD_Pin pin_dc,
+  const LCD_GPIO *gpio,
   LCD_Color_Mode color_mode,
   LCD_Orient orient
 );

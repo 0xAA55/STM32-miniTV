@@ -144,16 +144,21 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  // GND RST SCL DC CS SDA SDO GND VDD LEDA LEDK
+  const LCD_GPIO lcd_gpio = {
+    LCD_MakePin(LCD_RST_GPIO_Port, LCD_RST_Pin),
+    LCD_MakePin(LCD_CS_GPIO_Port, LCD_CS_Pin),
+    LCD_MakePin(LCD_DC_GPIO_Port, LCD_DC_Pin),
+    LCD_MakePin(LCD_SCK_GPIO_Port, LCD_SCK_Pin),
+    LCD_MakePin(LCD_SDA_GPIO_Port, LCD_SDA_Pin),
+    LCD_MakePin(LCD_SDO_GPIO_Port, LCD_SDO_Pin),
+  };
   LCD_Init
   (
     &hlcd,
     &hspi1,
     &hdma_spi1_tx,
     &hdma_spi1_rx,
-    LCD_MakePin(LCD_RST_GPIO_Port, LCD_RST_Pin),
-    LCD_MakePin(LCD_CS_GPIO_Port, LCD_CS_Pin),
-    LCD_MakePin(LCD_DC_GPIO_Port, LCD_DC_Pin),
+    &lcd_gpio,
     LCD_RGB565,
     LCD_Landscape
   );
