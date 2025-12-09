@@ -55,7 +55,7 @@ static int SampleFont(int x, int y)
 
 static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
 {
-  int cur_x, cur_y;
+  int cur_x = x, cur_y = y;
   UTF8Parser parser = utf8_start_parse(text);
   uint32_t code;
   size_t char_index;
