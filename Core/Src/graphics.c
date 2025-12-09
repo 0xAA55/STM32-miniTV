@@ -9,9 +9,9 @@
 #include "utf8.h"
 #include "font.h"
 
-const int space_size = 6;
+int space_size;
+int tab_size;
 const int font_height = 12;
-const int tab_size = space_size * 4;
 const size_t num_font_codes = (sizeof font_code_table) / (sizeof font_code_table[0]);
 const uint32_t min_code = font_code_table[0];
 const uint32_t max_code = font_code_table[num_font_codes - 1];
@@ -203,6 +203,19 @@ static HorzLine gear_45[] =
   { 44 ,-1 , 13 }, { 45 ,-1 , 9 },
 };
 
+void Graphics_Init()
+{
+  int space_char_index = GetCharIndex(' ');
+  uint16_t x = 0;
+  for (size_t i = 0; i < num_font_codes; i++)
+  {
+    font_x_table[i] = x;
+    x += font_width_table[i];
+  }
+  space_size = font_width_table[space_char_index];
+  tab_size = space_size * 4;
+}
+
 static ssize_t GetCharIndex(uint32_t unicode)
 {
   ssize_t max_index = (ssize_t)num_font_codes - 1;
@@ -269,16 +282,6 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
     cur_x += char_width;
   }
   utf8_end_parse(&parser);
-}
-
-void Graphics_Init()
-{
-  uint16_t x = 0;
-  for (size_t i = 0; i < num_font_codes; i++)
-  {
-    font_x_table[i] = x;
-    x += font_width_table[i];
-  }
 }
 
 Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness)
