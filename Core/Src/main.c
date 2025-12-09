@@ -271,13 +271,14 @@ int main(void)
         pwr_pin_up = 1;
       }
     }
+    int draw_wave = cur_tick / 20;
     for (int y = 0; y < hlcd.yres; y++)
     {
     	for (int x = 0; x < hlcd.xres; x++)
     	{
-        uint8_t R = x + cur_tick;
-        uint8_t G = y + cur_tick;
-        uint8_t B = cur_tick;
+        uint8_t R = x + draw_wave;
+        uint8_t G = y + draw_wave;
+        uint8_t B = 200;
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
