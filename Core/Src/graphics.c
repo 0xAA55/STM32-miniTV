@@ -356,7 +356,7 @@ static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
       int dx = (x + ix) % 320;
       int dy = (y + iy) % 240;
       if (SampleFont(char_x + ix, iy))
-        Framebuffer[dy][dx] = dt->text_color;
+        CurDrawFramebuffer[dy][dx] = dt->text_color;
     }
   }
 }
@@ -373,9 +373,9 @@ static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
       int dx = (x + ix) % 320;
       int dy = (y + iy) % 240;
       if (SampleFont(char_x + ix, iy))
-        Framebuffer[dy][dx] = dt->text_color;
+        CurDrawFramebuffer[dy][dx] = dt->text_color;
       else
-        Framebuffer[dy][dx] = dt->bg_color;
+        CurDrawFramebuffer[dy][dx] = dt->bg_color;
     }
   }
 }
@@ -415,7 +415,7 @@ void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t cou
       if (l <= 0) continue;
     }
     for (int ix = 0; ix < l; ix ++)
-      Framebuffer[y][ix + x] = color;
+      CurDrawFramebuffer[y][ix + x] = color;
   }
 }
 

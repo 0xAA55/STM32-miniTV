@@ -64,7 +64,9 @@ TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
 LCD hlcd;
-Pixel565 Framebuffer[240][320];
+Pixel565 Framebuffer1[240][320];
+Pixel565 Framebuffer2[240][320];
+Pixel565 (*CurDrawFramebuffer)[320];
 uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
 /* USER CODE END PV */
 
@@ -132,6 +134,15 @@ static int imin(int a, int b)
 static int imax(int a, int b)
 {
   return a > b ? a : b;
+}
+static void SwapFramebuffers()
+{
+  SCB_CleanDCache();
+  LCD_WriteGRAM_DMA(&hlcd, (void*)CurDrawFramebuffer, sizeof Framebuffer1 / sizeof Framebuffer1[0][0]);
+  if (CurDrawFramebuffer == Framebuffer1)
+    CurDrawFramebuffer = Framebuffer2;
+  else
+    CurDrawFramebuffer = Framebuffer1;
 }
 int pwr_pin_up = 0;
 int cur_menu = 0;
@@ -213,6 +224,7 @@ int main(void)
     LCD_Landscape
   );
   LCD_Config(&hlcd);
+  CurDrawFramebuffer = Framebuffer1;
   for (int y = 0; y < hlcd.yres; y++)
   {
     for (int x = 0; x < hlcd.xres; x++)
@@ -220,11 +232,10 @@ int main(void)
       uint8_t R = x;
       uint8_t G = y;
       uint8_t B = 200;
-      Framebuffer[y][x] = MakePixel565(R, G, B);
+      CurDrawFramebuffer[y][x] = MakePixel565(R, G, B);
     }
   }
-  SCB_CleanDCache();
-  LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
+  SwapFramebuffers();
   HAL_ADC_Start(&hadc1);
   Graphics_Init();
   /* USER CODE END 2 */
@@ -272,7 +283,6 @@ int main(void)
       }
     }
     int draw_wave = cur_tick / 20;
-    LCD_WaitToIdle(&hlcd);
     for (int y = 0; y < hlcd.yres; y++)
     {
     	for (int x = 0; x < hlcd.xres; x++)
@@ -280,7 +290,7 @@ int main(void)
         uint8_t R = x + draw_wave;
         uint8_t G = y + draw_wave;
         uint8_t B = 200;
-        Framebuffer[y][x] = MakePixel565(R, G, B);
+        CurDrawFramebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
     sprintf(buf, "BAT: %03d", GetPowerPercentage());
@@ -306,8 +316,7 @@ int main(void)
     DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
     DrawShutdownButton(shutbutton_x, 120, ui_c3, shutbutton_size);
 
-    SCB_CleanDCache();
-    LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
+    SwapFramebuffers();
     frame_counter += 1;
 
     if (pwr_pin_up && HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_RESET)
