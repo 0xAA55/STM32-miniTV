@@ -125,6 +125,14 @@ int GetPowerPercentage()
   }
   return ret;
 }
+static int imin(int a, int b)
+{
+  return a < b ? a : b;
+}
+static int imax(int a, int b)
+{
+  return a > b ? a : b;
+}
 int pwr_pin_up = 0;
 volatile int enc1 = 0;
 /* USER CODE END 0 */
