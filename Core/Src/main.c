@@ -125,6 +125,7 @@ int GetPowerPercentage()
   }
   return ret;
 }
+volatile int enc1 = 0;
 /* USER CODE END 0 */
 
 /**
@@ -208,10 +209,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   int frame_counter = 0;
+  uint32_t last_tick = HAL_GetTick();
+  uint32_t delta_tick = 0;
+  int cur_enc1 = enc1;
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
     char buf[128];
+    int enc1_val = enc1;
+    int enc1_delta = enc1_val - cur_enc1;
+    int menu_speed = 5 * delta_tick;
+    enc1_delta = imax(-1, imin(enc1_delta, 1));
+    cur_enc1 = enc1_val;
     if (!pwr_pin_up)
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
@@ -242,6 +251,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if (cur_tick >= last_tick)
+      delta_tick = cur_tick - last_tick;
+    else
+      delta_tick = 0;
+    last_tick = cur_tick;
   }
   /* USER CODE END 3 */
 }

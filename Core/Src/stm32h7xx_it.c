@@ -195,7 +195,25 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-
+  int enc1_a = (HAL_GPIO_ReadPin(ENC1_A_GPIO_Port, ENC1_A_Pin) == GPIO_PIN_RESET);
+  int enc1_b = (HAL_GPIO_ReadPin(ENC1_B_GPIO_Port, ENC1_B_Pin) == GPIO_PIN_RESET);
+  static int enc1_bm;
+  enc1_bm = ((enc1_bm << 2) | (enc1_a << 1) | (enc1_b)) & 0xF;
+  switch(enc1_bm)
+  {
+    case 0b0001:
+    case 0b0111:
+    case 0b1110:
+    case 0b1000:
+      enc1 -= 1;
+      break;
+    case 0b0010:
+    case 0b1011:
+    case 0b1101:
+    case 0b0100:
+      enc1 += 1;
+      break;
+  }
   /* USER CODE END SysTick_IRQn 1 */
 }
 
