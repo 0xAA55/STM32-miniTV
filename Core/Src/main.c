@@ -283,7 +283,7 @@ int main(void)
         Framebuffer[y][x] = MakePixel565(R, G, B);
     	}
     }
-    sprintf(buf, "电池:%d", GetPowerPercentage());
+    sprintf(buf, "BAT: %03d", GetPowerPercentage());
     DrawTextOpaque(10, 10, buf, MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
 
     int playbutton_anim_pos = menu_anim;
