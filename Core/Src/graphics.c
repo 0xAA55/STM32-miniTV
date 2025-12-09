@@ -257,11 +257,6 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
       cur_x += ((cur_x - x) / tab_size + 1) * tab_size;
       continue;
     }
-    if (code == ' ')
-    {
-      cur_x += space_size;
-      continue;
-    }
     char_index = GetCharIndexMust(code);
     char_width = font_width_table[char_index];
     if (cur_x + char_width > r)
