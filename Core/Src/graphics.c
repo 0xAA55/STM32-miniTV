@@ -50,7 +50,7 @@ static size_t GetCharIndexMust(uint32_t unicode)
 
 static int SampleFont(int x, int y)
 {
-  return (font_bitmap[y * font_bmp_pitch + x / 8] & (0x80 >> x)) != 0;
+  return (font_bitmap[y * font_bmp_pitch + x / 8] & (0x80 >> (x & 7))) != 0;
 }
 
 static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
