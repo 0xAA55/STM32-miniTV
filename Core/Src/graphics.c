@@ -13,6 +13,8 @@ const int space_size = 6;
 const int font_height = 12;
 const int tab_size = space_size * 4;
 const size_t num_font_codes = (sizeof font_code_table) / (sizeof font_code_table[0]);
+const uint32_t min_code = font_code_table[0];
+const uint32_t max_code = font_code_table[num_font_codes - 1];
 const size_t font_bmp_pitch = sizeof font_bitmap / font_height;
 uint16_t font_x_table[(sizeof font_width_table) / (sizeof font_width_table[0])];
 
@@ -21,9 +23,8 @@ typedef int ssize_t;
 
 static ssize_t GetCharIndex(uint32_t unicode)
 {
-  const ssize_t max_index = (ssize_t)num_font_codes - 1;
-  const uint32_t min_code = font_code_table[0];
-  const uint32_t max_code = font_code_table[max_index];
+  ssize_t max_index = (ssize_t)num_font_codes - 1;
+  ssize_t min_index = 0;
   if (unicode < min_code || unicode > max_code) return -1;
   ssize_t ci = (size_t)(num_font_codes) >> 1;
   for (;;)
@@ -31,9 +32,11 @@ static ssize_t GetCharIndex(uint32_t unicode)
     uint32_t cur_code = font_code_table[ci];
     if (cur_code == unicode) return ci;
     if (cur_code < unicode)
-      ci += (max_index - ci) >> 1;
+      min_index = ci;
     else
-      ci >>= 1;
+      max_index = ci;
+    if (max_index - 1 == min_index) return -1;
+    ci = (max_index + min_index) >> 1;
   }
 }
 
