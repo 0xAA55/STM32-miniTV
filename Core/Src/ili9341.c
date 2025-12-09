@@ -72,7 +72,7 @@ static void BSwap16Multi(uint16_t *data, size_t count)
   }
 }
 
-static void WaitForLastDMA(LCD *hlcd)
+void LCD_WaitToIdle(LCD *hlcd)
 {
   while (hlcd->is_dma_active)
     __WFI();
@@ -252,7 +252,7 @@ static HAL_StatusTypeDef LCD_ReadReg8(LCD *hlcd, uint8_t reg, uint8_t *data)
 HAL_StatusTypeDef LCD_Config(LCD *hlcd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
   Pin_Low(&hlcd->pin_rst);
   HAL_Delay(10);
@@ -278,7 +278,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_SWReset(LCD *hlcd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
   ret = LCD_WriteCommand(hlcd, 0x01);
   Pin_High(&hlcd->pin_cs);
@@ -290,7 +290,7 @@ HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *dr
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint8_t buf[3];
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
   ret = LCD_ReadReg8Multi(hlcd, 0x04, buf, sizeof buf);
   Pin_High(&hlcd->pin_cs);
@@ -308,7 +308,7 @@ HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient)
   int xres;
   int yres;
 
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
 
   switch (orient)
   {
@@ -351,7 +351,7 @@ HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient)
 HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   switch(color_mode)
   {
     default:
@@ -375,7 +375,7 @@ HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint16_t scrolls[] = {top, lines, hlcd->yres - top - lines};
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
 
   Pin_Low(&hlcd->pin_cs);
 
@@ -395,7 +395,7 @@ HAL_StatusTypeDef LCD_SetWindow(LCD *hlcd, int x, int y, int r, int b)
   HAL_StatusTypeDef ret = HAL_OK;
   uint16_t horz[] = {x, r};
   uint16_t vert[] = {y, b};
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
 
   Pin_Low(&hlcd->pin_cs);
 
@@ -417,7 +417,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_SetBrightness(LCD *hlcd, uint8_t brightness)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   ret = LCD_WriteReg8(hlcd, 0x51, brightness);
@@ -431,7 +431,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_GetBrightness(LCD *hlcd, uint8_t *brightness)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   ret = LCD_ReadReg8(hlcd, 0x52, brightness);
@@ -445,7 +445,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_ReadGRAM(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   switch(hlcd->color_mode)
@@ -469,7 +469,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_WriteGRAM(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   switch(hlcd->color_mode)
@@ -493,7 +493,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   switch(hlcd->color_mode)
@@ -518,7 +518,7 @@ ErrRet:
 HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   switch(hlcd->color_mode)
@@ -545,7 +545,7 @@ HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, 
   HAL_StatusTypeDef ret = HAL_OK;
   Pixel565 pixel565;
   Pixel666 pixel666;
-  WaitForLastDMA(hlcd);
+  LCD_WaitToIdle(hlcd);
   Pin_Low(&hlcd->pin_cs);
 
   switch(hlcd->color_mode)

@@ -92,6 +92,7 @@ HAL_StatusTypeDef LCD_Init
 );
 
 HAL_StatusTypeDef LCD_Config(LCD *hlcd);
+void LCD_WaitToIdle(LCD *hlcd);
 HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
 HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
 HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient);
