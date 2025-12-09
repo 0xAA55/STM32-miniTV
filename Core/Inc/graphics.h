@@ -16,6 +16,9 @@ extern Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
 extern Pixel565 Framebuffer[240][320];
 
 void Graphics_Init();
+
+/// A period is 1536, and brightness is from 0 to 511
+Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness);
 void DrawText(int x, int y, const char* text, Pixel565 TextColor);
 void DrawTextOpaque(int x, int y, const char* text, Pixel565 TextColor, Pixel565 BgColor);
 
