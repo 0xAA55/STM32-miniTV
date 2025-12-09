@@ -134,6 +134,8 @@ static int imax(int a, int b)
   return a > b ? a : b;
 }
 int pwr_pin_up = 0;
+int cur_menu = 0;
+int menu_anim = 0;
 volatile int enc1 = 0;
 /* USER CODE END 0 */
 
@@ -242,6 +244,26 @@ int main(void)
     int menu_speed = 5 * delta_tick;
     enc1_delta = imax(-1, imin(enc1_delta, 1));
     cur_enc1 = enc1_val;
+    if (cur_menu < 0) cur_menu = 0;
+    if (cur_menu > 2) cur_menu = 2;
+    int target_menu;
+    target_menu = cur_menu * 1024;
+    if (menu_anim < target_menu)
+    {
+      if (menu_anim + menu_speed >= target_menu)
+        menu_anim = target_menu;
+      else
+        menu_anim += menu_speed;
+    }
+    if (menu_anim > target_menu)
+    {
+      if (menu_anim - menu_speed <= target_menu)
+        menu_anim = target_menu;
+      else
+        menu_anim -= menu_speed;
+    }
+    if (abs(menu_anim - target_menu) <= 768)
+      cur_menu += enc1_delta;
     if (!pwr_pin_up)
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
@@ -261,6 +283,27 @@ int main(void)
     }
     sprintf(buf, "电池:%d", GetPowerPercentage());
     DrawTextOpaque(10, 10, buf, MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+
+    int playbutton_anim_pos = menu_anim;
+    int optbutton_anim_pos = menu_anim - 1024;
+    int shutbutton_anim_pos = menu_anim - 2048;
+    int playbutton_size = 512;
+    int playbutton_x = 160 - playbutton_anim_pos * 320 / 1024;
+    int optbutton_size = 512;
+    int optbutton_x = 160 - optbutton_anim_pos * 320 / 1024;
+    int shutbutton_size = 512;
+    int shutbutton_x = 160 - shutbutton_anim_pos * 320 / 1024;
+    int ui_c1_phase = (cur_tick * 1536) / 8192;
+    int ui_c2_phase = ((cur_tick + 4096) * 1536) / 8192;
+    int ui_c3_phase = (cur_tick * 1536) / 16384;
+    Pixel565 ui_c1 = ColorFromPhase(ui_c1_phase, 200);
+    Pixel565 ui_c2 = ColorFromPhase(ui_c2_phase, 128);
+    Pixel565 ui_c3 = ColorFromPhase(ui_c3_phase, 64);
+
+    DrawPlayButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
+    DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
+    DrawShutdownButton(shutbutton_x, 120, ui_c3, shutbutton_size);
+
     SCB_CleanDCache();
     LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
     frame_counter += 1;
