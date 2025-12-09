@@ -125,6 +125,7 @@ int GetPowerPercentage()
   }
   return ret;
 }
+int pwr_pin_up = 0;
 volatile int enc1 = 0;
 /* USER CODE END 0 */
 
@@ -136,7 +137,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  int pwr_pin_up = 0;
+
   /* USER CODE END 1 */
 
   /* MPU Configuration--------------------------------------------------------*/
