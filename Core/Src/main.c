@@ -272,6 +272,7 @@ int main(void)
       }
     }
     int draw_wave = cur_tick / 20;
+    LCD_WaitToIdle(&hlcd);
     for (int y = 0; y < hlcd.yres; y++)
     {
     	for (int x = 0; x < hlcd.xres; x++)
