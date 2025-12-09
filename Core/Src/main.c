@@ -211,6 +211,18 @@ int main(void)
     LCD_Landscape
   );
   LCD_Config(&hlcd);
+  for (int y = 0; y < hlcd.yres; y++)
+  {
+    for (int x = 0; x < hlcd.xres; x++)
+    {
+      uint8_t R = x;
+      uint8_t G = y;
+      uint8_t B = 200;
+      Framebuffer[y][x] = MakePixel565(R, G, B);
+    }
+  }
+  SCB_CleanDCache();
+  LCD_WriteGRAM_DMA(&hlcd, (void*)Framebuffer, sizeof Framebuffer / sizeof Framebuffer[0][0]);
   HAL_ADC_Start(&hadc1);
   Graphics_Init();
   /* USER CODE END 2 */
