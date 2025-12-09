@@ -9,6 +9,7 @@
 #define INC_GRAPHICS_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef uint16_t Pixel565;
 
