@@ -21,6 +21,17 @@ uint16_t font_x_table[(sizeof font_width_table) / (sizeof font_width_table[0])];
 typedef void(*fn_on_draw)(void *userdata, int x, int y, size_t char_index);
 typedef int ssize_t;
 
+typedef struct dtts
+{
+  Pixel565 text_color;
+} DrawDataTransparent;
+
+typedef struct dtos
+{
+  Pixel565 text_color;
+  Pixel565 bg_color;
+} DrawDataOpaque;
+
 static ssize_t GetCharIndex(uint32_t unicode)
 {
   ssize_t max_index = (ssize_t)num_font_codes - 1;
@@ -162,42 +173,55 @@ Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness)
   return MakePixel565(r, g, b);
 }
 
-void DrawText(int x, int y, const char* text, Pixel565 text_color)
+static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
 {
-  typedef struct dts
+  DrawDataTransparent *dt = (DrawDataTransparent*)userdata;
+  int char_width = font_width_table[char_index];
+  int char_x = font_x_table[char_index];
+  for (int iy = 0; iy < font_height; iy ++)
   {
-    Pixel565 text_color;
-  } DrawData;
-  DrawData dt;
-  void on_draw(void *userdata, int x, int y, size_t char_index)
-  {
-    DrawData *dt = (DrawData*)userdata;
-    int char_width = font_width_table[char_index];
-    int char_x = font_x_table[char_index];
-    for (int iy = 0; iy < font_height; iy ++)
+    for (int ix = 0; ix < char_width; ix ++)
     {
-      for (int ix = 0; ix < char_width; ix++)
-      {
-        int dx = (x + ix) % 320;
-        int dy = (y + iy) % 240;
-        if (SampleFont(char_x + ix, iy))
-          Framebuffer[dy][dx] = dt->text_color;
-      }
+      int dx = (x + ix) % 320;
+      int dy = (y + iy) % 240;
+      if (SampleFont(char_x + ix, iy))
+        Framebuffer[dy][dx] = dt->text_color;
     }
   }
+}
+
+static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
+{
+  DrawDataOpaque *dt = (DrawDataOpaque*)userdata;
+  int char_width = font_width_table[char_index];
+  int char_x = font_x_table[char_index];
+  for (int iy = 0; iy < font_height; iy ++)
+  {
+    for (int ix = 0; ix < char_width; ix ++)
+    {
+      int dx = (x + ix) % 320;
+      int dy = (y + iy) % 240;
+      if (SampleFont(char_x + ix, iy))
+        Framebuffer[dy][dx] = dt->text_color;
+      else
+        Framebuffer[dy][dx] = dt->bg_color;
+    }
+  }
+}
+
+void DrawText(int x, int y, const char* text, Pixel565 text_color)
+{
+  DrawDataTransparent dt;
   dt.text_color = text_color;
-  Compose(x, y, 319, 239, text, on_draw, &dt);
+  Compose(x, y, 319, 239, text, on_draw_transparent, &dt);
 }
 
 void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel565 bg_color)
 {
-  typedef struct dts
-  {
-    Pixel565 text_color;
-    Pixel565 bg_color;
-  } DrawData;
-  DrawData dt;
-  void on_draw(void *userdata, int x, int y, size_t char_index)
+  DrawDataOpaque dt;
+  dt.text_color = text_color;
+  dt.bg_color = bg_color;
+  Compose(x, y, 319, 239, text, on_draw_opaque, &dt);
   {
     DrawData *dt = (DrawData*)userdata;
     int char_width = font_width_table[char_index];
