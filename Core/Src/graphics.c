@@ -87,8 +87,9 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
       cur_x = x;
       cur_y += font_height;
     }
-    if (cur_y + font_height - 1> b) break;
+    if (cur_y + font_height - 1 > b) break;
     on_draw(userdata, cur_x, cur_y, char_index);
+    cur_x += char_width;
   }
   utf8_end_parse(&parser);
 }
