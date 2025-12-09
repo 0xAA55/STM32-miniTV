@@ -34,5 +34,6 @@ typedef struct hls
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling);
 void DrawPlayButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
+void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling);
 
 #endif /* INC_GRAPHICS_H_ */
