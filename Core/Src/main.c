@@ -60,8 +60,6 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 
-TIM_HandleTypeDef htim6;
-
 /* USER CODE BEGIN PV */
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
@@ -79,7 +77,6 @@ static void MX_MDMA_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SDMMC1_SD_Init(void);
 static void MX_JPEG_Init(void);
-static void MX_TIM6_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_QUADSPI_Init(void);
@@ -197,7 +194,6 @@ int main(void)
   MX_DMA_Init();
   MX_SDMMC1_SD_Init();
   MX_JPEG_Init();
-  MX_TIM6_Init();
   MX_FATFS_Init();
   MX_SPI1_Init();
   MX_I2S2_Init();
@@ -669,44 +665,6 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
   HAL_SPI_MspInit(&hspi1);
   /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief TIM6 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM6_Init(void)
-{
-
-  /* USER CODE BEGIN TIM6_Init 0 */
-
-  /* USER CODE END TIM6_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM6_Init 1 */
-
-  /* USER CODE END TIM6_Init 1 */
-  htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 9;
-  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 999;
-  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM6_Init 2 */
-  HAL_TIM_Base_MspInit(&htim6);
-  /* USER CODE END TIM6_Init 2 */
 
 }
 
