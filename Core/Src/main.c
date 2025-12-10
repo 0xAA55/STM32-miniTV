@@ -299,16 +299,12 @@ int main(void)
     int optbutton_x = 160 - optbutton_anim_pos * 320 / 1024;
     int shutbutton_size = 512;
     int shutbutton_x = 160 - shutbutton_anim_pos * 320 / 1024;
-    int ui_c1_phase = (cur_tick * 1536) / 8192;
-    int ui_c2_phase = ((cur_tick + 4096) * 1536) / 8192;
-    int ui_c3_phase = (cur_tick * 1536) / 16384;
-    Pixel565 ui_c1 = ColorFromPhase(ui_c1_phase, 200);
-    Pixel565 ui_c2 = ColorFromPhase(ui_c2_phase, 128);
-    Pixel565 ui_c3 = ColorFromPhase(ui_c3_phase, 64);
+    Pixel565 ui_c1 = MakePixel565(0, 0, 0);
+    Pixel565 ui_c2 = MakePixel565(255, 255, 255);
 
     DrawPlayButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
     DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
-    DrawShutdownButton(shutbutton_x, 120, ui_c3, shutbutton_size);
+    DrawShutdownButton(shutbutton_x, 120, ui_c1, shutbutton_size);
 
     SwapFramebuffers();
     frame_counter += 1;
