@@ -302,7 +302,7 @@ int main(void)
     Pixel565 ui_c1 = MakePixel565(0, 0, 0);
     Pixel565 ui_c2 = MakePixel565(255, 255, 255);
 
-    DrawPlayButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
+    DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
     DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
     DrawShutdownButton(shutbutton_x, 120, ui_c1, shutbutton_size);
 
