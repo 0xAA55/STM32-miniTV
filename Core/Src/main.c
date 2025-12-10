@@ -293,12 +293,12 @@ int main(void)
     int playbutton_anim_pos = menu_anim;
     int optbutton_anim_pos = menu_anim - 1024;
     int shutbutton_anim_pos = menu_anim - 2048;
-    int playbutton_size = 512;
-    int playbutton_x = 160 - playbutton_anim_pos * 240 / 1024;
-    int optbutton_size = 512;
-    int optbutton_x = 160 - optbutton_anim_pos * 240 / 1024;
-    int shutbutton_size = 512;
-    int shutbutton_x = 160 - shutbutton_anim_pos * 240 / 1024;
+    int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
+    int playbutton_x = 160 - playbutton_anim_pos * 120 / 1024;
+    int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
+    int optbutton_x = 160 - optbutton_anim_pos * 120 / 1024;
+    int shutbutton_size = (512 - imin(256, abs(shutbutton_anim_pos)));
+    int shutbutton_x = 160 - shutbutton_anim_pos * 120 / 1024;
     Pixel565 ui_c1 = MakePixel565(0, 0, 0);
     Pixel565 ui_c2 = MakePixel565(255, 255, 255);
 
