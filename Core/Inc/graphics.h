@@ -36,4 +36,6 @@ void DrawPlayButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int sc
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling);
 
+#define FixedInterpolate(a, b, s, fix) ((a) + ((b) - (a)) * (s) / (fix))
+
 #endif /* INC_GRAPHICS_H_ */
