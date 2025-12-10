@@ -64,7 +64,7 @@ DMA_HandleTypeDef hdma_spi1_rx;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
-Pixel565 (*CurDrawFramebuffer)[320];
+Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
 uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
 /* USER CODE END PV */
 
@@ -220,7 +220,6 @@ int main(void)
     LCD_Landscape
   );
   LCD_Config(&hlcd);
-  CurDrawFramebuffer = Framebuffer1;
   for (int y = 0; y < hlcd.yres; y++)
   {
     for (int x = 0; x < hlcd.xres; x++)
