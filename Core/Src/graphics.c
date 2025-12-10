@@ -284,10 +284,11 @@ void Graphics_Init()
   tab_size = space_size * 4;
 }
 
-Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness)
+Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness)
 {
   uint32_t phase_value = phase % 1536;
   uint32_t r, g, b;
+  uint32_t grey;
   if (phase_value <= 255)
   {
     r = 255;
@@ -339,6 +340,11 @@ Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness)
     g = g * brightness / 256;
     b = b * brightness / 256;
   }
+  grey = (r + g + b) / 3;
+  if (colorness > 256) colorness = 256;
+  r = FixedInterpolate(grey, r, colorness, 256);
+  g = FixedInterpolate(grey, g, colorness, 256);
+  b = FixedInterpolate(grey, b, colorness, 256);
   return MakePixel565(r, g, b);
 }
 
