@@ -220,21 +220,18 @@ int main(void)
     LCD_Landscape
   );
   LCD_Config(&hlcd);
+  Graphics_Init();
   for (int y = 0; y < hlcd.yres; y++)
   {
     for (int x = 0; x < hlcd.xres; x++)
     {
-      uint8_t R = x;
-      uint8_t G = y;
-      uint8_t B = 200;
-      CurDrawFramebuffer[y][x] = MakePixel565(R, G, B);
+      CurDrawFramebuffer[y][x] = 0;
     }
   }
   SwapFramebuffers();
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
   HAL_ADC_Start(&hadc1);
-  Graphics_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
