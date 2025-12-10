@@ -208,6 +208,8 @@ static ssize_t GetCharIndex(uint32_t unicode)
   ssize_t max_index = (ssize_t)num_font_codes - 1;
   ssize_t min_index = 0;
   if (unicode < min_code || unicode > max_code) return -1;
+  if (unicode == min_code) return min_index;
+  if (unicode == max_code) return max_index;
   ssize_t ci = (size_t)(num_font_codes) >> 1;
   for (;;)
   {
