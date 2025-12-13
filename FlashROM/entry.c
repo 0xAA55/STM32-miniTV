@@ -44,18 +44,6 @@ const FlashMap_t FlashMap =
 
 size_t DummyEntry()
 {
-	size_t ptr = 0x90000000 +
-	(size_t)&FlashMap +
-	(size_t)&BatteryBMP +
-	(size_t)&FontChars +
-	(size_t)&Font12pxWidthTable +
-	(size_t)&Font12pxXTable +
-	(size_t)&Font12pxBitmap +
-	(size_t)&Font14pxWidthTable +
-	(size_t)&Font14pxXTable +
-	(size_t)&Font14pxBitmap +
-	(size_t)&Font17pxWidthTable +
-	(size_t)&Font17pxXTable +
-	(size_t)&Font17pxBitmap;
+	size_t ptr = (size_t)&FlashMap;
 	return ptr;
 }
