@@ -19,3 +19,8 @@ This solution implements a compact media player using the STM32H750 microcontrol
 * User input is handled through EC11 rotary encoders, with the button on encoder 1 functioning as the primary selection (OK) and power-on control.
 * USB High-Speed (using USB3300-EZK as PHY) is configured in mass storage mode, allowing the device to act as a card reader when connected to a host computer.
 * Audio output is managed by the MAX98357AETE+T I2S amplifier chip.
+
+## QSPI FLASH
+
+* The QSPI FLASH stores GUI multimedia assets, such as fonts and icons. To generate the asset image file, navigate to the `FlashROM` folder and run `make -j` using your `arm-none-eabi-gcc` toolchain. This produces the ROM image file `FlashROM.bin`.
+* Attach your `w25q64jv` NOR FLASH chip to a CH341 programmer and use NeoProgrammer software to program the ROM image. Once programmed, solder the chip onto your board.
