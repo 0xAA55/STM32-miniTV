@@ -1,0 +1,21 @@
+#include <stdint.h>
+#include <stdlib.h>
+
+typedef struct FlashMap_s
+{
+	uint32_t Signature;
+	uint32_t BatteryBMP_Width;
+	uint32_t BatteryBMP_Height;
+	const uint8_t *BatteryBMP;
+	const uint16_t *FontChar;
+	size_t NumFontChars;
+	const uint8_t *Font12pxWidthTable;
+	const uint32_t *Font12pxXTable;
+	const uint8_t *Font12pxBitmap;
+	const uint8_t *Font14pxWidthTable;
+	const uint32_t *Font14pxXTable;
+	const uint8_t *Font14pxBitmap;
+	const uint8_t *Font17pxWidthTable;
+	const uint32_t *Font17pxXTable;
+	const uint8_t *Font17pxBitmap;
+} FlashMap_t;
