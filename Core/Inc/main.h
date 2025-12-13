@@ -114,6 +114,7 @@ void Error_Handler(void);
 extern volatile uint32_t BAT_ADC_VAL;
 extern volatile int BAT_ADC_Sampling;
 extern volatile int Enc1;
+extern volatile int MainBtnClick;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -214,6 +214,20 @@ void SysTick_Handler(void)
       Enc1 += 1;
       break;
   }
+  static int main_btn_is_up = 0;
+  switch(HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin))
+  {
+    default:
+      if (main_btn_is_up)
+      {
+        main_btn_is_up = 0;
+        MainBtnClick = 1;
+      }
+      break;
+    case GPIO_PIN_SET:
+      main_btn_is_up = 1;
+      break;
+  }
   /* USER CODE END SysTick_IRQn 1 */
 }
 

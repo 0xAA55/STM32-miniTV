@@ -92,6 +92,7 @@ static void MX_ADC1_Init(void);
 volatile int Enc1 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
+volatile int MainBtnClick = 0;
 int GetBatteryVolatage(uint32_t adc_val)
 {
   int adc_voltage = (int)((adc_val * 3300) >> 16);
@@ -177,7 +178,12 @@ void UpdateEnc1MainMenuState(int delta_tick)
   if (abs(menu_anim - target_menu) <= 768)
     cur_menu += enc1_delta;
 }
-int pwr_pin_up = 0;
+int IsMainBtnClick()
+{
+  int ret = MainBtnClick;
+  MainBtnClick = 0;
+  return ret;
+}
 int cur_menu = 0;
 int menu_anim = 0;
 /* USER CODE END 0 */
@@ -278,7 +284,7 @@ int main(void)
   {
     uint32_t cur_tick = HAL_GetTick();
     char buf[128];
-    if (!pwr_pin_up)
+    int main_btn_click = IsMainBtnClick();
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
       {
@@ -314,10 +320,6 @@ int main(void)
     SwapFramebuffers();
     frame_counter += 1;
 
-    if (pwr_pin_up && HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_RESET)
-    {
-      HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
