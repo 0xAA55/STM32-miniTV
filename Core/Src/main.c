@@ -91,11 +91,11 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int cur_menu = 0;
-int cur_level = 0;
-int menu_anim = 0;
-int menu_ready = 0;
-char cur_folder_path[4096];
+int GUICurMenu = 0;
+int GUICurMenuLevel = 0;
+int GUIMenuAnim = 0;
+int GUIMenuReady = 0;
+char GUIFolderPath[4096];
 volatile int Enc1 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
@@ -161,39 +161,39 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
 {
   int menu_speed = 5 * delta_tick;
   enc_delta = imax(-1, imin(enc_delta, 1));
-  if (cur_menu < 0) cur_menu = 0;
-  if (cur_menu > 3) cur_menu = 3;
+  if (GUICurMenu < 0) GUICurMenu = 0;
+  if (GUICurMenu > 3) GUICurMenu = 3;
   int target_menu;
-  target_menu = cur_menu * 1024;
-  if (abs(menu_anim - target_menu) <= 768)
+  target_menu = GUICurMenu * 1024;
+  if (abs(GUIMenuAnim - target_menu) <= 768)
   {
-    menu_ready = 0;
-    cur_menu += enc_delta;
+    GUIMenuReady = 0;
+    GUICurMenu += enc_delta;
   }
-  if (menu_anim < target_menu)
+  if (GUIMenuAnim < target_menu)
   {
-    if (menu_anim + menu_speed >= target_menu)
+    if (GUIMenuAnim + menu_speed >= target_menu)
     {
-      menu_anim = target_menu;
-      menu_ready = 1;
+      GUIMenuAnim = target_menu;
+      GUIMenuReady = 1;
     }
     else
     {
-      menu_anim += menu_speed;
-      menu_ready = 0;
+      GUIMenuAnim += menu_speed;
+      GUIMenuReady = 0;
     }
   }
-  if (menu_anim > target_menu)
+  if (GUIMenuAnim > target_menu)
   {
-    if (menu_anim - menu_speed <= target_menu)
+    if (GUIMenuAnim - menu_speed <= target_menu)
     {
-      menu_anim = target_menu;
-      menu_ready = 1;
+      GUIMenuAnim = target_menu;
+      GUIMenuReady = 1;
     }
     else
     {
-      menu_anim -= menu_speed;
-      menu_ready = 0;
+      GUIMenuAnim -= menu_speed;
+      GUIMenuReady = 0;
     }
   }
 }
@@ -350,7 +350,7 @@ int main(void)
     is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
     is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_SET);
 
-    switch (cur_level)
+    switch (GUICurMenuLevel)
     {
       case 0:
       {
@@ -363,10 +363,10 @@ int main(void)
           }
         }
 
-        int playbutton_anim_pos = menu_anim;
-        int usbbutton_anim_pos = menu_anim - 1024;
-        int optbutton_anim_pos = menu_anim - 2048;
-        int shutbutton_anim_pos = menu_anim - 3072;
+        int playbutton_anim_pos = GUIMenuAnim;
+        int usbbutton_anim_pos = GUIMenuAnim - 1024;
+        int optbutton_anim_pos = GUIMenuAnim - 2048;
+        int shutbutton_anim_pos = GUIMenuAnim - 3072;
         int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
         int usbbutton_size = (512 - imin(256, abs(usbbutton_anim_pos)));
         int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
@@ -385,14 +385,14 @@ int main(void)
         DrawBattery(GetPowerPercentage(), is_charging, is_full);
         if (main_btn_click)
         {
-          strcpy(cur_folder_path, "./");
-          cur_level = 1;
+          strcpy(GUIFolderPath, "./");
+          GUICurMenuLevel = 1;
         }
       }
       break;
       case 1:
       {
-        switch (cur_menu)
+        switch (GUICurMenu)
         {
           case 0: // TF card
             break;
