@@ -40,6 +40,7 @@ void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t cou
 void FillRect(int x, int y, int w, int h, Pixel565 color);
 
 void DrawTFCardButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
+void DrawUSBConnButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling);
 void DrawStandByScreen();
