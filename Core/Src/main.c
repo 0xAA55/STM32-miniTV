@@ -138,7 +138,7 @@ static Pixel565 DrawPixelBg(int x, int y, int time)
   b = b * 255 / 1024;
   return MakePixel565(r, g, b);
 }
-static void SwapFramebuffers()
+void SwapFramebuffers()
 {
   SCB_CleanDCache();
   LCD_WriteGRAM_DMA(&hlcd, (void*)CurDrawFramebuffer, sizeof Framebuffer1 / sizeof Framebuffer1[0][0]);
