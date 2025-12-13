@@ -113,7 +113,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 extern volatile uint32_t BAT_ADC_VAL;
 extern volatile int BAT_ADC_Sampling;
-extern volatile int enc1;
+extern volatile int Enc1;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -89,6 +89,7 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+volatile int Enc1 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
 int GetBatteryVolatage(uint32_t adc_val)
@@ -148,7 +149,6 @@ static void SwapFramebuffers()
 int pwr_pin_up = 0;
 int cur_menu = 0;
 int menu_anim = 0;
-volatile int enc1 = 0;
 /* USER CODE END 0 */
 
 /**
