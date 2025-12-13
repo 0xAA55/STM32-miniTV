@@ -77,3 +77,17 @@ int FastSqrt(int x)
   return n;
 }
 
+int Length2D(int x, int y)
+{
+  return FastSqrt(x * x + y * y);
+}
+
+int imin(int a, int b)
+{
+  return a < b ? a : b;
+}
+
+int imax(int a, int b)
+{
+  return a > b ? a : b;
+}

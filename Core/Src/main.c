@@ -125,18 +125,6 @@ int GetPowerPercentage()
   }
   return ret;
 }
-static int imin(int a, int b)
-{
-  return a < b ? a : b;
-}
-static int imax(int a, int b)
-{
-  return a > b ? a : b;
-}
-static int Length2D(int x, int y)
-{
-    return FastSqrt(x * x + y * y);
-}
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
   int r = FastCos(x - time / 16) / 8 + 512;

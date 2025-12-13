@@ -14,5 +14,8 @@
 int FastSin(int x);
 int FastCos(int x);
 int FastSqrt(int x);
+int Length2D(int x, int y);
+int imin(int a, int b);
+int imax(int a, int b);
 
 #endif /* INC_FASTMATH_H_ */
