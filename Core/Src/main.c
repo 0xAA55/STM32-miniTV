@@ -187,6 +187,10 @@ int IsMainBtnClick()
   MainBtnClick = 0;
   return ret;
 }
+void Suicide()
+{
+  HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
+}
 int cur_menu = 0;
 int menu_anim = 0;
 /* USER CODE END 0 */
