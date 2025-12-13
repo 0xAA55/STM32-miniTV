@@ -620,6 +620,53 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   }
 }
 
+void BitBlt565(int dx, int dy, int w, int h, SrcPicture* src, int src_x, int src_y)
+{
+  if (src_x < 0)
+  {
+    dx += src_x;
+    w -= src_x;
+    src_x = 0;
+  }
+  if (src_y < 0)
+  {
+    dy += src_y;
+    h -= src_y;
+    src_y = 0;
+  }
+  if (dx < 0)
+  {
+    src_x -= dx;
+    w += dx;
+    dx = 0;
+  }
+  if (dy < 0)
+  {
+    src_y -= dy;
+    h += dy;
+    dy = 0;
+  }
+  if (dx >= FramebufferWidth || dy >= FramebufferHeight) return;
+  if (src_x >= src->width || src_y >= src->height) return;
+  if (dx + w > FramebufferWidth) w = FramebufferWidth - dx;
+  if (dy + h > FramebufferHeight) h = FramebufferHeight - dy;
+  if (w <= 0 || h <= 0) return;
+  if (w > src->width) w = src->width;
+  if (h > src->height) h = src->height;
+  for (int y = 0; y < h; y++)
+  {
+    int sy = src_y + y;
+    int ty = dy + y;
+    const Pixel565 *row_ptr = (const Pixel565*)((uint8_t*)src->bitmap + src->pitch * sy);
+    for (int x = 0; x < w; x++)
+    {
+      int sx = src_x + x;
+      int tx = dx + x;
+      CurDrawFramebuffer[ty][tx] = row_ptr[sx];
+    }
+  }
+}
+
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling)
 {
   if (scaling <= 0) return;

@@ -21,6 +21,14 @@ extern void SwapFramebuffers();
 extern const size_t FramebufferWidth;
 extern const size_t FramebufferHeight;
 
+typedef struct SrcPicture_s
+{
+  const Pixel565* bitmap;
+  size_t pitch;
+  uint32_t width;
+  uint32_t height;
+}SrcPicture;
+
 void Graphics_Init();
 
 /// * A period is 1536
@@ -46,6 +54,7 @@ typedef struct hls
 // Max scaling is 512
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling);
 void FillRect(int x, int y, int w, int h, Pixel565 color);
+void BitBlt565(int dx, int dy, int w, int h, SrcPicture* src, int src_x, int src_y);
 
 void DrawTFCardButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawUSBConnButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
