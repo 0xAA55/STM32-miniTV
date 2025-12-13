@@ -95,6 +95,7 @@ HAL_StatusTypeDef LCD_Config(LCD *hlcd);
 void LCD_WaitToIdle(LCD *hlcd);
 HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
 HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
+HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline);
 HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient);
 HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode);
 HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y);

@@ -249,6 +249,20 @@ static HAL_StatusTypeDef LCD_ReadReg8(LCD *hlcd, uint8_t reg, uint8_t *data)
   return LCD_ReadReg8Multi(hlcd, reg, data, 1);
 }
 
+static HAL_StatusTypeDef LCD_ReadReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
+{
+  uint8_t z = 0;
+  HAL_StatusTypeDef ret = HAL_OK;
+  ret = LCD_WriteCommand(hlcd, reg);
+  if (ret != HAL_OK) return ret;
+  ret = HAL_SPI_Transmit(hlcd->hspi, &z, 1, LCD_TIMEOUT);
+  if (ret != HAL_OK) return ret;
+  ret = LCD_Receive(hlcd, (uint8_t*)data, count * 2);
+  if (ret != HAL_OK) return ret;
+  BSwap16Multi(data, count);
+  return ret;
+}
+
 HAL_StatusTypeDef LCD_Config(LCD *hlcd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
@@ -298,6 +312,18 @@ HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *dr
   *manufacturer_id = buf[0];
   *driver_version_id = buf[1];
   *driver_id = buf[2];
+  return ret;
+}
+
+HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  LCD_WaitToIdle(hlcd);
+  Pin_Low(&hlcd->pin_cs);
+  ret = LCD_ReadReg16Multi(hlcd, 0x45, scanline, 1);
+  Pin_High(&hlcd->pin_cs);
+  if (ret != HAL_OK) return ret;
+  *scanline &= 1023;
   return ret;
 }
 
