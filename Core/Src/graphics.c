@@ -9,17 +9,10 @@
 #include "utf8.h"
 #include "font.h"
 
-int space_size;
-int tab_size;
-const int font_height = 12;
-const size_t num_font_codes = (sizeof font_code_table) / (sizeof font_code_table[0]);
-const uint32_t min_code = font_code_table[0];
-const uint32_t max_code = font_code_table[num_font_codes - 1];
-const size_t font_bmp_pitch = sizeof font_bitmap / font_height;
-uint16_t font_x_table[(sizeof font_width_table) / (sizeof font_width_table[0])];
-
 typedef void(*fn_on_draw)(void *userdata, int x, int y, size_t char_index);
 typedef int ssize_t;
+
+font_t CurrentFont = DefaultFont;
 
 typedef struct dtts
 {
@@ -255,15 +248,15 @@ static HorzLine tf_card_35[] =
 
 static ssize_t GetCharIndex(uint32_t unicode)
 {
-  ssize_t max_index = (ssize_t)num_font_codes - 1;
+  ssize_t max_index = (ssize_t)CurrentFont.num_codes - 1;
   ssize_t min_index = 0;
-  if (unicode < min_code || unicode > max_code) return -1;
-  if (unicode == min_code) return min_index;
-  if (unicode == max_code) return max_index;
-  ssize_t ci = (size_t)(num_font_codes) >> 1;
+  if (unicode < CurrentFont.min_code || unicode > CurrentFont.max_code) return -1;
+  if (unicode == CurrentFont.min_code) return min_index;
+  if (unicode == CurrentFont.max_code) return max_index;
+  ssize_t ci = (size_t)(CurrentFont.num_codes) >> 1;
   for (;;)
   {
-    uint32_t cur_code = font_code_table[ci];
+    uint32_t cur_code = CurrentFont.code_table[ci];
     if (cur_code == unicode) return ci;
     if (cur_code < unicode)
       min_index = ci;
@@ -284,7 +277,7 @@ static size_t GetCharIndexMust(uint32_t unicode)
 
 static int SampleFont(int x, int y)
 {
-  return (font_bitmap[y * font_bmp_pitch + x / 8] & (0x80 >> (x & 7))) != 0;
+  return (CurrentFont.bitmap[y * CurrentFont.bitmap_pitch + x / 8] & (0x80 >> (x & 7))) != 0;
 }
 
 static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
@@ -294,6 +287,7 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
   uint32_t code;
   size_t char_index;
   int char_width;
+  uint32_t font_height = CurrentFont.bitmap_height;
   for(;;)
   {
     code = utf8_to_utf32(&parser, '?');
@@ -306,11 +300,11 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
     }
     if (code == '\t')
     {
-      cur_x += ((cur_x - x) / tab_size + 1) * tab_size;
+      cur_x += ((cur_x - x) / CurrentFont.tab_size + 1) * CurrentFont.tab_size;
       continue;
     }
     char_index = GetCharIndexMust(code);
-    char_width = font_width_table[char_index];
+    char_width = CurrentFont.width_table[char_index];
     if (cur_x + char_width > r)
     {
       cur_x = x;
@@ -326,14 +320,8 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
 void Graphics_Init()
 {
   int space_char_index = GetCharIndex(' ');
-  uint16_t x = 0;
-  for (size_t i = 0; i < num_font_codes; i++)
-  {
-    font_x_table[i] = x;
-    x += font_width_table[i];
-  }
-  space_size = font_width_table[space_char_index];
-  tab_size = space_size * 4;
+  CurrentFont.space_size = CurrentFont.width_table[space_char_index];
+  CurrentFont.tab_size = CurrentFont.space_size * 4;
 }
 
 Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness)
@@ -403,9 +391,10 @@ Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness)
 static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
 {
   DrawDataTransparent *dt = (DrawDataTransparent*)userdata;
-  int char_width = font_width_table[char_index];
-  int char_x = font_x_table[char_index];
-  for (int iy = 0; iy < font_height; iy ++)
+  uint32_t font_height = CurrentFont.bitmap_height;
+  int char_width = CurrentFont.width_table[char_index];
+  int char_x = CurrentFont.x_table[char_index];
+  for (uint32_t iy = 0; iy < font_height; iy ++)
   {
     for (int ix = 0; ix < char_width; ix ++)
     {
@@ -420,9 +409,10 @@ static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
 static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
 {
   DrawDataOpaque *dt = (DrawDataOpaque*)userdata;
-  int char_width = font_width_table[char_index];
-  int char_x = font_x_table[char_index];
-  for (int iy = 0; iy < font_height; iy ++)
+  uint32_t font_height = CurrentFont.bitmap_height;
+  int char_width = CurrentFont.width_table[char_index];
+  int char_x = CurrentFont.x_table[char_index];
+  for (uint32_t iy = 0; iy < font_height; iy ++)
   {
     for (int ix = 0; ix < char_width; ix ++)
     {
