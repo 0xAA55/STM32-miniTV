@@ -350,9 +350,92 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
 
 void Graphics_Init()
 {
+  UseDefaultFont();
+}
+
+static void FontChanged()
+{
   int space_char_index = GetCharIndex(' ');
   CurrentFont.space_size = CurrentFont.width_table[space_char_index];
   CurrentFont.tab_size = CurrentFont.space_size * 4;
+}
+
+static void ChangeFontFailed()
+{
+  UseDefaultFont();
+  FillRect(0, 0, 320, 240, MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 100, "FLASH ROM NEEDED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  SwapFramebuffers();
+  for(;;);
+}
+
+void UseDefaultFont()
+{
+  CurrentFont = DefaultFont;
+  FontChanged();
+}
+
+void UseSmallFont()
+{
+  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  font_t SmallFont =
+  {
+      FLASH_MAP->NumFontChars,
+      FLASH_MAP->Font12pxBitmap,
+      FLASH_MAP->Font12pxBitmapPitch,
+      12,
+      FLASH_MAP->Font12pxWidthTable,
+      FLASH_MAP->Font12pxXTable,
+      FLASH_MAP->FontCodeTable,
+      FLASH_MAP->FontCodeTable[0],
+      FLASH_MAP->FontCodeTable[FLASH_MAP->NumFontChars - 1],
+      6,
+      24,
+  };
+  CurrentFont = SmallFont;
+  FontChanged();
+}
+
+void UseMediumFont()
+{
+  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  font_t MediumFont =
+  {
+      FLASH_MAP->NumFontChars,
+      FLASH_MAP->Font14pxBitmap,
+      FLASH_MAP->Font14pxBitmapPitch,
+      14,
+      FLASH_MAP->Font14pxWidthTable,
+      FLASH_MAP->Font14pxXTable,
+      FLASH_MAP->FontCodeTable,
+      FLASH_MAP->FontCodeTable[0],
+      FLASH_MAP->FontCodeTable[FLASH_MAP->NumFontChars - 1],
+      7,
+      28,
+  };
+  CurrentFont = MediumFont;
+  FontChanged();
+}
+
+void UseLargeFont()
+{
+  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  font_t LargeFont =
+  {
+      FLASH_MAP->NumFontChars,
+      FLASH_MAP->Font17pxBitmap,
+      FLASH_MAP->Font17pxBitmapPitch,
+      17,
+      FLASH_MAP->Font17pxWidthTable,
+      FLASH_MAP->Font17pxXTable,
+      FLASH_MAP->FontCodeTable,
+      FLASH_MAP->FontCodeTable[0],
+      FLASH_MAP->FontCodeTable[FLASH_MAP->NumFontChars - 1],
+      7,
+      28,
+  };
+  CurrentFont = MediumFont;
+  FontChanged();
 }
 
 Pixel565 ColorFromPhaseSimple(uint32_t phase)
