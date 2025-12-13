@@ -542,3 +542,47 @@ void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling)
 {
   DrawHorzLines(x_center, y_center, shutdown_50, (sizeof shutdown_50) / (sizeof shutdown_50[0]), color, scaling);
 }
+
+void DrawStandByScreen()
+{
+  const Pixel565 colors1[] =
+  {
+    MakePixel565(255, 255, 255),
+    MakePixel565(255, 255, 0),
+    MakePixel565(0, 255, 255),
+    MakePixel565(0, 255, 0),
+    MakePixel565(255, 0, 255),
+    MakePixel565(255, 0, 0),
+    MakePixel565(0, 0, 255),
+  };
+  const Pixel565 colors2[] =
+  {
+    MakePixel565(0, 0, 255),
+    MakePixel565(0, 0, 0),
+    MakePixel565(255, 0, 255),
+    MakePixel565(0, 0, 0),
+    MakePixel565(0, 255, 255),
+    MakePixel565(0, 0, 0),
+    MakePixel565(255, 255, 255),
+  };
+  FillRect(0, 210, 320, 30, MakePixel565(0, 0, 0));
+  for (int i = 0; i < 7; i++)
+  {
+    int x1 = i * 320 / 7;
+    int x2 = (i + 1) * 320 / 7;
+    int brightness = i * 255 / 6;
+    Pixel565 color3 = MakePixel565(brightness, brightness, brightness);
+    FillRect(x1, 0, x2 - x1, 180, colors1[i]);
+    FillRect(x1, 180, x2 - x1, 10, colors2[i]);
+    FillRect(x1, 200, x2 - x1, 10, color3);
+  }
+  for (int x = 0; x < 320; x++)
+  {
+    int brightness = x * 256 / 320;
+    Pixel565 color = MakePixel565(brightness, brightness, brightness);
+    for (int y = 190; y < 200; y++)
+    {
+      CurDrawFramebuffer[y][x] = color;
+    }
+  }
+}
