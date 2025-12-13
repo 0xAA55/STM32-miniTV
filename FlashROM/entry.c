@@ -1,7 +1,7 @@
 #include "flashmap.h"
 
 extern const uint8_t BatteryBMP[];
-extern const uint16_t FontChars[];
+extern const uint16_t FontCodeTable[];
 extern const uint8_t Font12pxWidthTable[];
 extern const uint32_t Font12pxXTable[];
 extern const uint32_t Font12pxBitmap[];
@@ -26,7 +26,7 @@ const FlashMap_t FlashMap =
 	BatteryBMP_Width,
 	BatteryBMP_Height,
 	BatteryBMP,
-	FontChars,
+	FontCodeTable,
 	NumFontChars,
 	Font12pxWidthTable,
 	Font12pxXTable,
