@@ -146,6 +146,37 @@ static void SwapFramebuffers()
   else
     CurDrawFramebuffer = Framebuffer1;
 }
+void UpdateEnc1MainMenuState(int delta_tick)
+{
+  static int last_enc1 = 0;
+  int menu_speed = 5 * delta_tick;
+  int enc1_val = Enc1;
+  int enc1_delta = enc1_val - cur_enc1;
+  last_enc1 = Enc1;
+
+  enc1_delta = imax(-1, imin(enc1_delta, 1));
+  cur_enc1 = enc1_val;
+  if (cur_menu < 0) cur_menu = 0;
+  if (cur_menu > 2) cur_menu = 2;
+  int target_menu;
+  target_menu = cur_menu * 1024;
+  if (menu_anim < target_menu)
+  {
+    if (menu_anim + menu_speed >= target_menu)
+      menu_anim = target_menu;
+    else
+      menu_anim += menu_speed;
+  }
+  if (menu_anim > target_menu)
+  {
+    if (menu_anim - menu_speed <= target_menu)
+      menu_anim = target_menu;
+    else
+      menu_anim -= menu_speed;
+  }
+  if (abs(menu_anim - target_menu) <= 768)
+    cur_menu += enc1_delta;
+}
 int pwr_pin_up = 0;
 int cur_menu = 0;
 int menu_anim = 0;
@@ -243,36 +274,10 @@ int main(void)
   int frame_counter = 0;
   uint32_t last_tick = HAL_GetTick();
   uint32_t delta_tick = 0;
-  int cur_enc1 = enc1;
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
     char buf[128];
-    int enc1_val = enc1;
-    int enc1_delta = enc1_val - cur_enc1;
-    int menu_speed = 5 * delta_tick;
-    enc1_delta = imax(-1, imin(enc1_delta, 1));
-    cur_enc1 = enc1_val;
-    if (cur_menu < 0) cur_menu = 0;
-    if (cur_menu > 2) cur_menu = 2;
-    int target_menu;
-    target_menu = cur_menu * 1024;
-    if (menu_anim < target_menu)
-    {
-      if (menu_anim + menu_speed >= target_menu)
-        menu_anim = target_menu;
-      else
-        menu_anim += menu_speed;
-    }
-    if (menu_anim > target_menu)
-    {
-      if (menu_anim - menu_speed <= target_menu)
-        menu_anim = target_menu;
-      else
-        menu_anim -= menu_speed;
-    }
-    if (abs(menu_anim - target_menu) <= 768)
-      cur_menu += enc1_delta;
     if (!pwr_pin_up)
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
