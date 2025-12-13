@@ -24,6 +24,7 @@ void Graphics_Init();
 /// * brightness is from 0 to 511
 /// * colorness from 0 to 256
 Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness);
+Pixel565 ColorFromPhaseSimple(uint32_t phase);
 void DrawText(int x, int y, const char* text, Pixel565 TextColor);
 void DrawTextOpaque(int x, int y, const char* text, Pixel565 TextColor, Pixel565 BgColor);
 
