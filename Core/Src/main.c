@@ -133,6 +133,20 @@ static int imax(int a, int b)
 {
   return a > b ? a : b;
 }
+static int Length2D(int x, int y)
+{
+    return FastSqrt(x * x + y * y);
+}
+static Pixel565 DrawPixelBg(int x, int y, int time)
+{
+  int r = FastCos(x - time / 16) / 8 + 512;
+  int g = FastSin(time / 8 + y) / 4 + 512;
+  int b = 1024 * 200 / 256;
+  r = r * 255 / 1024;
+  g = g * 255 / 1024;
+  b = b * 255 / 1024;
+  return MakePixel565(r, g, b);
+}
 static void SwapFramebuffers()
 {
   SCB_CleanDCache();
@@ -277,15 +291,11 @@ int main(void)
         pwr_pin_up = 1;
       }
     }
-    int draw_wave = cur_tick / 20;
     for (int y = 0; y < hlcd.yres; y++)
     {
     	for (int x = 0; x < hlcd.xres; x++)
     	{
-        uint8_t R = x + draw_wave;
-        uint8_t G = y + draw_wave;
-        uint8_t B = 200;
-        CurDrawFramebuffer[y][x] = MakePixel565(R, G, B);
+        CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
     	}
     }
     sprintf(buf, "BAT: %03d", GetPowerPercentage());
