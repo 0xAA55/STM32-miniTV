@@ -1,3 +1,6 @@
+#ifndef _FLASH_MAP_
+#define _FLASH_MAP_ 1
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -19,3 +22,5 @@ typedef struct FlashMap_s
 	const uint32_t *Font17pxXTable;
 	const uint8_t *Font17pxBitmap;
 } FlashMap_t;
+
+#endif
