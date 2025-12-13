@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
 #include "graphics.h"
+#include "fastmath.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
