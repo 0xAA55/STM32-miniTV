@@ -150,18 +150,12 @@ void SwapFramebuffers()
   else
     CurDrawFramebuffer = Framebuffer1;
 }
-void UpdateEnc1MainMenuState(int delta_tick)
+void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
 {
-  static int last_enc1 = 0;
   int menu_speed = 5 * delta_tick;
-  int enc1_val = Enc1;
-  int enc1_delta = enc1_val - cur_enc1;
-  last_enc1 = Enc1;
-
-  enc1_delta = imax(-1, imin(enc1_delta, 1));
-  cur_enc1 = enc1_val;
+  enc_delta = imax(-1, imin(enc_delta, 1));
   if (cur_menu < 0) cur_menu = 0;
-  if (cur_menu > 2) cur_menu = 2;
+  if (cur_menu > 3) cur_menu = 3;
   int target_menu;
   target_menu = cur_menu * 1024;
   if (menu_anim < target_menu)
@@ -179,12 +173,20 @@ void UpdateEnc1MainMenuState(int delta_tick)
       menu_anim -= menu_speed;
   }
   if (abs(menu_anim - target_menu) <= 768)
-    cur_menu += enc1_delta;
+    cur_menu += enc_delta;
 }
 int IsMainBtnClick()
 {
   int ret = MainBtnClick;
   MainBtnClick = 0;
+  return ret;
+}
+int GetEnc1Delta()
+{
+  static int last_enc1 = 0;
+  int enc1_val = Enc1;
+  int ret = enc1_val - last_enc1;
+  last_enc1 = enc1_val;
   return ret;
 }
 void Suicide()
@@ -295,6 +297,8 @@ int main(void)
     int is_charging;
     int is_full;
     int main_btn_click = IsMainBtnClick();
+    int enc1_delta = GetEnc1Delta();
+
     UpdatePowerRead();
     is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
     is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_SET);
