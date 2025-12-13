@@ -26,6 +26,7 @@
 #include "ili9341.h"
 #include "graphics.h"
 #include "fastmath.h"
+#include "../../FlashROM/flashmap.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

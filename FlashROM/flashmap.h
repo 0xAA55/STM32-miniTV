@@ -23,4 +23,6 @@ typedef struct FlashMap_s
 	const uint8_t *Font17pxBitmap;
 } FlashMap_t;
 
+#define FLASH_MAP ((const FlashMap_t *)0x90000000)
+
 #endif

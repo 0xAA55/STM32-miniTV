@@ -8,6 +8,7 @@
 #include "graphics.h"
 #include "utf8.h"
 #include "font.h"
+#include "../../FlashROM/flashmap.h"
 
 typedef void(*fn_on_draw)(void *userdata, int x, int y, size_t char_index);
 typedef int ssize_t;
