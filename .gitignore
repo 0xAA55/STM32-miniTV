@@ -3,3 +3,5 @@ Release
 .settings
 *.o
 FontData/compressor/comp
+*.elf
+*.bin
