@@ -553,10 +553,12 @@ static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
   int char_x = CurrentFont.x_table[char_index];
   for (uint32_t iy = 0; iy < font_height; iy ++)
   {
+    int dy = y + iy;
+    if (dy < 0 || dy >= FramebufferHeight) continue;
     for (int ix = 0; ix < char_width; ix ++)
     {
-      int dx = (x + ix) % 320;
-      int dy = (y + iy) % 240;
+      int dx = x + ix;
+      if (dx < 0 || dx >= FramebufferWidth) continue;
       if (SampleFont(char_x + ix, iy))
         CurDrawFramebuffer[dy][dx] = dt->text_color;
     }
@@ -571,10 +573,12 @@ static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
   int char_x = CurrentFont.x_table[char_index];
   for (uint32_t iy = 0; iy < font_height; iy ++)
   {
+    int dy = y + iy;
+    if (dy < 0 || dy >= FramebufferHeight) continue;
     for (int ix = 0; ix < char_width; ix ++)
     {
-      int dx = (x + ix) % 320;
-      int dy = (y + iy) % 240;
+      int dx = x + ix;
+      if (dx < 0 || dx >= FramebufferWidth) continue;
       if (SampleFont(char_x + ix, iy))
         CurDrawFramebuffer[dy][dx] = dt->text_color;
       else
