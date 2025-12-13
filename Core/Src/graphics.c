@@ -484,6 +484,24 @@ void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel56
   Compose(x, y, 319, 239, text, on_draw_opaque, &dt);
 }
 
+void FillRect(int x, int y, int w, int h, Pixel565 color)
+{
+  int r = x + w;
+  int b = y + h;
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  if (r < 0 || b < 0) return;
+  if (r > 320) r = 320;
+  if (b > 240) b = 240;
+  for (int iy = y; iy < b; iy ++)
+  {
+    for (int ix = x; ix < r; ix ++)
+    {
+      CurDrawFramebuffer[iy][ix] = color;
+    }
+  }
+}
+
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling)
 {
   if (scaling <= 0) return;
