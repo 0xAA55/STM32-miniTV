@@ -13,6 +13,8 @@
 
 typedef uint16_t Pixel565;
 
+#define FixedInterpolate(a, b, s, fix) ((a) + ((b) - (a)) * (s) / (fix))
+
 extern Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
 extern Pixel565 (*CurDrawFramebuffer)[320];
 
@@ -37,7 +39,5 @@ void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t cou
 void DrawTFCardButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling);
-
-#define FixedInterpolate(a, b, s, fix) ((a) + ((b) - (a)) * (s) / (fix))
 
 #endif /* INC_GRAPHICS_H_ */
