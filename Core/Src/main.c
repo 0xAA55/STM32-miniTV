@@ -93,6 +93,7 @@ volatile int Enc1 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
 volatile int MainBtnClick = 0;
+volatile int BAT_Voltage = 0;
 int GetBatteryVolatage(uint32_t adc_val)
 {
   int adc_voltage = (int)((adc_val * 3300) >> 16);
@@ -107,26 +108,28 @@ int BatteryVolatageToPowerPercentage(int voltage)
 }
 int GetPowerPercentage()
 {
-  int ret;
+  return BatteryVolatageToPowerPercentage(BAT_Voltage);
+}
+void UpdatePowerRead()
+{
   if (BAT_ADC_VAL == 0 && BAT_ADC_Sampling == 0)
   {
     BAT_ADC_Sampling = 1;
     HAL_ADC_Start_IT(&hadc1);
     while(BAT_ADC_Sampling) __WFI();
-    ret = BatteryVolatageToPowerPercentage(GetBatteryVolatage(BAT_ADC_VAL));
+    BAT_Voltage = GetBatteryVolatage(BAT_ADC_VAL);
     BAT_ADC_Sampling = 1;
     HAL_ADC_Start_IT(&hadc1);
   }
   else
   {
-    ret = BatteryVolatageToPowerPercentage(GetBatteryVolatage(BAT_ADC_VAL));
+    BAT_Voltage = GetBatteryVolatage(BAT_ADC_VAL);
     if (!BAT_ADC_Sampling)
     {
       BAT_ADC_Sampling = 1;
       HAL_ADC_Start_IT(&hadc1);
     }
   }
-  return ret;
 }
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
@@ -273,6 +276,7 @@ int main(void)
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
   HAL_ADC_Start(&hadc1);
+  UpdatePowerRead();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -284,7 +288,12 @@ int main(void)
   {
     uint32_t cur_tick = HAL_GetTick();
     char buf[128];
+    int is_charging;
+    int is_full;
     int main_btn_click = IsMainBtnClick();
+    UpdatePowerRead();
+    is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
+    is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_SET);
     {
       if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
       {
@@ -320,6 +329,8 @@ int main(void)
     SwapFramebuffers();
     frame_counter += 1;
 
+    if (BAT_Voltage <= 3500 && !is_charging && !is_full)
+      Suicide();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
