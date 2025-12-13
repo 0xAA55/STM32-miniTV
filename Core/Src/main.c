@@ -194,7 +194,9 @@ void Suicide()
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
 }
 int cur_menu = 0;
+int cur_level = 0;
 int menu_anim = 0;
+char cur_folder_path[4096];
 /* USER CODE END 0 */
 
 /**
@@ -302,37 +304,63 @@ int main(void)
     UpdatePowerRead();
     is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
     is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_SET);
+
+    switch (cur_level)
     {
-      if (HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin) == GPIO_PIN_SET)
+      case 0:
       {
-        pwr_pin_up = 1;
+        UpdateEnc1MainMenuState(delta_tick, enc1_delta);
+        for (int y = 0; y < hlcd.yres; y++)
+        {
+          for (int x = 0; x < hlcd.xres; x++)
+          {
+            CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
+          }
+        }
+
+        int playbutton_anim_pos = menu_anim;
+        int usbbutton_anim_pos = menu_anim - 1024;
+        int optbutton_anim_pos = menu_anim - 2048;
+        int shutbutton_anim_pos = menu_anim - 3072;
+        int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
+        int usbbutton_size = (512 - imin(256, abs(usbbutton_anim_pos)));
+        int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
+        int shutbutton_size = (512 - imin(256, abs(shutbutton_anim_pos)));
+        int playbutton_x = 160 - playbutton_anim_pos * 120 / 1024;
+        int usbbutton_x = 160 - usbbutton_anim_pos * 120 / 1024;
+        int optbutton_x = 160 - optbutton_anim_pos * 120 / 1024;
+        int shutbutton_x = 160 - shutbutton_anim_pos * 120 / 1024;
+        Pixel565 ui_c1 = MakePixel565(0, 0, 0);
+        Pixel565 ui_c2 = MakePixel565(255, 255, 255);
+
+        DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
+        DrawUSBConnButton(usbbutton_x, 120, ui_c1, ui_c2, usbbutton_size);
+        DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
+        DrawShutdownButton(shutbutton_x, 120, ui_c1, shutbutton_size);
+        DrawBattery(GetPowerPercentage(), is_charging, is_full);
+        if (main_btn_click)
+        {
+          strcpy(cur_folder_path, "./");
+          cur_level = 1;
+        }
+      }
+      break;
+      case 1:
+      {
+        switch (cur_menu)
+        {
+          case 0: // TF card
+            break;
+          case 1: // USB
+            break;
+          case 2: // Option
+            break;
+          case 3: // Shutdown
+            Suicide();
+            break;
+        }
       }
     }
-    for (int y = 0; y < hlcd.yres; y++)
-    {
-    	for (int x = 0; x < hlcd.xres; x++)
-    	{
-        CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
-    	}
-    }
-    sprintf(buf, "BAT: %03d", GetPowerPercentage());
-    DrawTextOpaque(10, 10, buf, MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
-
-    int playbutton_anim_pos = menu_anim;
-    int optbutton_anim_pos = menu_anim - 1024;
-    int shutbutton_anim_pos = menu_anim - 2048;
-    int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
-    int playbutton_x = 160 - playbutton_anim_pos * 120 / 1024;
-    int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
-    int optbutton_x = 160 - optbutton_anim_pos * 120 / 1024;
-    int shutbutton_size = (512 - imin(256, abs(shutbutton_anim_pos)));
-    int shutbutton_x = 160 - shutbutton_anim_pos * 120 / 1024;
-    Pixel565 ui_c1 = MakePixel565(0, 0, 0);
-    Pixel565 ui_c2 = MakePixel565(255, 255, 255);
-
-    DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
-    DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
-    DrawShutdownButton(shutbutton_x, 120, ui_c1, shutbutton_size);
 
     SwapFramebuffers();
     frame_counter += 1;
