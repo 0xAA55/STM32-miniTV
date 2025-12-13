@@ -336,12 +336,12 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
     }
     char_index = GetCharIndexMust(code);
     char_width = CurrentFont.width_table[char_index];
-    if (cur_x + char_width > r)
+    if (cur_x + char_width >= r)
     {
       cur_x = x;
       cur_y += font_height;
     }
-    if (cur_y + font_height - 1 > b) break;
+    if (cur_y + font_height - 1 >= b) break;
     on_draw(userdata, cur_x, cur_y, char_index);
     cur_x += char_width;
   }
@@ -363,7 +363,7 @@ static void FontChanged()
 static void ChangeFontFailed()
 {
   UseDefaultFont();
-  FillRect(0, 0, 320, 240, MakePixel565(255, 255, 255));
+  FillRect(0, 0, FramebufferWidth, FramebufferHeight, MakePixel565(255, 255, 255));
   DrawTextOpaque(40, 100, "FLASH ROM NEEDED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
   SwapFramebuffers();
   for(;;);
@@ -587,7 +587,7 @@ void DrawText(int x, int y, const char* text, Pixel565 text_color)
 {
   DrawDataTransparent dt;
   dt.text_color = text_color;
-  Compose(x, y, 319, 239, text, on_draw_transparent, &dt);
+  Compose(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
 }
 
 void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel565 bg_color)
@@ -595,7 +595,7 @@ void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel56
   DrawDataOpaque dt;
   dt.text_color = text_color;
   dt.bg_color = bg_color;
-  Compose(x, y, 319, 239, text, on_draw_opaque, &dt);
+  Compose(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
 }
 
 void FillRect(int x, int y, int w, int h, Pixel565 color)
@@ -605,8 +605,8 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   if (r < 0 || b < 0) return;
-  if (r > 320) r = 320;
-  if (b > 240) b = 240;
+  if (r > FramebufferWidth) r = FramebufferWidth;
+  if (b > FramebufferHeight) b = FramebufferHeight;
   for (int iy = y; iy < b; iy ++)
   {
     for (int ix = x; ix < r; ix ++)
@@ -624,15 +624,15 @@ void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t cou
     int y = y_center + lines[i].y_offset * scaling / 512;
     int x = x_center + lines[i].x_offset * scaling / 512;
     int l = lines[i].x_length * scaling / 512;
-    if (y < 0 || y >= 240) continue;
+    if (y < 0 || y >= FramebufferHeight) continue;
     if (x < 0)
     {
       l += x;
       x = 0;
     }
-    if (x + l >= 320)
+    if (x + l >= FramebufferWidth)
     {
-      l = 319 - x;
+      l = (FramebufferWidth - 1) - x;
       if (l <= 0) continue;
     }
     for (int ix = 0; ix < l; ix ++)

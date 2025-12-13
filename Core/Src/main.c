@@ -63,6 +63,8 @@ DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 
 /* USER CODE BEGIN PV */
+const size_t FramebufferWidth = 320;
+const size_t FramebufferHeight = 240;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
