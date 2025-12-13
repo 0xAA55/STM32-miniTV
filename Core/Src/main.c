@@ -91,6 +91,11 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int cur_menu = 0;
+int cur_level = 0;
+int menu_anim = 0;
+int menu_ready = 0;
+char cur_folder_path[4096];
 volatile int Enc1 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
@@ -160,22 +165,37 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
   if (cur_menu > 3) cur_menu = 3;
   int target_menu;
   target_menu = cur_menu * 1024;
+  if (abs(menu_anim - target_menu) <= 768)
+  {
+    menu_ready = 0;
+    cur_menu += enc_delta;
+  }
   if (menu_anim < target_menu)
   {
     if (menu_anim + menu_speed >= target_menu)
+    {
       menu_anim = target_menu;
+      menu_ready = 1;
+    }
     else
+    {
       menu_anim += menu_speed;
+      menu_ready = 0;
+    }
   }
   if (menu_anim > target_menu)
   {
     if (menu_anim - menu_speed <= target_menu)
+    {
       menu_anim = target_menu;
+      menu_ready = 1;
+    }
     else
+    {
       menu_anim -= menu_speed;
+      menu_ready = 0;
+    }
   }
-  if (abs(menu_anim - target_menu) <= 768)
-    cur_menu += enc_delta;
 }
 int IsMainBtnClick()
 {
@@ -221,10 +241,6 @@ void QSPI_Config_Mmap(void)
     Error_Handler();
   }
 }
-int cur_menu = 0;
-int cur_level = 0;
-int menu_anim = 0;
-char cur_folder_path[4096];
 /* USER CODE END 0 */
 
 /**
