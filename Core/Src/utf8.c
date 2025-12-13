@@ -22,7 +22,7 @@ UTF8Parser utf8_start_parse(const char *utf8)
 
 uint32_t utf8_to_utf32(UTF8Parser *p, uint32_t bad_char_code)
 {
-  char *utf8s = p->ptr;
+  const char *utf8s = p->ptr;
   if((utf8s[0] & 0xFE) == 0xFC) //1111110x
   {
     if (p->rem >= 6)

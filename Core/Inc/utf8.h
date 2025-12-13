@@ -13,7 +13,7 @@
 
 typedef struct UTF8Parser_s
 {
-  char *ptr;
+  const char *ptr;
   size_t rem;
 }UTF8Parser;
 
