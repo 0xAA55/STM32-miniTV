@@ -15,12 +15,15 @@ typedef struct FlashMap_s
 	const uint8_t *Font12pxWidthTable;
 	const uint32_t *Font12pxXTable;
 	const uint8_t *Font12pxBitmap;
+	const size_t Font12pxBitmapPitch;
 	const uint8_t *Font14pxWidthTable;
 	const uint32_t *Font14pxXTable;
 	const uint8_t *Font14pxBitmap;
+	const size_t Font14pxBitmapPitch;
 	const uint8_t *Font17pxWidthTable;
 	const uint32_t *Font17pxXTable;
 	const uint8_t *Font17pxBitmap;
+	const size_t Font17pxBitmapPitch;
 } FlashMap_t;
 
 #define FLASH_MAP ((const FlashMap_t *)0x90000000)

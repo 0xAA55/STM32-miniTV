@@ -15,6 +15,9 @@ extern const uint32_t Font17pxBitmap[];
 const uint32_t BatteryBMP_Width = 16;
 const uint32_t BatteryBMP_Height = 290;
 const size_t NumFontChars = 7318;
+const size_t Font12pxBitmapPitch = 10908;
+const size_t Font14pxBitmapPitch = 12668;
+const size_t Font17pxBitmapPitch = 14544;
 
 __attribute__((section(".flash_map")))
 const FlashMap_t FlashMap =
@@ -28,12 +31,15 @@ const FlashMap_t FlashMap =
 	Font12pxWidthTable,
 	Font12pxXTable,
 	(const uint8_t*)&Font12pxBitmap,
+	Font12pxBitmapPitch,
 	Font14pxWidthTable,
 	Font14pxXTable,
 	(const uint8_t*)&Font14pxBitmap,
+	Font14pxBitmapPitch,
 	Font17pxWidthTable,
 	Font17pxXTable,
 	(const uint8_t*)&Font17pxBitmap,
+	Font17pxBitmapPitch,
 };
 
 size_t DummyEntry()
