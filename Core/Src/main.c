@@ -174,28 +174,26 @@ void SwapFramebuffers()
 }
 void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
 {
+  int target_menu;
   int menu_speed = 5 * delta_tick;
   enc_delta = imax(-1, imin(enc_delta, 1));
   if (GUICurMenu < 0) GUICurMenu = 0;
   if (GUICurMenu > 3) GUICurMenu = 3;
-  int target_menu;
-  target_menu = GUICurMenu * 1024;
   if (abs(GUIMenuAnim - target_menu) <= 768)
   {
     GUIMenuReady = 0;
     GUICurMenu += enc_delta;
   }
+  target_menu = GUICurMenu * 1024;
   if (GUIMenuAnim < target_menu)
   {
     if (GUIMenuAnim + menu_speed >= target_menu)
     {
       GUIMenuAnim = target_menu;
-      GUIMenuReady = 1;
     }
     else
     {
       GUIMenuAnim += menu_speed;
-      GUIMenuReady = 0;
     }
   }
   if (GUIMenuAnim > target_menu)
@@ -203,14 +201,13 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
     if (GUIMenuAnim - menu_speed <= target_menu)
     {
       GUIMenuAnim = target_menu;
-      GUIMenuReady = 1;
     }
     else
     {
       GUIMenuAnim -= menu_speed;
-      GUIMenuReady = 0;
     }
   }
+  GUIMenuReady = (GUIMenuAnim == target_menu);
 }
 int IsMainBtnClick()
 {
@@ -325,6 +322,7 @@ int main(void)
   SwapFramebuffers();
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
+  UseLargeFont();
   UpdatePowerRead();
   /* USER CODE END 2 */
 
@@ -377,8 +375,27 @@ int main(void)
         DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
         DrawUSBConnButton(usbbutton_x, 120, ui_c1, ui_c2, usbbutton_size);
         DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
-        DrawShutdownButton(shutbutton_x, 120, ui_c1, shutbutton_size);
+        DrawShutdownButton(shutbutton_x, 120, ui_c1, ui_c2, shutbutton_size);
         DrawBattery(GetPowerPercentage(), is_charging, is_full);
+        if (GUIMenuReady)
+        {
+          switch(GUICurMenu)
+          {
+            case 0:
+              strcpy(buf, "打开存储卡");
+              break;
+            case 1:
+              strcpy(buf, "连接USB");
+              break;
+            case 2:
+              strcpy(buf, "选项设置");
+              break;
+            case 3:
+              strcpy(buf, "关闭电源");
+              break;
+          }
+          DrawTextOpaque(120, 180, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+        }
         if (main_btn_click)
         {
           strcpy(GUIFolderPath, "./");
