@@ -681,6 +681,7 @@ void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t cou
       l += x;
       x = 0;
     }
+    if (l <= 0) continue;
     if (x + l >= FramebufferWidth)
     {
       l = (FramebufferWidth - 1) - x;
