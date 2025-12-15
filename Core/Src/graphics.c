@@ -364,7 +364,9 @@ static void ChangeFontFailed()
 {
   UseDefaultFont();
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, MakePixel565(255, 255, 255));
-  DrawTextOpaque(40, 100, "FLASH ROM NEEDED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 100, "READ FLASH ROM FAILED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 114, "PRESS BUTTON TO TURN OFF THE POWER", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 128, "THEN TRY TO TURN ON AGAIN", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
   SwapFramebuffers();
   OnException();
 }
