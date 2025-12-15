@@ -101,6 +101,14 @@ volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
 volatile int MainBtnClick = 0;
 volatile int BAT_Voltage = 0;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+  if (hadc == &hadc1)
+  {
+    BAT_ADC_VAL = HAL_ADC_GetValue(hadc);
+    BAT_ADC_Sampling = 0;
+  }
+}
 int GetBatteryVolatage(uint32_t adc_val)
 {
   int adc_voltage = (int)((adc_val * 3300) >> 16);
@@ -309,7 +317,6 @@ int main(void)
   SwapFramebuffers();
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
-  HAL_ADC_Start(&hadc1);
   UpdatePowerRead();
   /* USER CODE END 2 */
 

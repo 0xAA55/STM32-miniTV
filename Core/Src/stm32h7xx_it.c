@@ -339,12 +339,4 @@ void MDMA_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-  if (hadc == &hadc1)
-  {
-    BAT_ADC_VAL = HAL_ADC_GetValue(&hadc1);
-    BAT_ADC_Sampling = 0;
-  }
-}
 /* USER CODE END 1 */
