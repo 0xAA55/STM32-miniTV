@@ -59,7 +59,7 @@ void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, i
 void DrawTFCardButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawUSBConnButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
-void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling);
+void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawStandByScreen();
 void DrawBattery(int percentage, int is_charging, int is_full);
 

@@ -710,9 +710,10 @@ void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int 
   DrawHorzLines(x_center, y_center, gear_45, (sizeof gear_45) / (sizeof gear_45[0]), c2, scaling);
 }
 
-void DrawShutdownButton(int x_center, int y_center, Pixel565 color, int scaling)
+void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling)
 {
-  DrawHorzLines(x_center, y_center, shutdown_50, (sizeof shutdown_50) / (sizeof shutdown_50[0]), color, scaling);
+  DrawHorzLines(x_center, y_center, circle_60, (sizeof circle_60) / (sizeof circle_60[0]), c1, scaling);
+  DrawHorzLines(x_center, y_center, shutdown_50, (sizeof shutdown_50) / (sizeof shutdown_50[0]), c2, scaling);
 }
 
 void DrawStandByScreen()
