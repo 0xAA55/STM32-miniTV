@@ -22,9 +22,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdlib.h>
+#include <string.h>
 #include "ili9341.h"
 #include "graphics.h"
 #include "fastmath.h"
+#include "qspixip.h"
 #include "../../FlashROM/flashmap.h"
 /* USER CODE END Includes */
 
@@ -290,7 +293,8 @@ int main(void)
   MX_ADC1_Init();
   // MX_USB_OTG_HS_PCD_Init();
   /* USER CODE BEGIN 2 */
-  QSPI_Config_Mmap();
+  QSPI_InitFlash();
+  QSPI_EnterMemoryMapMode();
   const LCD_GPIO lcd_gpio = {
     LCD_MakePin(LCD_RST_GPIO_Port, LCD_RST_Pin),
     LCD_MakePin(LCD_CS_GPIO_Port, LCD_CS_Pin),
