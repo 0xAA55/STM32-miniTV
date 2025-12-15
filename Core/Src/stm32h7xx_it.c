@@ -55,7 +55,6 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_spi2_tx;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_nf;
@@ -63,6 +62,7 @@ extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern SPI_HandleTypeDef hspi1;
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
