@@ -68,8 +68,8 @@ const size_t FramebufferHeight = 240;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
-Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
 uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
+Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
