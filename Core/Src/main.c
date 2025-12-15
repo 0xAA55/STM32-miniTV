@@ -274,7 +274,7 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  DynAlloc_Init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
