@@ -191,14 +191,17 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
+  static int enc1_bm;
+  static int enc2_bm;
+  static int main_btn_is_up = 0;
+  static int second_btn_is_up = 0;
 
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
   int enc1_a = (HAL_GPIO_ReadPin(ENC1_A_GPIO_Port, ENC1_A_Pin) == GPIO_PIN_RESET);
   int enc1_b = (HAL_GPIO_ReadPin(ENC1_B_GPIO_Port, ENC1_B_Pin) == GPIO_PIN_RESET);
-  static int enc1_bm;
+  int enc2_a = (HAL_GPIO_ReadPin(ENC2_A_GPIO_Port, ENC2_A_Pin) == GPIO_PIN_RESET);
+  int enc2_b = (HAL_GPIO_ReadPin(ENC2_B_GPIO_Port, ENC2_B_Pin) == GPIO_PIN_RESET);
   enc1_bm = ((enc1_bm << 2) | (enc1_a << 1) | (enc1_b)) & 0xF;
+  enc2_bm = ((enc2_bm << 2) | (enc2_a << 1) | (enc2_b)) & 0xF;
   switch(enc1_bm)
   {
     case 0b0001:
@@ -214,7 +217,21 @@ void SysTick_Handler(void)
       Enc1 += 1;
       break;
   }
-  static int main_btn_is_up = 0;
+  switch(enc2_bm)
+  {
+    case 0b0001:
+    case 0b0111:
+    case 0b1110:
+    case 0b1000:
+      Enc2 -= 1;
+      break;
+    case 0b0010:
+    case 0b1011:
+    case 0b1101:
+    case 0b0100:
+      Enc2 += 1;
+      break;
+  }
   switch(HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin))
   {
     default:
@@ -228,6 +245,23 @@ void SysTick_Handler(void)
       main_btn_is_up = 1;
       break;
   }
+  switch(HAL_GPIO_ReadPin(ENC2_SW_GPIO_Port, ENC2_SW_Pin))
+  {
+    default:
+      if (second_btn_is_up)
+      {
+        second_btn_is_up = 0;
+        SecondBtnClick = 1;
+      }
+      break;
+    case GPIO_PIN_SET:
+      second_btn_is_up = 1;
+      break;
+  }
+  /* USER CODE END SysTick_IRQn 0 */
+  HAL_IncTick();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
   /* USER CODE END SysTick_IRQn 1 */
 }
 

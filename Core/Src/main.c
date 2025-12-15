@@ -99,9 +99,11 @@ int GUIMenuAnim = 0;
 int GUIMenuReady = 0;
 char GUIFolderPath[4096];
 volatile int Enc1 = 0;
+volatile int Enc2 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
 volatile int BAT_ADC_Sampling = 0;
 volatile int MainBtnClick = 0;
+volatile int SecondBtnClick = 0;
 volatile int BAT_Voltage = 0;
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
