@@ -366,7 +366,7 @@ static void ChangeFontFailed()
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, MakePixel565(255, 255, 255));
   DrawTextOpaque(40, 100, "FLASH ROM NEEDED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
   SwapFramebuffers();
-  for(;;);
+  OnException();
 }
 
 void UseDefaultFont()

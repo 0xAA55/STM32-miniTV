@@ -215,30 +215,11 @@ void Suicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
 }
-void QSPI_Config_Mmap(void)
+void OnException()
 {
-  QSPI_CommandTypeDef s_command;
-  QSPI_MemoryMappedTypeDef s_mem_mapped_cfg;
-
-  s_mem_mapped_cfg.TimeOutActivation = QSPI_TIMEOUT_COUNTER_DISABLE;
-  s_mem_mapped_cfg.TimeOutPeriod = 0;
-
-  s_command.InstructionMode   = QSPI_INSTRUCTION_4_LINES;
-  s_command.Instruction       = 0xEB;
-  s_command.AddressMode       = QSPI_ADDRESS_4_LINES;
-  s_command.AddressSize       = QSPI_ADDRESS_24_BITS;
-  s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_4_LINES;
-  s_command.AlternateBytes    = 0xA0;
-  s_command.AlternateBytesSize = QSPI_ALTERNATE_BYTES_8_BITS;
-  s_command.DataMode          = QSPI_DATA_4_LINES;
-  s_command.DummyCycles       = 6;
-  s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
-  s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
-  s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
-
-  if (HAL_QSPI_MemoryMapped(&hqspi, &s_command, &s_mem_mapped_cfg) != HAL_OK)
+  while(1)
   {
-    Error_Handler();
+    if (IsMainBtnClick()) Suicide();
   }
 }
 /* USER CODE END 0 */

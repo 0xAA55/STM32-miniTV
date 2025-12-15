@@ -20,6 +20,7 @@ extern Pixel565 (*CurDrawFramebuffer)[320];
 extern void SwapFramebuffers();
 extern const size_t FramebufferWidth;
 extern const size_t FramebufferHeight;
+extern void OnException();
 
 typedef struct SrcPicture_s
 {
