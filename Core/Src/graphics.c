@@ -434,7 +434,7 @@ void UseLargeFont()
       7,
       28,
   };
-  CurrentFont = MediumFont;
+  CurrentFont = LargeFont;
   FontChanged();
 }
 
