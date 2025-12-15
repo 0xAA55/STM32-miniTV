@@ -764,20 +764,20 @@ void DrawBattery(int percentage, int is_charging, int is_full)
   const int BatLevels = 14;
   const SrcPicture BatteryPicture =
   {
-    FLASH_MAP->BatteryBMP,
+    (const Pixel565*)FLASH_MAP->BatteryBMP,
     ((FLASH_MAP->BatteryBMP_Width * 2 - 1) / 4 + 1) * 4,
     FLASH_MAP->BatteryBMP_Width,
     FLASH_MAP->BatteryBMP_Height,
   };
   int BatteryHeight = FLASH_MAP->BatteryBMP_Height / 29;
   int BatImageIndex = percentage * 14 / 100;
-  if (BatImageIndex < 0 || BatImageIndex > 14)
+  if (BatImageIndex < 0 || BatImageIndex > BatLevels)
     BatImageIndex = 28;
   else
   {
-    if (BatImageIndex == 14) BatImageIndex = 13;
+    if (BatImageIndex == BatLevels) BatImageIndex = 13;
     BatImageIndex = 13 - BatImageIndex;
-    if (is_charging || is_full) BatImageIndex += 14;
+    if (is_charging || is_full) BatImageIndex += BatLevels;
   }
-  BitBlt565(FramebufferWidth - FLASH_MAP->BatteryBMP_Width, 0, FLASH_MAP->BatteryBMP_Width, FLASH_MAP->BatteryBMP_Height, &BatteryPicture, 0, BatImageIndex * BatteryHeight);
+  BitBlt565(FramebufferWidth - FLASH_MAP->BatteryBMP_Width, 0, FLASH_MAP->BatteryBMP_Width, BatteryHeight, &BatteryPicture, 0, BatImageIndex * BatteryHeight);
 }
