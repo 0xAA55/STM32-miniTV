@@ -7,6 +7,7 @@
 
 #include "graphics.h"
 #include "utf8.h"
+#include "utf16.h"
 #include "font.h"
 #include "../../FlashROM/flashmap.h"
 
@@ -376,6 +377,26 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
     if (!ComposeCode(&cs, utf8_to_utf32(&parser, '?'))) break;
   }
   utf8_end_parse(&parser);
+}
+
+static void ComposeW(int x, int y, int r, int b, const uint16_t* text, fn_on_draw on_draw, void *userdata)
+{
+  UTF16Parser parser = utf16_start_parse(text);
+  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  while(1)
+  {
+    if (!ComposeCode(&cs, utf16_to_utf32(&parser, '?'))) break;
+  }
+  utf16_end_parse(&parser);
+}
+
+static void ComposeU(int x, int y, int r, int b, const uint32_t* text, fn_on_draw on_draw, void *userdata)
+{
+  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  while(1)
+  {
+    if (!ComposeCode(&cs, *text++)) break;
+  }
 }
 
 void Graphics_Init()
