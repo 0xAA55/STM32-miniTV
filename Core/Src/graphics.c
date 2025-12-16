@@ -317,39 +317,63 @@ static int SampleFont(int x, int y)
   return (CurrentFont.bitmap[y * CurrentFont.bitmap_pitch + x / 8] & (0x80 >> (x & 7))) != 0;
 }
 
-static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
+typedef struct cs
 {
-  int cur_x = x, cur_y = y;
-  UTF8Parser parser = utf8_start_parse(text);
-  uint32_t code;
+  int x, y, r, b;
+  int cur_x;
+  int cur_y;
+  fn_on_draw on_draw;
+  void *userdata;
+}ComposeStatus_t;
+
+static ComposeStatus_t CreateCompose(int x, int y, int r, int b, fn_on_draw on_draw, void *userdata)
+{
+  ComposeStatus_t ret =
+  {
+    x, y, r, b,
+    0, 0,
+    on_draw,
+    userdata
+  };
+  return ret;
+}
+
+static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
+{
   size_t char_index;
   int char_width;
-  uint32_t font_height = CurrentFont.bitmap_height;
-  for(;;)
+  if (!code) return 0;
+  if (code == '\n')
   {
-    code = utf8_to_utf32(&parser, '?');
-    if (!code) break;
-    if (code == '\n')
-    {
-      cur_x = x;
-      cur_y += font_height;
-      continue;
-    }
-    if (code == '\t')
-    {
-      cur_x += ((cur_x - x) / CurrentFont.tab_size + 1) * CurrentFont.tab_size;
-      continue;
-    }
-    char_index = GetCharIndexMust(code);
-    char_width = CurrentFont.width_table[char_index];
-    if (cur_x + char_width >= r)
-    {
-      cur_x = x;
-      cur_y += font_height;
-    }
-    if (cur_y + font_height - 1 >= b) break;
-    on_draw(userdata, cur_x, cur_y, char_index);
-    cur_x += char_width;
+    cs->cur_x = cs->x;
+    cs->cur_y += CurrentFont.bitmap_height;
+    return 1;
+  }
+  if (code == '\t')
+  {
+    cs->cur_x += ((cs->cur_x - cs->x) / CurrentFont.tab_size + 1) * CurrentFont.tab_size;
+    return 1;
+  }
+  char_index = GetCharIndexMust(code);
+  char_width = CurrentFont.width_table[char_index];
+  if (cs->cur_x + char_width > cs->r)
+  {
+    cs->cur_x = cs->x;
+    cs->cur_y += CurrentFont.bitmap_height;
+  }
+  if (cs->cur_y + CurrentFont.bitmap_height - 1 > cs->b) return 0;
+  cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
+  cs->cur_x += char_width;
+  return 1;
+}
+
+static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
+{
+  UTF8Parser parser = utf8_start_parse(text);
+  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  while(1)
+  {
+    if (!ComposeCode(&cs, utf8_to_utf32(&parser, '?'))) break;
   }
   utf8_end_parse(&parser);
 }
