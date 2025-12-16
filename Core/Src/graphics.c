@@ -743,39 +743,45 @@ void ClearScreen(Pixel565 color)
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, color);
 }
 
+static int BitBltCheck(int *dx, int *dy, int *w, int *h, const SrcPicture* src, int *src_x, int *src_y)
+{
+  if (*src_x < 0)
+  {
+    *dx += *src_x;
+    *w -= *src_x;
+    *src_x = 0;
+  }
+  if (*src_y < 0)
+  {
+    *dy += *src_y;
+    *h -= *src_y;
+    *src_y = 0;
+  }
+  if (*dx < 0)
+  {
+    *src_x -= *dx;
+    *w += *dx;
+    *dx = 0;
+  }
+  if (*dy < 0)
+  {
+    *src_y -= *dy;
+    *h += *dy;
+    *dy = 0;
+  }
+  if (*dx >= FramebufferWidth || *dy >= FramebufferHeight) return 0;
+  if (*src_x >= src->width || *src_y >= src->height) return 0;
+  if (*dx + *w > FramebufferWidth) *w = FramebufferWidth - *dx;
+  if (*dy + *h > FramebufferHeight) *h = FramebufferHeight - *dy;
+  if (*w <= 0 || *h <= 0) return 0;
+  if (*w > src->width) *w = src->width;
+  if (*h > src->height) *h = src->height;
+  return 1;
+}
+
 void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y)
 {
-  if (src_x < 0)
-  {
-    dx += src_x;
-    w -= src_x;
-    src_x = 0;
-  }
-  if (src_y < 0)
-  {
-    dy += src_y;
-    h -= src_y;
-    src_y = 0;
-  }
-  if (dx < 0)
-  {
-    src_x -= dx;
-    w += dx;
-    dx = 0;
-  }
-  if (dy < 0)
-  {
-    src_y -= dy;
-    h += dy;
-    dy = 0;
-  }
-  if (dx >= FramebufferWidth || dy >= FramebufferHeight) return;
-  if (src_x >= src->width || src_y >= src->height) return;
-  if (dx + w > FramebufferWidth) w = FramebufferWidth - dx;
-  if (dy + h > FramebufferHeight) h = FramebufferHeight - dy;
-  if (w <= 0 || h <= 0) return;
-  if (w > src->width) w = src->width;
-  if (h > src->height) h = src->height;
+  if (!BitBltCheck(&dx, &dy, &w, &h, src, &src_x, &src_y)) return;
   for (int y = 0; y < h; y++)
   {
     int sy = src_y + y;
@@ -786,6 +792,23 @@ void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, i
       int sx = src_x + x;
       int tx = dx + x;
       CurDrawFramebuffer[ty][tx] = row_ptr[sx];
+    }
+  }
+}
+
+void TransparentBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y, Pixel565 key)
+{
+  if (!BitBltCheck(&dx, &dy, &w, &h, src, &src_x, &src_y)) return;
+  for (int y = 0; y < h; y++)
+  {
+    int sy = src_y + y;
+    int ty = dy + y;
+    const Pixel565 *row_ptr = (const Pixel565*)((uint8_t*)src->bitmap + src->pitch * sy);
+    for (int x = 0; x < w; x++)
+    {
+      int sx = src_x + x;
+      int tx = dx + x;
+      if (row_ptr[sx] != key) CurDrawFramebuffer[ty][tx] = row_ptr[sx];
     }
   }
 }
