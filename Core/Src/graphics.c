@@ -928,3 +928,19 @@ void DrawBattery(int percentage, int is_charging, int is_full)
   }
   BitBlt565(FramebufferWidth - FLASH_MAP->BatteryBMP_Width, 0, FLASH_MAP->BatteryBMP_Width, BatteryHeight, &BatteryPicture, 0, BatImageIndex * BatteryHeight);
 }
+
+void DrawFolderOrFile(int x, int y, int is_folder)
+{
+  const SrcPicture FolderFilePicture =
+  {
+    (const Pixel565*)FLASH_MAP->FolderBMP,
+    ((FLASH_MAP->FolderBMP_Width * 2 - 1) / 4 + 1) * 4,
+    FLASH_MAP->FolderBMP_Width,
+    FLASH_MAP->FolderBMP_Height,
+  };
+  if (is_folder)
+    TransparentBlt565(x, y, FLASH_MAP->FolderBMP_Width / 2, FLASH_MAP->FolderBMP_Height, &FolderFilePicture, 0, 0, MakePixel565(128, 128, 128));
+  else
+    TransparentBlt565(x, y, FLASH_MAP->FolderBMP_Width / 2, FLASH_MAP->FolderBMP_Height, &FolderFilePicture, FLASH_MAP->FolderBMP_Width / 2, 0, MakePixel565(128, 128, 128));
+}
+
