@@ -10,6 +10,9 @@ typedef struct FlashMap_s
 	uint32_t BatteryBMP_Width;
 	uint32_t BatteryBMP_Height;
 	const uint8_t *BatteryBMP;
+	uint32_t FolderBMP_Width;
+	uint32_t FolderBMP_Height;
+	const uint8_t *FolderBMP;
 	const uint16_t *FontCodeTable;
 	size_t NumFontChars;
 	const uint8_t *Font12pxWidthTable;

@@ -6,7 +6,7 @@ CFLAGS=-mcpu=cortex-m7 -std=gnu11 -ffunction-sections -fdata-sections -Wall --sp
 LDFLAGS=-mcpu=cortex-m7 -T"FLASHROM.ld" --specs=nosys.specs -Wl,--gc-sections -static -flto=auto --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -Wl,--end-group
 LDLIBS=-lc -lm
 
-OBJS=entry.o battery.o font_chars.o font12px.o font14px.o font17px.o
+OBJS=entry.o battery.o folder.o font_chars.o font12px.o font14px.o font17px.o
 
 All: FlashROM.bin
 
