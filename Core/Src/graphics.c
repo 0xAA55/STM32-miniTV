@@ -640,6 +640,17 @@ static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
   }
 }
 
+static void on_draw_get_size(void *userdata, int x, int y, size_t char_index)
+{
+  DrawDataGetSize *dt = (DrawDataGetSize*)userdata;
+  uint32_t font_height = CurrentFont.bitmap_height;
+  int char_width = CurrentFont.width_table[char_index];
+  int w = x + char_width;
+  int h = y + font_height;
+  if (w > dt->w) dt->w = w;
+  if (h > dt->h) dt->h = h;
+}
+
 void DrawText(int x, int y, const char* text, Pixel565 text_color)
 {
   DrawDataTransparent dt;
@@ -653,6 +664,14 @@ void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel56
   dt.text_color = text_color;
   dt.bg_color = bg_color;
   Compose(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+}
+
+void GetTextSize(const char* text, uint32_t *width, uint32_t *height)
+{
+  DrawDataGetSize dt = {0};
+  Compose(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  *width = dt.w;
+  *height = dt.h;
 }
 
 void FillRect(int x, int y, int w, int h, Pixel565 color)
