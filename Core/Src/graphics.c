@@ -674,6 +674,52 @@ void GetTextSize(const char* text, uint32_t *width, uint32_t *height)
   *height = dt.h;
 }
 
+void DrawTextW(int x, int y, const uint16_t* text, Pixel565 text_color)
+{
+  DrawDataTransparent dt;
+  dt.text_color = text_color;
+  ComposeW(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
+}
+
+void DrawTextOpaqueW(int x, int y, const uint16_t* text, Pixel565 text_color, Pixel565 bg_color)
+{
+  DrawDataOpaque dt;
+  dt.text_color = text_color;
+  dt.bg_color = bg_color;
+  ComposeW(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+}
+
+void GetTextSizeW(const uint16_t* text, uint32_t *width, uint32_t *height)
+{
+  DrawDataGetSize dt = {0};
+  ComposeW(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  *width = dt.w;
+  *height = dt.h;
+}
+
+void DrawTextU(int x, int y, const uint32_t* text, Pixel565 text_color)
+{
+  DrawDataTransparent dt;
+  dt.text_color = text_color;
+  ComposeU(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
+}
+
+void DrawTextOpaqueU(int x, int y, const uint32_t* text, Pixel565 text_color, Pixel565 bg_color)
+{
+  DrawDataOpaque dt;
+  dt.text_color = text_color;
+  dt.bg_color = bg_color;
+  ComposeU(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+}
+
+void GetTextSizeU(const uint32_t* text, uint32_t *width, uint32_t *height)
+{
+  DrawDataGetSize dt = {0};
+  ComposeU(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  *width = dt.w;
+  *height = dt.h;
+}
+
 void FillRect(int x, int y, int w, int h, Pixel565 color)
 {
   int r = x + w;
