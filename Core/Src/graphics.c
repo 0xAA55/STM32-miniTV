@@ -628,6 +628,11 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   }
 }
 
+void ClearScreen(Pixel565 color)
+{
+  FillRect(0, 0, FramebufferWidth, FramebufferHeight, color);
+}
+
 void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y)
 {
   if (src_x < 0)

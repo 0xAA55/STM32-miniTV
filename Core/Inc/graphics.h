@@ -38,6 +38,8 @@ void Graphics_Init();
 Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness);
 Pixel565 ColorFromPhaseSimple(uint32_t phase);
 
+void ClearScreen(Pixel565 color);
+
 void UseDefaultFont();
 void UseSmallFont();
 void UseMediumFont();
