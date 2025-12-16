@@ -20,6 +20,6 @@ typedef struct UTF8Parser_s
 UTF8Parser utf8_start_parse(const char *utf8);
 uint32_t utf8_to_utf32(UTF8Parser *p, uint32_t bad_char_code);
 void utf8_end_parse(UTF8Parser *p);
-void utf32_to_utf8(uint32_t code, char *utf8);
+char *utf32_to_utf8(uint32_t code, char *utf8);
 
 #endif /* INC_UTF8_H_ */

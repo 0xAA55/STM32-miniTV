@@ -144,7 +144,7 @@ void utf8_end_parse(UTF8Parser *p)
   UNUSED(p);
 }
 
-void utf32_to_utf8(uint32_t code, char *utf8)
+char *utf32_to_utf8(uint32_t code, char *utf8)
 {
   if(code >= 0x4000000)
   {
@@ -185,5 +185,6 @@ void utf32_to_utf8(uint32_t code, char *utf8)
   {
     *utf8++ = (char)(code);
   }
+  return utf8;
 }
 
