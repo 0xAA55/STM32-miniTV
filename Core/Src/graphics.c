@@ -26,6 +26,12 @@ typedef struct dtos
   Pixel565 bg_color;
 } DrawDataOpaque;
 
+typedef struct dtgs
+{
+  uint32_t w;
+  uint32_t h;
+} DrawDataGetSize;
+
 const HorzLine circle_60[] =
 {
   {-60 ,-4 , 9 }, {-59 ,-12 , 25 }, {-58 ,-16 , 33 }, {-57 ,-19 , 39 },
