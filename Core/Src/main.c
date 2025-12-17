@@ -24,11 +24,15 @@
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
 #include <string.h>
+#include "utf8.h"
+#include "utf16.h"
 #include "ili9341.h"
 #include "graphics.h"
 #include "fastmath.h"
 #include "qspixip.h"
+#include "dynalloc.h"
 #include "../../FlashROM/flashmap.h"
+#include "ff.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,6 +75,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_HS;
 /* USER CODE BEGIN PV */
 const size_t FramebufferWidth = 320;
 const size_t FramebufferHeight = 240;
+FATFS FatFs;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
@@ -99,11 +104,18 @@ static void MX_DMA2D_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define NUM_FILE_ITEMS 14
+#define MAX_FILE_NAMELEN 256
 int GUICurMenu = 0;
 int GUICurMenuLevel = 0;
 int GUIMenuAnim = 0;
 int GUIMenuReady = 0;
-char GUIFolderPath[4096];
+uint16_t GUIFolderPath[4096];
+uint16_t GUIFileList[NUM_FILE_ITEMS][MAX_FILE_NAMELEN];
+uint8_t GUIFileIsDir[NUM_FILE_ITEMS];
+int CurFileIndex = 0;
+int FirstFileIndex = 0;
+int FsMounted = 0;
 volatile int Enc1 = 0;
 volatile int Enc2 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
@@ -218,12 +230,26 @@ int IsMainBtnClick()
   MainBtnClick = 0;
   return ret;
 }
+int IsSecondBtnClick()
+{
+  int ret = SecondBtnClick;
+  SecondBtnClick = 0;
+  return ret;
+}
 int GetEnc1Delta()
 {
   static int last_enc1 = 0;
   int enc1_val = Enc1;
   int ret = enc1_val - last_enc1;
   last_enc1 = enc1_val;
+  return ret;
+}
+int GetEnc2Delta()
+{
+  static int last_enc2 = 0;
+  int enc2_val = Enc2;
+  int ret = enc2_val - last_enc2;
+  last_enc2 = enc2_val;
   return ret;
 }
 void Suicide()
@@ -235,6 +261,35 @@ void OnException()
   while(1)
   {
     if (IsMainBtnClick()) Suicide();
+  }
+}
+void GetCurDirFileList()
+{
+  DIR dir;
+  FRESULT res;
+  res = f_opendir(&dir, GUIFolderPath);
+  memset(GUIFileList, 0, sizeof GUIFileList);
+  for (size_t i = 0; i < NUM_FILE_ITEMS; i++)
+  {
+    GUIFileIsDir[i] = -1;
+  }
+  if (res == FR_OK)
+  {
+    FILINFO fno;
+    for (size_t i = 0;; i++)
+    {
+      res = f_readdir(&dir, &fno);
+      if (res != FR_OK || fno.fname[0] == 0) break;
+      if (fno.fname[0] == '.') continue;
+      if (i >= FirstFileIndex)
+      {
+        size_t item = i - FirstFileIndex;
+        if (item >= NUM_FILE_ITEMS) break;
+        strncpyW(GUIFileList[item], fno.fname, MAX_FILE_NAMELEN);
+        if (fno.fattrib & AM_DIR) GUIFileIsDir[item] = 1;
+      }
+    }
+    f_closedir(&dir);
   }
 }
 /* USER CODE END 0 */
@@ -342,7 +397,9 @@ int main(void)
     int is_charging;
     int is_full;
     int main_btn_click = IsMainBtnClick();
+    int second_btn_click = IsMainBtnClick();
     int enc1_delta = GetEnc1Delta();
+    int enc2_delta = GetEnc2Delta();
 
     UpdatePowerRead();
     is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
@@ -402,7 +459,7 @@ int main(void)
         }
         if (main_btn_click)
         {
-          strcpy(GUIFolderPath, "./");
+          strcpyW(GUIFolderPath, (const WCHAR*) L"/");
           GUICurMenuLevel = 1;
         }
       }
@@ -412,10 +469,64 @@ int main(void)
         switch (GUICurMenu)
         {
           case 0: // TF card
+            ClearScreen(MakePixel565(0, 0, 0));
+            if (BSP_PlatformIsDetected() == SD_PRESENT)
+            {
+              if (!FsMounted)
+              {
+                if (HAL_SD_Init(&hsd1) != HAL_OK)
+                  DrawText(40, 110, "初始化SD卡失败，请尝试更换SD卡", MakePixel565(255, 255, 255));
+                else if (HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B) != HAL_OK)
+                  DrawText(40, 110, "配置SD卡失败，请尝试更换SD卡", MakePixel565(255, 255, 255));
+                else if (f_mount(&FatFs, (const WCHAR*)L"0:", 1) != FR_OK)
+                  DrawText(40, 110, "无法挂载SD卡，请尝试更换SD卡", MakePixel565(255, 255, 255));
+                else
+                {
+                  FsMounted = 1;
+                  GetCurDirFileList();
+                }
+              }
+              if (FsMounted)
+              {
+                for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+                {
+                  int y = i * 17;
+                  if (GUIFileIsDir[i] == 0)
+                    DrawFolderOrFile(0, i * 17, 0);
+                  else if (GUIFileIsDir[i] == 1)
+                    DrawFolderOrFile(0, i * 17, 1);
+                  else
+                    break;
+                  DrawTextW(17, y, GUIFileList[i], MakePixel565(255, 255, 255));
+                }
+              }
+              else
+              {
+                HAL_Delay(20);
+              }
+              if (second_btn_click)
+              {
+                if (FsMounted)
+                {
+                  f_mount(&FatFs, (const WCHAR*)L"", 0);
+                  FsMounted = 0;
+                }
+                GUICurMenuLevel = 0;
+              }
+            }
+            else
+            {
+              DrawText(120, 180, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255));
+              if (main_btn_click) GUICurMenuLevel = 0;
+              if (second_btn_click) GUICurMenuLevel = 0;
+            }
             break;
           case 1: // USB
+            ClearScreen(MakePixel565(0, 0, 0));
+            if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 2: // Option
+            if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 3: // Shutdown
             Suicide();
@@ -426,6 +537,7 @@ int main(void)
 
     SwapFramebuffers();
     frame_counter += 1;
+    last_menu_level = GUICurMenuLevel;
 
     if (BAT_Voltage <= 3500 && !is_charging && !is_full)
       Suicide();
