@@ -393,7 +393,7 @@ int main(void)
     int is_charging;
     int is_full;
     int main_btn_click = IsMainBtnClick();
-    int second_btn_click = IsMainBtnClick();
+    int second_btn_click = IsSecondBtnClick();
     int enc1_delta = GetEnc1Delta();
     int enc2_delta = GetEnc2Delta();
 
