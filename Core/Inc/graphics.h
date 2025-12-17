@@ -75,5 +75,6 @@ void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int 
 void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawStandByScreen();
 void DrawBattery(int percentage, int is_charging, int is_full);
+void DrawFolderOrFile(int x, int y, int is_folder);
 
 #endif /* INC_GRAPHICS_H_ */
