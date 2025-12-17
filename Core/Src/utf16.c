@@ -24,6 +24,15 @@ uint16_t * strcpyW(uint16_t *destination, const uint16_t *source)
   return destination;
 }
 
+uint16_t * strncpyW(uint16_t *destination, const uint16_t *source, size_t maxlen)
+{
+  size_t len = strlenW(source) + 1;
+  if (len > maxlen) len = maxlen;
+  memcpy(destination, source, len * 2);
+  destination[len - 1] = 0;
+  return destination;
+}
+
 UTF16Parser utf16_start_parse(const uint16_t *utf16)
 {
   UTF16Parser ret =
