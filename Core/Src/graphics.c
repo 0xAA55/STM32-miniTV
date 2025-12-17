@@ -726,7 +726,7 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   int b = y + h;
   if (x < 0) x = 0;
   if (y < 0) y = 0;
-  if (r < 0 || b < 0) return;
+  if (r < x || b < y) return;
   if (r > FramebufferWidth) r = FramebufferWidth;
   if (b > FramebufferHeight) b = FramebufferHeight;
   for (int iy = y; iy < b; iy ++)
