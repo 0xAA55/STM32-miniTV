@@ -498,23 +498,37 @@ int main(void)
               }
               else
               {
-                HAL_Delay(100);
-                HAL_SD_DeInit(&hsd1);
-                HAL_Delay(100);
+                FsMounted = 1;
+                GetCurDirFileList();
               }
-              if (second_btn_click)
+            }
+            if (FsMounted)
+            {
+              ClearScreen(MakePixel565(0, 0, 0));
+              for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
               {
-                if (FsMounted)
-                {
-                  f_mount(&FatFs, (const WCHAR*)L"", 0);
-                  FsMounted = 0;
-                }
-                GUICurMenuLevel = 0;
+                int y = i * 17;
+                if (GUIFileIsDir[i] == 0)
+                  DrawFolderOrFile(0, i * 17, 0);
+                else if (GUIFileIsDir[i] == 1)
+                  DrawFolderOrFile(0, i * 17, 1);
+                else
+                  break;
+                DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
               }
             }
             else
             {
-              DrawStandByScreen();
+              HAL_SD_DeInit(&hsd1);
+            }
+            if (second_btn_click)
+            {
+              if (FsMounted)
+              {
+                f_mount(&FatFs, (const WCHAR*)L"", 0);
+                FsMounted = 0;
+              }
+              GUICurMenuLevel = 0;
             }
             DrawBattery(GetPowerPercentage(), is_charging, is_full);
             if (second_btn_click) GUICurMenuLevel = 0;
