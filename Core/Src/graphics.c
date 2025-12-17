@@ -15,6 +15,7 @@ typedef void(*fn_on_draw)(void *userdata, int x, int y, size_t char_index);
 typedef int ssize_t;
 
 font_t CurrentFont = DefaultFont;
+int WordWrap = 1;
 
 typedef struct dtts
 {
@@ -467,8 +468,15 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
   char_width = CurrentFont.width_table[char_index];
   if (cs->cur_x + char_width > cs->r)
   {
-    cs->cur_x = cs->x;
-    cs->cur_y += CurrentFont.bitmap_height;
+    if (WordWrap)
+    {
+      cs->cur_x = cs->x;
+      cs->cur_y += CurrentFont.bitmap_height;
+    }
+    else
+    {
+      return 0;
+    }
   }
   if (cs->cur_y + CurrentFont.bitmap_height - 1 > cs->b) return 0;
   cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
@@ -597,6 +605,11 @@ void UseLargeFont()
   };
   CurrentFont = LargeFont;
   FontChanged();
+}
+
+void SetWordWrap(int wrap)
+{
+  WordWrap = wrap;
 }
 
 static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
