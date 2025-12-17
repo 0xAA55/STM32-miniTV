@@ -746,6 +746,34 @@ void DrawRect(int x, int y, int w, int h, Pixel565 color)
   FillRect(x + 1, y + h - 1, x + w - 2, 1, color);
 }
 
+void InvertRect(int x, int y, int w, int h, int fill)
+{
+  if (fill)
+  {
+    int r = x + w;
+    int b = y + h;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (r < 0 || b < 0) return;
+    if (r > FramebufferWidth) r = FramebufferWidth;
+    if (b > FramebufferHeight) b = FramebufferHeight;
+    for (int iy = y; iy < b; iy ++)
+    {
+      for (int ix = x; ix < r; ix ++)
+      {
+        CurDrawFramebuffer[iy][ix] = ~CurDrawFramebuffer[iy][ix];
+      }
+    }
+  }
+  else
+  {
+    InvertRect(x, y, w, 1, 1);
+    InvertRect(x, y + 1, x, h, 1);
+    InvertRect(x + w - 1, y + 1, x + w - 1, h, 1);
+    InvertRect(x + 1, y + h - 1, x + w - 2, 1, 1);
+  }
+}
+
 void ClearScreen(Pixel565 color)
 {
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, color);
