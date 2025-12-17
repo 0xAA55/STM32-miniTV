@@ -45,15 +45,15 @@ void UseSmallFont();
 void UseMediumFont();
 void UseLargeFont();
 void SetWordWrap(int wrap);
-void DrawText(int x, int y, const char* text, Pixel565 TextColor);
-void DrawTextOpaque(int x, int y, const char* text, Pixel565 TextColor, Pixel565 BgColor);
-void GetTextSize(const char* text, uint32_t *width, uint32_t *height);
-void DrawTextW(int x, int y, const uint16_t* text, Pixel565 TextColor);
-void DrawTextOpaqueW(int x, int y, const uint16_t* text, Pixel565 TextColor, Pixel565 BgColor);
-void GetTextSizeW(const uint16_t* text, uint32_t *width, uint32_t *height);
-void DrawTextU(int x, int y, const uint32_t* text, Pixel565 TextColor);
-void DrawTextOpaqueU(int x, int y, const uint32_t* text, Pixel565 TextColor, Pixel565 BgColor);
-void GetTextSizeU(const uint32_t* text, uint32_t *width, uint32_t *height);
+void DrawText(int x, int y, int w, int h, const char* text, Pixel565 TextColor);
+void DrawTextOpaque(int x, int y, int w, int h, const char* text, Pixel565 TextColor, Pixel565 BgColor);
+void GetTextSize(const char* text, int w, int h, uint32_t *width, uint32_t *height);
+void DrawTextW(int x, int y, int w, int h, const uint16_t* text, Pixel565 TextColor);
+void DrawTextOpaqueW(int x, int y, int w, int h, const uint16_t* text, Pixel565 TextColor, Pixel565 BgColor);
+void GetTextSizeW(const uint16_t* text, int w, int h, uint32_t *width, uint32_t *height);
+void DrawTextU(int x, int y, int w, int h, const uint32_t* text, Pixel565 TextColor);
+void DrawTextOpaqueU(int x, int y, int w, int h, const uint32_t* text, Pixel565 TextColor, Pixel565 BgColor);
+void GetTextSizeU(const uint32_t* text, int w, int h, uint32_t *width, uint32_t *height);
 
 typedef struct hls
 {

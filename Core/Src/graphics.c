@@ -466,17 +466,10 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
   }
   char_index = GetCharIndexMust(code);
   char_width = CurrentFont.width_table[char_index];
-  if (cs->cur_x + char_width > cs->r)
+  if (WordWrap && cs->cur_x + char_width > cs->r)
   {
-    if (WordWrap)
-    {
       cs->cur_x = cs->x;
       cs->cur_y += CurrentFont.bitmap_height;
-    }
-    else
-    {
-      return 0;
-    }
   }
   if (cs->cur_y + CurrentFont.bitmap_height - 1 > cs->b) return 0;
   cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
@@ -484,10 +477,10 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
   return 1;
 }
 
-static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_draw, void *userdata)
+static void Compose(int x, int y, int w, int h, const char* text, fn_on_draw on_draw, void *userdata)
 {
   UTF8Parser parser = utf8_start_parse(text);
-  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
   while(1)
   {
     if (!ComposeCode(&cs, utf8_to_utf32(&parser, '?'))) break;
@@ -495,10 +488,10 @@ static void Compose(int x, int y, int r, int b, const char* text, fn_on_draw on_
   utf8_end_parse(&parser);
 }
 
-static void ComposeW(int x, int y, int r, int b, const uint16_t* text, fn_on_draw on_draw, void *userdata)
+static void ComposeW(int x, int y, int w, int h, const uint16_t* text, fn_on_draw on_draw, void *userdata)
 {
   UTF16Parser parser = utf16_start_parse(text);
-  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
   while(1)
   {
     if (!ComposeCode(&cs, utf16_to_utf32(&parser, '?'))) break;
@@ -506,9 +499,9 @@ static void ComposeW(int x, int y, int r, int b, const uint16_t* text, fn_on_dra
   utf16_end_parse(&parser);
 }
 
-static void ComposeU(int x, int y, int r, int b, const uint32_t* text, fn_on_draw on_draw, void *userdata)
+static void ComposeU(int x, int y, int w, int h, const uint32_t* text, fn_on_draw on_draw, void *userdata)
 {
-  ComposeStatus_t cs = CreateCompose(x, y, r, b, on_draw, userdata);
+  ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
   while(1)
   {
     if (!ComposeCode(&cs, *text++)) break;
@@ -531,9 +524,9 @@ static void ChangeFontFailed()
 {
   UseDefaultFont();
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, MakePixel565(255, 255, 255));
-  DrawTextOpaque(40, 100, "READ FLASH ROM FAILED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
-  DrawTextOpaque(40, 114, "PRESS BUTTON TO TURN OFF THE POWER", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
-  DrawTextOpaque(40, 128, "THEN TRY TO TURN ON AGAIN", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 100, FramebufferWidth, FramebufferHeight, "READ FLASH ROM FAILED", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 114, FramebufferWidth, FramebufferHeight, "PRESS BUTTON TO TURN OFF THE POWER", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
+  DrawTextOpaque(40, 128, FramebufferWidth, FramebufferHeight, "THEN TRY TO TURN ON AGAIN", MakePixel565(0, 0, 0), MakePixel565(255, 255, 255));
   SwapFramebuffers();
   OnException();
 }
@@ -665,71 +658,71 @@ static void on_draw_get_size(void *userdata, int x, int y, size_t char_index)
   if (h > dt->h) dt->h = h;
 }
 
-void DrawText(int x, int y, const char* text, Pixel565 text_color)
+void DrawText(int x, int y, int w, int h, const char* text, Pixel565 text_color)
 {
   DrawDataTransparent dt;
   dt.text_color = text_color;
-  Compose(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
+  Compose(x, y, w, h, text, on_draw_transparent, &dt);
 }
 
-void DrawTextOpaque(int x, int y, const char* text, Pixel565 text_color, Pixel565 bg_color)
+void DrawTextOpaque(int x, int y, int w, int h, const char* text, Pixel565 text_color, Pixel565 bg_color)
 {
   DrawDataOpaque dt;
   dt.text_color = text_color;
   dt.bg_color = bg_color;
-  Compose(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+  Compose(x, y, w, h, text, on_draw_opaque, &dt);
 }
 
-void GetTextSize(const char* text, uint32_t *width, uint32_t *height)
+void GetTextSize(const char* text, int w, int h, uint32_t *width, uint32_t *height)
 {
   DrawDataGetSize dt = {0};
-  Compose(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  Compose(0, 0, w, h, text, on_draw_get_size, &dt);
   *width = dt.w;
   *height = dt.h;
 }
 
-void DrawTextW(int x, int y, const uint16_t* text, Pixel565 text_color)
+void DrawTextW(int x, int y, int w, int h, const uint16_t* text, Pixel565 text_color)
 {
   DrawDataTransparent dt;
   dt.text_color = text_color;
-  ComposeW(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
+  ComposeW(x, y, w, h, text, on_draw_transparent, &dt);
 }
 
-void DrawTextOpaqueW(int x, int y, const uint16_t* text, Pixel565 text_color, Pixel565 bg_color)
+void DrawTextOpaqueW(int x, int y, int w, int h, const uint16_t* text, Pixel565 text_color, Pixel565 bg_color)
 {
   DrawDataOpaque dt;
   dt.text_color = text_color;
   dt.bg_color = bg_color;
-  ComposeW(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+  ComposeW(x, y, w, h, text, on_draw_opaque, &dt);
 }
 
-void GetTextSizeW(const uint16_t* text, uint32_t *width, uint32_t *height)
+void GetTextSizeW(const uint16_t* text, int w, int h, uint32_t *width, uint32_t *height)
 {
   DrawDataGetSize dt = {0};
-  ComposeW(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  ComposeW(0, 0, w, h, text, on_draw_get_size, &dt);
   *width = dt.w;
   *height = dt.h;
 }
 
-void DrawTextU(int x, int y, const uint32_t* text, Pixel565 text_color)
+void DrawTextU(int x, int y, int w, int h, const uint32_t* text, Pixel565 text_color)
 {
   DrawDataTransparent dt;
   dt.text_color = text_color;
-  ComposeU(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_transparent, &dt);
+  ComposeU(x, y, w, h, text, on_draw_transparent, &dt);
 }
 
-void DrawTextOpaqueU(int x, int y, const uint32_t* text, Pixel565 text_color, Pixel565 bg_color)
+void DrawTextOpaqueU(int x, int y, int w, int h, const uint32_t* text, Pixel565 text_color, Pixel565 bg_color)
 {
   DrawDataOpaque dt;
   dt.text_color = text_color;
   dt.bg_color = bg_color;
-  ComposeU(x, y, FramebufferWidth, FramebufferHeight, text, on_draw_opaque, &dt);
+  ComposeU(x, y, w, h, text, on_draw_opaque, &dt);
 }
 
-void GetTextSizeU(const uint32_t* text, uint32_t *width, uint32_t *height)
+void GetTextSizeU(const uint32_t* text, int w, int h, uint32_t *width, uint32_t *height)
 {
   DrawDataGetSize dt = {0};
-  ComposeU(0, 0, FramebufferWidth, FramebufferHeight, text, on_draw_get_size, &dt);
+  ComposeU(0, 0, w, h, text, on_draw_get_size, &dt);
   *width = dt.w;
   *height = dt.h;
 }
