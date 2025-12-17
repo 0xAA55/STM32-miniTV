@@ -389,7 +389,7 @@ int main(void)
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
-    char buf[128];
+    static char buf[256];
     int is_charging;
     int is_full;
     int main_btn_click = IsMainBtnClick();
