@@ -544,6 +544,13 @@ int main(void)
             if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 3: // Shutdown
+            for (int y = 0; y < hlcd.yres; y++)
+            {
+              for (int x = 0; x < hlcd.xres; x++)
+              {
+                CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
+              }
+            }
             Suicide();
             break;
         }
