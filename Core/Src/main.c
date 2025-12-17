@@ -200,6 +200,7 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
   }
   if (GUICurMenu < 0) GUICurMenu = 0;
   if (GUICurMenu > 3) GUICurMenu = 3;
+  target_menu = GUICurMenu * 1024;
   if (GUIMenuAnim < target_menu)
   {
     if (GUIMenuAnim + menu_speed >= target_menu)
