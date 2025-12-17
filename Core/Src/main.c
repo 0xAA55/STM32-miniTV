@@ -505,6 +505,7 @@ int main(void)
             if (FsMounted)
             {
               ClearScreen(MakePixel565(0, 0, 0));
+              SetWordWrap(0);
               for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
               {
                 int y = i * 17;
@@ -516,6 +517,7 @@ int main(void)
                   break;
                 DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
               }
+              SetWordWrap(1);
             }
             else
             {
