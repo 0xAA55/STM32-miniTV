@@ -531,7 +531,6 @@ int main(void)
               DrawTextOpaque(120, 180, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
             }
             DrawBattery(GetPowerPercentage(), is_charging, is_full);
-            if (main_btn_click) GUICurMenuLevel = 0;
             if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 1: // USB
