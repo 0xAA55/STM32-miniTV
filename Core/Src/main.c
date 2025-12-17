@@ -125,9 +125,17 @@ volatile int SecondBtnClick = 0;
 volatile int BAT_Voltage = 0;
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
+  static int adc_read1;
+  static int adc_read2;
+  static int adc_read3;
+  static int adc_read4;
   if (hadc == &hadc1)
   {
-    BAT_ADC_VAL = HAL_ADC_GetValue(hadc);
+    adc_read4 = adc_read3;
+    adc_read3 = adc_read2;
+    adc_read2 = adc_read1;
+    adc_read1 = HAL_ADC_GetValue(hadc);
+    BAT_ADC_VAL = imin(imin(adc_read1, adc_read2), imin(adc_read3, adc_read4));
     BAT_ADC_Sampling = 0;
   }
 }
