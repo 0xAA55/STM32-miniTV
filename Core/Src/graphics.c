@@ -300,9 +300,10 @@ static ssize_t GetCharIndex(uint32_t unicode)
       min_index = ci;
     else
       max_index = ci;
-    if (max_index - 1 == min_index) return -1;
+    if (max_index - 1 == min_index) break;
     ci = (max_index + min_index) >> 1;
   }
+  return -1;
 }
 
 static size_t GetCharIndexMust(uint32_t unicode)
