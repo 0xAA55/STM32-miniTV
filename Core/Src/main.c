@@ -465,17 +465,29 @@ int main(void)
         switch (GUICurMenu)
         {
           case 0: // TF card
-            ClearScreen(MakePixel565(0, 0, 0));
             if (BSP_PlatformIsDetected() == SD_PRESENT)
             {
               if (!FsMounted)
               {
-                if (HAL_SD_Init(&hsd1) != HAL_OK)
-                  DrawText(40, 110, "初始化SD卡失败，请尝试更换SD卡", MakePixel565(255, 255, 255));
-                else if (HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B) != HAL_OK)
-                  DrawText(40, 110, "配置SD卡失败，请尝试更换SD卡", MakePixel565(255, 255, 255));
-                else if (f_mount(&FatFs, (const WCHAR*)L"0:", 1) != FR_OK)
-                  DrawText(40, 110, "无法挂载SD卡，请尝试更换SD卡", MakePixel565(255, 255, 255));
+                uint32_t res;
+                if ((res = HAL_SD_Init(&hsd1)) != HAL_OK)
+                {
+                  snprintf(buf, sizeof buf, "初始化SD卡失败(%"PRIu32")，请尝试更换SD卡", res);
+                  DrawStandByScreen();
+                  DrawTextOpaque(40, 110, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                }
+                else if ((res = HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B)) != HAL_OK)
+                {
+                  snprintf(buf, sizeof buf, "配置SD卡失败(%"PRIu32")，请尝试更换SD卡", res);
+                  DrawStandByScreen();
+                  DrawTextOpaque(40, 110, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                }
+                else if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
+                {
+                  snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIu32")，请尝试更换SD卡", res);
+                  DrawStandByScreen();
+                  DrawTextOpaque(40, 110, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                }
                 else
                 {
                   FsMounted = 1;
@@ -484,6 +496,7 @@ int main(void)
               }
               if (FsMounted)
               {
+                ClearScreen(MakePixel565(0, 0, 0));
                 for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
                 {
                   int y = i * 17;
@@ -512,10 +525,12 @@ int main(void)
             }
             else
             {
-              DrawText(120, 180, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255));
-              if (main_btn_click) GUICurMenuLevel = 0;
-              if (second_btn_click) GUICurMenuLevel = 0;
+              DrawStandByScreen();
+              DrawTextOpaque(120, 180, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
             }
+            DrawBattery(GetPowerPercentage(), is_charging, is_full);
+            if (main_btn_click) GUICurMenuLevel = 0;
+            if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 1: // USB
             ClearScreen(MakePixel565(0, 0, 0));
