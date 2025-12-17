@@ -30,7 +30,7 @@ void *memset(void * dst, int val, size_t len)
     }
     ptr_dst = (uint32_t *)ptr_dst_;
   }
-  if (len >= 4)
+  if (len >= 4 && ((size_t)ptr_dst & 3) == 0)
   {
     union {
       uint8_t u8[4];
@@ -75,10 +75,13 @@ void *memcpy(void * dst, const void * src, size_t len)
     ptr_dst = (uint32_t *)ptr_dst_;
     ptr_src = (uint32_t *)ptr_src_;
   }
-  while (len >= 4)
+  if (((size_t)ptr_src & 3) == 0 && ((size_t)ptr_dst & 3) == 0)
   {
-    *ptr_dst++ = *ptr_src++;
-    len -= 4;
+    while (len >= 4)
+    {
+      *ptr_dst++ = *ptr_src++;
+      len -= 4;
+    }
   }
   if (len)
   {
@@ -119,10 +122,13 @@ void *memmove(void * dst, const void * src, size_t len)
       ptr_dst_end = (uint32_t *)ptr_dst_end_;
       ptr_src_end = (uint32_t *)ptr_src_end_;
     }
-    while (len >= 4)
+    if (((size_t)ptr_src_end & 3) == 0 && ((size_t)ptr_dst_end & 3) == 0)
     {
-      *--ptr_dst_end = *--ptr_src_end;
-      len -= 4;
+      while (len >= 4)
+      {
+        *--ptr_dst_end = *--ptr_src_end;
+        len -= 4;
+      }
     }
     if (len)
     {
