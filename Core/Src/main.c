@@ -511,7 +511,9 @@ int main(void)
               }
               else
               {
-                HAL_Delay(20);
+                HAL_Delay(100);
+                HAL_SD_DeInit(&hsd1);
+                HAL_Delay(100);
               }
               if (second_btn_click)
               {
