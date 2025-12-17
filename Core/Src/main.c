@@ -398,8 +398,8 @@ int main(void)
     int enc2_delta = GetEnc2Delta();
 
     UpdatePowerRead();
-    is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_SET);
-    is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_SET);
+    is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
+    is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
 
     switch (GUICurMenuLevel)
     {
