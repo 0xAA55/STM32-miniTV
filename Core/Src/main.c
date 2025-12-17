@@ -390,6 +390,7 @@ int main(void)
   int frame_counter = 0;
   uint32_t last_tick = HAL_GetTick();
   uint32_t delta_tick = 0;
+  int last_menu_level = 0;
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
