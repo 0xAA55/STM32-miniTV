@@ -471,7 +471,7 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
       cs->cur_x = cs->x;
       cs->cur_y += CurrentFont.bitmap_height;
   }
-  if (cs->cur_y + CurrentFont.bitmap_height - 1 > cs->b) return 0;
+  if (cs->cur_y + CurrentFont.bitmap_height > cs->b) return 0;
   cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
   cs->cur_x += char_width;
   return 1;
