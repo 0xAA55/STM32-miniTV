@@ -332,7 +332,7 @@ static ComposeStatus_t CreateCompose(int x, int y, int r, int b, fn_on_draw on_d
   ComposeStatus_t ret =
   {
     x, y, r, b,
-    0, 0,
+    x, y,
     on_draw,
     userdata
   };
