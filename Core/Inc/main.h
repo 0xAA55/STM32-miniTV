@@ -107,8 +107,6 @@ void Error_Handler(void);
 #define LCD_SCK_GPIO_Port GPIOB
 #define LCD_DC_Pin GPIO_PIN_4
 #define LCD_DC_GPIO_Port GPIOB
-#define SDMMC_CKIN_Pin GPIO_PIN_8
-#define SDMMC_CKIN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 extern volatile uint32_t BAT_ADC_VAL;
