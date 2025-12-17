@@ -284,6 +284,113 @@ static HorzLine usb_conn_30[] =
   { 22 ,-23 , 6 },
 };
 
+Pixel565 ColorFromPhaseSimple(uint32_t phase)
+{
+  uint32_t phase_value = phase % 1536;
+  uint32_t r, g, b;
+  if (phase_value <= 255)
+  {
+    r = 255;
+    g = phase_value;
+    b = 0;
+  }
+  else if (phase_value <= 511)
+  {
+    r = 511 - phase_value;
+    g = 255;
+    b = 0;
+  }
+  else if (phase_value <= 767)
+  {
+    r = 0;
+    g = 255;
+    b = phase_value - 512;
+  }
+  else if (phase_value <= 1023)
+  {
+    r = 0;
+    g = 1023 - phase_value;
+    b = 255;
+  }
+  else if (phase_value <= 1279)
+  {
+    r = phase_value - 1024;
+    g = 0;
+    b = 255;
+  }
+  else
+  {
+    r = 255;
+    g = 0;
+    b = 1535 - phase_value;
+  }
+  return MakePixel565(r, g, b);
+}
+
+Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness)
+{
+  uint32_t phase_value = phase % 1536;
+  uint32_t r, g, b;
+  uint32_t grey;
+  if (phase_value <= 255)
+  {
+    r = 255;
+    g = phase_value;
+    b = 0;
+  }
+  else if (phase_value <= 511)
+  {
+    r = 511 - phase_value;
+    g = 255;
+    b = 0;
+  }
+  else if (phase_value <= 767)
+  {
+    r = 0;
+    g = 255;
+    b = phase_value - 512;
+  }
+  else if (phase_value <= 1023)
+  {
+    r = 0;
+    g = 1023 - phase_value;
+    b = 255;
+  }
+  else if (phase_value <= 1279)
+  {
+    r = phase_value - 1024;
+    g = 0;
+    b = 255;
+  }
+  else
+  {
+    r = 255;
+    g = 0;
+    b = 1535 - phase_value;
+  }
+  if (brightness > 256)
+  {
+    if (brightness > 511) brightness = 511;
+    int gain = brightness - 256;
+    int dim = 256 - gain;
+    r = r * dim / 256 + gain;
+    g = g * dim / 256 + gain;
+    b = b * dim / 256 + gain;
+  }
+  else
+  {
+    r = r * brightness / 256;
+    g = g * brightness / 256;
+    b = b * brightness / 256;
+  }
+  grey = (r + g + b) / 3;
+  if (colorness > 256) colorness = 256;
+  r = FixedInterpolate(grey, r, colorness, 256);
+  g = FixedInterpolate(grey, g, colorness, 256);
+  b = FixedInterpolate(grey, b, colorness, 256);
+  return MakePixel565(r, g, b);
+}
+
 static ssize_t GetCharIndex(uint32_t unicode)
 {
   ssize_t max_index = (ssize_t)CurrentFont.num_codes - 1;
@@ -490,113 +597,6 @@ void UseLargeFont()
   };
   CurrentFont = LargeFont;
   FontChanged();
-}
-
-Pixel565 ColorFromPhaseSimple(uint32_t phase)
-{
-  uint32_t phase_value = phase % 1536;
-  uint32_t r, g, b;
-  if (phase_value <= 255)
-  {
-    r = 255;
-    g = phase_value;
-    b = 0;
-  }
-  else if (phase_value <= 511)
-  {
-    r = 511 - phase_value;
-    g = 255;
-    b = 0;
-  }
-  else if (phase_value <= 767)
-  {
-    r = 0;
-    g = 255;
-    b = phase_value - 512;
-  }
-  else if (phase_value <= 1023)
-  {
-    r = 0;
-    g = 1023 - phase_value;
-    b = 255;
-  }
-  else if (phase_value <= 1279)
-  {
-    r = phase_value - 1024;
-    g = 0;
-    b = 255;
-  }
-  else
-  {
-    r = 255;
-    g = 0;
-    b = 1535 - phase_value;
-  }
-  return MakePixel565(r, g, b);
-}
-
-Pixel565 ColorFromPhase(uint32_t phase, uint32_t brightness, uint32_t colorness)
-{
-  uint32_t phase_value = phase % 1536;
-  uint32_t r, g, b;
-  uint32_t grey;
-  if (phase_value <= 255)
-  {
-    r = 255;
-    g = phase_value;
-    b = 0;
-  }
-  else if (phase_value <= 511)
-  {
-    r = 511 - phase_value;
-    g = 255;
-    b = 0;
-  }
-  else if (phase_value <= 767)
-  {
-    r = 0;
-    g = 255;
-    b = phase_value - 512;
-  }
-  else if (phase_value <= 1023)
-  {
-    r = 0;
-    g = 1023 - phase_value;
-    b = 255;
-  }
-  else if (phase_value <= 1279)
-  {
-    r = phase_value - 1024;
-    g = 0;
-    b = 255;
-  }
-  else
-  {
-    r = 255;
-    g = 0;
-    b = 1535 - phase_value;
-  }
-  if (brightness > 256)
-  {
-    if (brightness > 511) brightness = 511;
-    int gain = brightness - 256;
-    int dim = 256 - gain;
-    r = r * dim / 256 + gain;
-    g = g * dim / 256 + gain;
-    b = b * dim / 256 + gain;
-  }
-  else
-  {
-    r = r * brightness / 256;
-    g = g * brightness / 256;
-    b = b * brightness / 256;
-  }
-  grey = (r + g + b) / 3;
-  if (colorness > 256) colorness = 256;
-  r = FixedInterpolate(grey, r, colorness, 256);
-  g = FixedInterpolate(grey, g, colorness, 256);
-  b = FixedInterpolate(grey, b, colorness, 256);
-  return MakePixel565(r, g, b);
 }
 
 static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
