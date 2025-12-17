@@ -21,11 +21,12 @@ void *memset(void * dst, int val, size_t len)
   if (head)
   {
     uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
-    while(head && len)
+    if (head > len) head = len;
+    len -= head;
+    while(head)
     {
       *ptr_dst_ ++ = (uint8_t) val;
       head --;
-      len --;
     }
     ptr_dst = (uint32_t *)ptr_dst_;
   }
