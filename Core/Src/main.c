@@ -524,6 +524,7 @@ int main(void)
             if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 2: // Option
+            ClearScreen(MakePixel565(0, 0, 0));
             if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 3: // Shutdown
