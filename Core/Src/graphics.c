@@ -738,6 +738,14 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   }
 }
 
+void DrawRect(int x, int y, int w, int h, Pixel565 color)
+{
+  FillRect(x, y, w, 1, color);
+  FillRect(x, y + 1, x, h, color);
+  FillRect(x + w - 1, y + 1, x + w - 1, h, color);
+  FillRect(x + 1, y + h - 1, x + w - 2, 1, color);
+}
+
 void ClearScreen(Pixel565 color)
 {
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, color);

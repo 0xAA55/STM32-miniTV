@@ -63,6 +63,7 @@ typedef struct hls
 
 // Max scaling is 512
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling);
+void DrawRect(int x, int y, int w, int h, Pixel565 color);
 void FillRect(int x, int y, int w, int h, Pixel565 color);
 void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y);
 void TransparentBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y, Pixel565 key);
