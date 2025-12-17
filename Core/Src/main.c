@@ -371,13 +371,7 @@ int main(void)
   );
   LCD_Config(&hlcd);
   Graphics_Init();
-  for (int y = 0; y < hlcd.yres; y++)
-  {
-    for (int x = 0; x < hlcd.xres; x++)
-    {
-      CurDrawFramebuffer[y][x] = 0;
-    }
-  }
+  DrawStandByScreen();
   SwapFramebuffers();
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
