@@ -476,7 +476,7 @@ int main(void)
             if (BSP_PlatformIsDetected() != SD_PRESENT)
             {
               DrawStandByScreen();
-              DrawTextOpaque(40, 110, 240, 20, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+              DrawTextOpaque(40, 110, 240, 80, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
             }
             else if (!FsMounted)
             {
@@ -489,20 +489,20 @@ int main(void)
                 else
                   snprintf(buf, sizeof buf, "初始化SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 20, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
               else if (HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B) != HAL_OK)
               {
                 res = hsd1.ErrorCode;
                 snprintf(buf, sizeof buf, "配置SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 20, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
               else if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
               {
                 snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 20, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
               else
               {
