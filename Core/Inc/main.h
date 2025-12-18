@@ -85,8 +85,8 @@ void Error_Handler(void);
 #define BAT_CHRG_GPIO_Port GPIOB
 #define BAT_FULL_Pin GPIO_PIN_15
 #define BAT_FULL_GPIO_Port GPIOB
-#define SDMMC1_DETECT_Pin GPIO_PIN_15
-#define SDMMC1_DETECT_GPIO_Port GPIOD
+#define SDMMC_DETECT_Pin GPIO_PIN_15
+#define SDMMC_DETECT_GPIO_Port GPIOD
 #define SDMMC_D0_Pin GPIO_PIN_8
 #define SDMMC_D0_GPIO_Port GPIOC
 #define SDMMC_D1_Pin GPIO_PIN_9
