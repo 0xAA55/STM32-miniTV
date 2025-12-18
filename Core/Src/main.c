@@ -218,12 +218,7 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
   int target_menu;
   int menu_speed = 5 * delta_tick;
   enc_delta = imax(-1, imin(enc_delta, 1));
-  target_menu = GUICurMenu * 1024;
-  if (abs(GUIMenuAnim - target_menu) <= 768)
-  {
-    GUIMenuReady = 0;
-    GUICurMenu += enc_delta;
-  }
+  GUICurMenu += enc_delta;
   if (GUICurMenu < 0) GUICurMenu = 0;
   if (GUICurMenu > 3) GUICurMenu = 3;
   target_menu = GUICurMenu * 1024;
