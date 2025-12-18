@@ -902,8 +902,8 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
   hsd1.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
   hsd1.Init.BusWide = SDMMC_BUS_WIDE_4B;
-  hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
-  hsd1.Init.ClockDiv = 0;
+  hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+  hsd1.Init.ClockDiv = 2;
   /* USER CODE BEGIN SDMMC1_Init 2 */
   HAL_SD_MspInit(&hsd1);
   /* USER CODE END SDMMC1_Init 2 */
@@ -1125,11 +1125,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SDMMC1_DETECT_Pin */
-  GPIO_InitStruct.Pin = SDMMC1_DETECT_Pin;
+  /*Configure GPIO pin : SDMMC_DETECT_Pin */
+  GPIO_InitStruct.Pin = SDMMC_DETECT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SDMMC1_DETECT_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(SDMMC_DETECT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_CS_Pin LCD_RST_Pin */
   GPIO_InitStruct.Pin = LCD_CS_Pin|LCD_RST_Pin;
