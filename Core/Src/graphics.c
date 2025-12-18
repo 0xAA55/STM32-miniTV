@@ -34,7 +34,7 @@ typedef struct dtgs
   uint32_t h;
 } DrawDataGetSize;
 
-const HorzLine circle_60[] =
+static const HorzLine circle_60[] =
 {
   {-60 ,-4 , 9 }, {-59 ,-12 , 25 }, {-58 ,-16 , 33 }, {-57 ,-19 , 39 },
   {-56 ,-22 , 45 }, {-55 ,-24 , 49 }, {-54 ,-26 , 53 }, {-53 ,-28 , 57 },
@@ -69,7 +69,7 @@ const HorzLine circle_60[] =
   { 60 ,-4 , 9 },
 };
 
-static HorzLine shutdown_50[] =
+static const HorzLine shutdown_50[] =
 {
   {-60 ,-5 , 10 }, {-59 ,-5 , 10 }, {-58 ,-5 , 10 }, {-57 ,-5 , 10 },
   {-56 ,-5 , 10 }, {-55 ,-5 , 10 }, {-54 ,-5 , 10 }, {-53 ,-5 , 10 },
@@ -136,7 +136,7 @@ static HorzLine shutdown_50[] =
   { 49 ,-9 , 19 },
 };
 
-static HorzLine gear_45[] =
+static const HorzLine gear_45[] =
 {
   {-45 ,-8 , 9 }, {-44 ,-12 , 13 }, {-43 ,-15 , 16 }, {-43 , 13 , 3 },
   {-42 ,-14 , 15 }, {-42 , 13 , 5 }, {-41 ,-14 , 15 }, {-41 , 13 , 7 },
@@ -184,7 +184,7 @@ static HorzLine gear_45[] =
   { 44 ,-1 , 13 }, { 45 ,-1 , 9 },
 };
 
-static HorzLine tf_card_35[] =
+static const HorzLine tf_card_35[] =
 {
   {-37 ,-26 , 53 }, {-36 ,-27 , 55 }, {-35 ,-27 , 55 }, {-34 ,-27 , 55 },
   {-33 ,-27 , 55 }, {-32 ,-27 , 5 }, {-32 , 23 , 5 }, {-31 ,-27 , 5 },
@@ -255,7 +255,7 @@ static HorzLine tf_card_35[] =
   { 41 ,-37 , 65 }, { 42 ,-36 , 63 },
 };
 
-static HorzLine usb_conn_30[] =
+static const HorzLine usb_conn_30[] =
 {
   {-26 , 9 , 11 }, {-25 , 9 , 11 }, {-24 , 9 , 11 }, {-23 , 9 , 2 },
   {-23 , 13 , 3 }, {-23 , 18 , 2 }, {-22 , 9 , 2 }, {-22 , 13 , 3 },
