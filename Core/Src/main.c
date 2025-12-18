@@ -178,6 +178,22 @@ void UpdatePowerRead()
     }
   }
 }
+int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin)
+{
+  uint32_t val = 0;
+  uint8_t last;
+  uint32_t middle = buffer_size >> 1;
+  for (size_t i = 0; i < buffer_size - 1; i++)
+  {
+    uint8_t next = buffer[i + 1];
+    val += next;
+    buffer[i] = next;
+  }
+  last = (HAL_GPIO_ReadPin(GPIO, Pin) == GPIO_PIN_SET ? 1 : 0);
+  buffer[buffer_size - 1] = last;
+  val += last;
+  return val >= middle ? 1 : 0;
+}
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
   int r = FastCos(x - time / 16) / 8 + 512;
