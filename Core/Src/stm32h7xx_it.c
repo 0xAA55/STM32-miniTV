@@ -192,49 +192,53 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-  static int enc1_bm;
-  static int enc2_bm;
+  static int enc1_last_bm = 0;
+  static int enc2_last_bm = 0;
   static int main_btn_is_up = 0;
   static int second_btn_is_up = 0;
+  static uint8_t enc1_a_buffer[4] = {0};
+  static uint8_t enc1_b_buffer[4] = {0};
+  static uint8_t enc2_a_buffer[4] = {0};
+  static uint8_t enc2_b_buffer[4] = {0};
+  static int enc1_a;
+  static int enc1_b;
+  static int enc2_a;
+  static int enc2_b;
+  static int enc1_bm;
+  static int enc2_bm;
 
-  int enc1_a = (HAL_GPIO_ReadPin(ENC1_A_GPIO_Port, ENC1_A_Pin) == GPIO_PIN_RESET);
-  int enc1_b = (HAL_GPIO_ReadPin(ENC1_B_GPIO_Port, ENC1_B_Pin) == GPIO_PIN_RESET);
-  int enc2_a = (HAL_GPIO_ReadPin(ENC2_A_GPIO_Port, ENC2_A_Pin) == GPIO_PIN_RESET);
-  int enc2_b = (HAL_GPIO_ReadPin(ENC2_B_GPIO_Port, ENC2_B_Pin) == GPIO_PIN_RESET);
-  enc1_bm = ((enc1_bm << 2) | (enc1_a << 1) | (enc1_b)) & 0xF;
-  enc2_bm = ((enc2_bm << 2) | (enc2_a << 1) | (enc2_b)) & 0xF;
-  switch(enc1_bm)
+  enc1_a = DenoisedPinRead(enc1_a_buffer, sizeof enc1_a_buffer, ENC1_A_GPIO_Port, ENC1_A_Pin);
+  enc1_b = DenoisedPinRead(enc1_b_buffer, sizeof enc1_b_buffer, ENC1_B_GPIO_Port, ENC1_B_Pin);
+  enc2_a = DenoisedPinRead(enc2_a_buffer, sizeof enc2_a_buffer, ENC2_A_GPIO_Port, ENC2_A_Pin);
+  enc2_b = DenoisedPinRead(enc2_b_buffer, sizeof enc2_b_buffer, ENC2_B_GPIO_Port, ENC2_B_Pin);
+  enc1_bm = (enc1_a << 1) | (enc1_b);
+  enc2_bm = (enc2_a << 1) | (enc2_b);
   BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
   BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
+  switch((enc1_last_bm << 2) | enc1_bm)
   {
     case 0b0001:
-    case 0b0111:
-    case 0b1110:
     case 0b1000:
       Enc1 -= 1;
       break;
     case 0b0010:
-    case 0b1011:
-    case 0b1101:
     case 0b0100:
       Enc1 += 1;
       break;
   }
-  switch(enc2_bm)
+  switch((enc2_last_bm << 2) | enc2_bm)
   {
     case 0b0001:
-    case 0b0111:
-    case 0b1110:
     case 0b1000:
       Enc2 -= 1;
       break;
     case 0b0010:
-    case 0b1011:
-    case 0b1101:
     case 0b0100:
       Enc2 += 1;
       break;
   }
+  enc1_last_bm = enc1_bm;
+  enc2_last_bm = enc2_bm;
   switch(HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin))
   {
     default:
