@@ -116,6 +116,8 @@ uint8_t GUIFileIsDir[NUM_FILE_ITEMS];
 int CurFileIndex = 0;
 int FirstFileIndex = 0;
 int FsMounted = 0;
+volatile int BAT_IsCharging = 0;
+volatile int BAT_IsFull = 0;
 volatile int Enc1 = 0;
 volatile int Enc2 = 0;
 volatile uint32_t BAT_ADC_VAL = 0;
@@ -398,16 +400,12 @@ int main(void)
   {
     uint32_t cur_tick = HAL_GetTick();
     static char buf[256];
-    int is_charging;
-    int is_full;
     int main_btn_click = IsMainBtnClick();
     int second_btn_click = IsSecondBtnClick();
     int enc1_delta = GetEnc1Delta();
     int enc2_delta = GetEnc2Delta();
 
     UpdatePowerRead();
-    is_charging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
-    is_full = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
 
     switch (GUICurMenuLevel)
     {
@@ -441,7 +439,7 @@ int main(void)
         DrawUSBConnButton(usbbutton_x, 120, ui_c1, ui_c2, usbbutton_size);
         DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
         DrawShutdownButton(shutbutton_x, 120, ui_c1, ui_c2, shutbutton_size);
-        DrawBattery(GetPowerPercentage(), is_charging, is_full);
+        DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
         if (GUIMenuReady)
         {
           switch(GUICurMenu)

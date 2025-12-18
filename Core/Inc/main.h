@@ -116,6 +116,8 @@ extern volatile int Enc2;
 extern volatile int MainBtnClick;
 extern volatile int SecondBtnClick;
 extern volatile int BAT_Voltage;
+extern volatile int BAT_IsCharging;
+extern volatile int BAT_IsFull;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

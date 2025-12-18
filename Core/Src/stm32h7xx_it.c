@@ -203,6 +203,8 @@ void SysTick_Handler(void)
   enc1_bm = ((enc1_bm << 2) | (enc1_a << 1) | (enc1_b)) & 0xF;
   enc2_bm = ((enc2_bm << 2) | (enc2_a << 1) | (enc2_b)) & 0xF;
   switch(enc1_bm)
+  BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
+  BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
   {
     case 0b0001:
     case 0b0111:
