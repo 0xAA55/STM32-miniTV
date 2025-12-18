@@ -567,7 +567,7 @@ int main(void)
     frame_counter += 1;
     last_menu_level = GUICurMenuLevel;
 
-    if (BAT_Voltage <= 3500 && !is_charging && !is_full)
+    if (BAT_Voltage <= 3400 && !BAT_IsCharging && !BAT_IsFull)
       Suicide();
     /* USER CODE END WHILE */
 
