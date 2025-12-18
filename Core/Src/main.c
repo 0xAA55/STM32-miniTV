@@ -533,7 +533,7 @@ int main(void)
             {
               if (FsMounted)
               {
-                f_mount(&FatFs, (const WCHAR*)L"", 0);
+                f_mount(&FatFs, (const WCHAR*)L":0", 0);
                 FsMounted = 0;
               }
               GUICurMenuLevel = 0;
