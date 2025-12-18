@@ -515,7 +515,7 @@ int main(void)
               {
                 snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+                DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
               else
               {
