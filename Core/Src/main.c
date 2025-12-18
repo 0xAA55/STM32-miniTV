@@ -538,7 +538,7 @@ int main(void)
               }
               GUICurMenuLevel = 0;
             }
-            DrawBattery(GetPowerPercentage(), is_charging, is_full);
+            DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
             if (second_btn_click) GUICurMenuLevel = 0;
             break;
           case 1: // USB
