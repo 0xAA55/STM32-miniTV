@@ -200,7 +200,7 @@ int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uin
 }
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
-  int r = FastCos(x - time / 16) / 8 + 512;
+  int r = FastCos(x - time / 16) / 2 + 512;
   int g = FastSin(time / 8 + y) / 4 + 512;
   int b = 1024 * 200 / 256;
   r = r * 255 / 1024;
