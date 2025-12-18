@@ -59,6 +59,7 @@ extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_spi2_tx;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_nf;
 extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
+extern SD_HandleTypeDef hsd1;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern SPI_HandleTypeDef hspi1;
