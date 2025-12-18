@@ -148,6 +148,10 @@ int GetBatteryVolatage(uint32_t adc_val)
 }
 int BatteryVolatageToPowerPercentage(int voltage)
 {
+  if (BAT_IsCharging && voltage != 0)
+  {
+    voltage = 4200 - (4200 - voltage) * 6 / 5;
+  }
   if (voltage >= 3700)
     return (voltage - 3700) * 80 / (4200 - 3700) + 20;
   else
