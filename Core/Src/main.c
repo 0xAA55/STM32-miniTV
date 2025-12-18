@@ -151,7 +151,7 @@ int BatteryVolatageToPowerPercentage(int voltage)
   if (voltage >= 3700)
     return (voltage - 3700) * 80 / (4200 - 3700) + 20;
   else
-    return (voltage - 3000) * 20 / (3700 - 3000);
+    return (voltage - 3500) * 20 / (3700 - 3500);
 }
 int GetPowerPercentage()
 {
