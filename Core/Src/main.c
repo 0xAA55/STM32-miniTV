@@ -289,6 +289,18 @@ void OnException()
     if (IsMainBtnClick()) Suicide();
   }
 }
+uint8_t BSP_SD_Init(void)
+{
+  uint8_t sd_state = MSD_OK;
+  /* Check if the SD card is plugged in the slot */
+  if (BSP_SD_IsDetected() != SD_PRESENT)
+  {
+    return MSD_ERROR_SD_NOT_PRESENT;
+  }
+  /* HAL SD initialization */
+  sd_state = HAL_SD_Init(&hsd1);
+  return sd_state;
+}
 void GetCurDirFileList()
 {
   DIR dir;
@@ -494,24 +506,7 @@ int main(void)
             else if (!FsMounted)
             {
               uint32_t res;
-              if (HAL_SD_Init(&hsd1) != HAL_OK)
-              {
-                res = hsd1.ErrorCode;
-                if (res == 0x10000000)
-                  strcpy(buf, "未检测到SD卡。请插入SD卡");
-                else
-                  snprintf(buf, sizeof buf, "初始化SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
-                DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-              }
-              else if (HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B) != HAL_OK)
-              {
-                res = hsd1.ErrorCode;
-                snprintf(buf, sizeof buf, "配置SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
-                DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-              }
-              else if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
+              if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
               {
                 snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
