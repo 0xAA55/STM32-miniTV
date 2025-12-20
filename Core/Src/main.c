@@ -121,16 +121,16 @@ __attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
 /* USER CODE BEGIN 0 */
 #define NUM_FILE_ITEMS 14
 #define MAX_FILE_NAMELEN 256
-int GUICurMenu = 0;
-int GUICurMenuLevel = 0;
-int GUIMenuAnim = 0;
-int GUIMenuReady = 0;
+int GUICurMenu;
+int GUICurMenuLevel;
+int GUIMenuAnim;
+int GUIMenuReady;
 uint16_t GUIFolderPath[4096];
 uint16_t GUIFileList[NUM_FILE_ITEMS][MAX_FILE_NAMELEN];
 uint8_t GUIFileIsDir[NUM_FILE_ITEMS];
-int CurFileIndex = 0;
-int FirstFileIndex = 0;
-int FsMounted = 0;
+int CurFileIndex;
+int FirstFileIndex;
+int FsMounted;
 __attribute__((section(".dtcm_bss"))) volatile int BAT_IsCharging;
 __attribute__((section(".dtcm_bss"))) volatile int BAT_IsFull;
 __attribute__((section(".dtcm_bss"))) volatile int Enc1;
