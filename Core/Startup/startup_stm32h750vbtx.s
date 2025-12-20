@@ -44,6 +44,14 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word  _ebss
 /* stack used for SystemInit_ExtMemCtl; always internal RAM used */
+.word _siitcm_code
+.word _sitcm_code
+.word _eitcm_code
+.word _sidtcm_data
+.word _sdtcm_data
+.word _edtcm_data
+.word _sdtcm_bss
+.word _edtcm_bss
 
 /**
  * @brief  This is the code that gets called when the processor first
@@ -66,21 +74,44 @@ Reset_Handler:
   bl  SystemInit
 
 /* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
-  ldr r1, =_edata
-  ldr r2, =_sidata
-  movs r3, #0
-  b LoopCopyDataInit
+  ldr r0, = _sidata
+  ldr r1, = _sdata
+  ldr r2, = _edata
+  subs r2, r2, r1
+  ble CopyDataDone
+CopyData:
+  ldr r3, [r0], #4
+  str r3, [r1], #4
+  subs r2, r2, #4
+  bgt CopyData
+CopyDataDone:
 
-CopyDataInit:
-  ldr r4, [r2, r3]
-  str r4, [r0, r3]
-  adds r3, r3, #4
+/* Copy the ITCMRAM segment initializers from flash to ITCMRAM */
+  ldr r0, = _siitcm_code
+  ldr r1, = _sitcm_code
+  ldr r2, = _eitcm_code
+  subs r2, r2, r1
+  ble CopyITCMCodeDone
+CopyITCMCode:
+  ldr r3, [r0], #4
+  str r3, [r1], #4
+  subs r2, r2, #4
+  bgt CopyITCMCode
+CopyITCMCodeDone:
 
-LoopCopyDataInit:
-  adds r4, r0, r3
-  cmp r4, r1
-  bcc CopyDataInit
+/* Copy the DTCMRAM data segment initializers from flash to DTCMRAM */
+  ldr r0, =_sidtcm_data
+  ldr r1, =_sdtcm_data
+  ldr r2, =_edtcm_data
+  subs r2, r2, r1
+  ble CopyDTCMDataDone
+CopyDTCMData:
+  ldr r3, [r0], #4
+  str r3, [r1], #4
+  subs r2, r2, #4
+  bgt CopyDTCMData
+CopyDTCMDataDone:
+
 /* Zero fill the bss segment. */
   ldr r2, =_sbss
   ldr r4, =_ebss
@@ -94,6 +125,20 @@ FillZerobss:
 LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
+
+/* Zero fill the DTCM bss segment. */
+  ldr r2, =_sdtcm_bss
+  ldr r4, =_edtcm_bss
+  movs r3, #0
+  b LoopFillZeroDTCMbss
+
+FillZeroDTCMbss:
+  str  r3, [r2]
+  adds r2, r2, #4
+
+LoopFillZeroDTCMbss:
+  cmp r2, r4
+  bcc FillZeroDTCMbss
 
 /* Call static constructors */
     bl __libc_init_array
