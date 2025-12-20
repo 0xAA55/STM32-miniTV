@@ -109,7 +109,9 @@ static void MX_ADC1_Init(void);
 static void MX_USB_OTG_HS_PCD_Init(void);
 static void MX_DMA2D_Init(void);
 /* USER CODE BEGIN PFP */
-
+__attribute__((section(".itcm_code"))) void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd);
+__attribute__((section(".itcm_code"))) void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd);
+__attribute__((section(".itcm_code"))) void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -137,6 +139,7 @@ __attribute__((section(".dtcm_bss"))) volatile int SecondBtnClick;
 __attribute__((section(".dtcm_bss"))) volatile int BAT_Voltage;
 __attribute__((section(".dtcm_bss"))) volatile int SD_Tx_Cplt;
 __attribute__((section(".dtcm_bss"))) volatile int SD_Rx_Cplt;
+__attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   static int adc_read1;

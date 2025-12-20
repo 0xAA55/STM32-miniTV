@@ -14,6 +14,7 @@
 
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
+__attribute__((section(".itcm_code")))
 void *memset(void * dst, int val, size_t len)
 {
   uint32_t *ptr_dst = dst;
@@ -55,6 +56,7 @@ void *memset(void * dst, int val, size_t len)
   return dst;
 }
 
+__attribute__((section(".itcm_code")))
 void *memcpy(void * dst, const void * src, size_t len)
 {
   uint32_t *ptr_dst = dst;
@@ -96,6 +98,7 @@ void *memcpy(void * dst, const void * src, size_t len)
   return dst;
 }
 
+__attribute__((section(".itcm_code")))
 void *memmove(void * dst, const void * src, size_t len)
 {
   if (dst == src) return dst;
