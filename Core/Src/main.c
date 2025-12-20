@@ -111,7 +111,10 @@ static void MX_DMA2D_Init(void);
 /* USER CODE BEGIN PFP */
 __attribute__((section(".itcm_code"))) void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd);
+__attribute__((section(".itcm_code"))) void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd);
+__attribute__((section(".itcm_code"))) void BSP_SD_ReadCpltCallback(void);
+__attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -140,10 +143,10 @@ __attribute__((section(".dtcm_bss"))) volatile int BAT_Voltage;
 __attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  static int adc_read1;
-  static int adc_read2;
-  static int adc_read3;
-  static int adc_read4;
+  __attribute__((section(".dtcm_bss"))) static int adc_read1;
+  __attribute__((section(".dtcm_bss"))) static int adc_read2;
+  __attribute__((section(".dtcm_bss"))) static int adc_read3;
+  __attribute__((section(".dtcm_bss"))) static int adc_read4;
   if (hadc == &hadc1)
   {
     adc_read4 = adc_read3;
