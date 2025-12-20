@@ -533,10 +533,6 @@ int main(void)
               {
                 HAL_SD_DeInit(&hsd1);
                 snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
-                if (hsd1.Init.ClockDiv < 4)
-                  hsd1.Init.ClockDiv += 1;
-                else
-                  hsd1.Init.ClockDiv = 2;
                 DrawStandByScreen();
                 DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
@@ -569,7 +565,6 @@ int main(void)
               {
                 f_mount(&FatFs, (const WCHAR*)L":0", 0);
                 FsMounted = 0;
-                hsd1.Init.ClockDiv = 2;
               }
               GUICurMenuLevel = 0;
             }
