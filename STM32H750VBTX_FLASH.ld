@@ -79,6 +79,19 @@ SECTIONS
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
 
+  _siitcm_code = LOADADDR(.itcm_code);
+
+  /* The program code that needs to run faster, and other data goes into FLASH */
+  .itcm_code :
+  {
+    . = ALIGN(4);
+    _sitcm_code = .;
+    *(.itcm_code)           /* .text sections (code) */
+    *(.itcm_code*)          /* .text* sections (code) */
+    . = ALIGN(4);
+    _eitcm_code = .;        /* define a global symbols at end of code */
+  } >ITCMRAM AT>FLASH
+
   /* Constant data goes into FLASH */
   .rodata :
   {
@@ -154,6 +167,31 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM_D1
+
+  /* used by the startup to initialize DTCMRAM data */
+  _sidtcm_data = LOADADDR(.dtcm_data);
+
+  /* Initialized data sections goes into DTCMRAM, load LMA copy after code */
+  .dtcm_data :
+  {
+    . = ALIGN(4);
+    _sdtcm_data = .;   /* create a global symbol at data start */
+    *(.dtcm_data)      /* .data sections */
+    *(.dtcm_data*)     /* .data* sections */
+    . = ALIGN(4);
+    _edtcm_data = .;        /* define a global symbol at data end */
+  } >DTCMRAM AT> FLASH
+
+  /* Initialized data sections goes into DTCMRAM, load LMA copy after code */
+  .dtcm_bss :
+  {
+    . = ALIGN(4);
+    _sdtcm_bss = .;   /* create a global symbol at data start */
+    *(.dtcm_bss)      /* .data sections */
+    *(.dtcm_bss*)     /* .data* sections */
+    . = ALIGN(4);
+    _edtcm_bss = .;        /* define a global symbol at data end */
+  } >DTCMRAM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
