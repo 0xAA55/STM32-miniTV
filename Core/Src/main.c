@@ -589,7 +589,7 @@ int main(void)
     SwapFramebuffers();
     frame_counter += 1;
 
-    if (BAT_Voltage <= 3400 && !BAT_IsCharging && !BAT_IsFull)
+    if (BAT_Voltage >= 2000 && BAT_Voltage <= 3400 && !BAT_IsCharging && !BAT_IsFull)
       Suicide();
     /* USER CODE END WHILE */
 
