@@ -49,6 +49,7 @@
  */
 /* USER CODE BEGIN disableSDInit */
 /* #define DISABLE_SD_INIT */
+#define DISABLE_SD_INIT
 #undef SD_TIMEOUT
 #define SD_TIMEOUT 200
 /* USER CODE END disableSDInit */

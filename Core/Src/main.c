@@ -520,20 +520,25 @@ int main(void)
             if (!FsMounted)
             {
               uint32_t res;
-              if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
+              if (HAL_SD_Init(&hsd1) != HAL_OK)
               {
-                if (res == 3)
-                  strcpy(buf, "未检测到SD卡，请插入SD卡");
+                res = hsd1.ErrorCode;
+                if (res == 0x10000000)
+                  strcpy(buf, "未检测到SD卡。请插入SD卡");
                 else
-                {
-                  if (hsd1.Init.ClockDiv < 16)
-                  {
-                    hsd1.Init.ClockDiv += 1;
-                    HAL_SD_DeInit(&hsd1);
-                    HAL_SD_Init(&hsd1);
-                  }
-                  snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
-                }
+                  snprintf(buf, sizeof buf, "初始化SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
+                HAL_SD_DeInit(&hsd1);
+                DrawStandByScreen();
+                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+              }
+              else if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
+              {
+                HAL_SD_DeInit(&hsd1);
+                snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
+                if (hsd1.Init.ClockDiv < 4)
+                  hsd1.Init.ClockDiv += 1;
+                else
+                  hsd1.Init.ClockDiv = 2;
                 DrawStandByScreen();
                 DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
