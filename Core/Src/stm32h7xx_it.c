@@ -57,8 +57,6 @@
 /* External variables --------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_spi2_tx;
-extern MDMA_HandleTypeDef hmdma_jpeg_infifo_nf;
-extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 extern SD_HandleTypeDef hsd1;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
@@ -375,21 +373,6 @@ void OTG_HS_IRQHandler(void)
   /* USER CODE BEGIN OTG_HS_IRQn 1 */
 
   /* USER CODE END OTG_HS_IRQn 1 */
-}
-
-/**
-  * @brief This function handles MDMA global interrupt.
-  */
-void MDMA_IRQHandler(void)
-{
-  /* USER CODE BEGIN MDMA_IRQn 0 */
-
-  /* USER CODE END MDMA_IRQn 0 */
-  HAL_MDMA_IRQHandler(&hmdma_jpeg_infifo_nf);
-  HAL_MDMA_IRQHandler(&hmdma_jpeg_outfifo_ne);
-  /* USER CODE BEGIN MDMA_IRQn 1 */
-
-  /* USER CODE END MDMA_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
