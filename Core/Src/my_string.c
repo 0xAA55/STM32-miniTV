@@ -13,6 +13,7 @@
 // https://stackoverflow.com/questions/46996893/gcc-replaces-loops-with-memcpy-and-memset
 
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("O3")
 
 __attribute__((section(".itcm_code")))
 void *memset(void * dst, int val, size_t len)
