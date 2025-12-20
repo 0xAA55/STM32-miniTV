@@ -517,17 +517,15 @@ int main(void)
         switch (GUICurMenu)
         {
           case 0: // TF card
-            if (BSP_PlatformIsDetected() != SD_PRESENT)
-            {
-              DrawStandByScreen();
-              DrawTextOpaque(40, 110, 240, 80, "未检测到SD卡，请插入SD卡", MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-            }
-            else if (!FsMounted)
+            if (!FsMounted)
             {
               uint32_t res;
               if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
               {
-                snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
+                if (res == 3)
+                  strcpy(buf, "未检测到SD卡，请插入SD卡");
+                else
+                  snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
                 DrawStandByScreen();
                 DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
@@ -553,10 +551,6 @@ int main(void)
                 DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
               }
               SetWordWrap(1);
-            }
-            else
-            {
-              HAL_SD_DeInit(&hsd1);
             }
             if (second_btn_click)
             {
