@@ -46,6 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+#if !DEBUG
 __attribute__((section(".itcm_code"))) void SysTick_Handler(void);
 __attribute__((section(".itcm_code"))) void DMA1_Stream0_IRQHandler(void);
 __attribute__((section(".itcm_code"))) void DMA1_Stream1_IRQHandler(void);
@@ -59,6 +60,7 @@ __attribute__((section(".itcm_code"))) void HAL_ADC_IRQHandler(ADC_HandleTypeDef
 __attribute__((section(".itcm_code"))) void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi);
 __attribute__((section(".itcm_code"))) void HAL_SD_IRQHandler(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
+#endif
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
