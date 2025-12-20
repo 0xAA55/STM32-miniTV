@@ -42,7 +42,20 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+__attribute__((section(".dtcm_bss"))) extern ADC_HandleTypeDef hadc1;
+__attribute__((section(".dtcm_bss"))) extern DMA2D_HandleTypeDef hdma2d;
+__attribute__((section(".dtcm_bss"))) extern I2S_HandleTypeDef hi2s2;
+__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi2_tx;
+__attribute__((section(".dtcm_bss"))) extern JPEG_HandleTypeDef hjpeg;
+__attribute__((section(".dtcm_bss"))) extern QSPI_HandleTypeDef hqspi;
+__attribute__((section(".dtcm_bss"))) extern SD_HandleTypeDef hsd1;
+__attribute__((section(".dtcm_bss"))) extern SPI_HandleTypeDef hspi1;
+__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_tx;
+__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_rx;
+__attribute__((section(".dtcm_bss"))) extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
+__attribute__((section(".dtcm_bss"))) extern FATFS FatFs;
+__attribute__((section(".dtcm_bss"))) extern LCD hlcd;
+__attribute__((section(".dtcm_data"))) extern Pixel565 (*CurDrawFramebuffer)[320];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -113,15 +126,17 @@ uint8_t GUIFileIsDir[NUM_FILE_ITEMS];
 int CurFileIndex = 0;
 int FirstFileIndex = 0;
 int FsMounted = 0;
-volatile int BAT_IsCharging = 0;
-volatile int BAT_IsFull = 0;
-volatile int Enc1 = 0;
-volatile int Enc2 = 0;
-volatile uint32_t BAT_ADC_VAL = 0;
-volatile int BAT_ADC_Sampling = 0;
-volatile int MainBtnClick = 0;
-volatile int SecondBtnClick = 0;
-volatile int BAT_Voltage = 0;
+__attribute__((section(".dtcm_bss"))) volatile int BAT_IsCharging;
+__attribute__((section(".dtcm_bss"))) volatile int BAT_IsFull;
+__attribute__((section(".dtcm_bss"))) volatile int Enc1;
+__attribute__((section(".dtcm_bss"))) volatile int Enc2;
+__attribute__((section(".dtcm_bss"))) volatile uint32_t BAT_ADC_VAL;
+__attribute__((section(".dtcm_bss"))) volatile int BAT_ADC_Sampling;
+__attribute__((section(".dtcm_bss"))) volatile int MainBtnClick;
+__attribute__((section(".dtcm_bss"))) volatile int SecondBtnClick;
+__attribute__((section(".dtcm_bss"))) volatile int BAT_Voltage;
+__attribute__((section(".dtcm_bss"))) volatile int SD_Tx_Cplt;
+__attribute__((section(".dtcm_bss"))) volatile int SD_Rx_Cplt;
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   static int adc_read1;
@@ -261,7 +276,7 @@ int IsSecondBtnClick()
 }
 int GetEnc1Delta()
 {
-  static int last_enc1 = 0;
+  __attribute__((section(".dtcm_bss"))) static int last_enc1;
   int enc1_val = Enc1;
   int ret = enc1_val - last_enc1;
   last_enc1 = enc1_val;
@@ -269,7 +284,7 @@ int GetEnc1Delta()
 }
 int GetEnc2Delta()
 {
-  static int last_enc2 = 0;
+  __attribute__((section(".dtcm_bss"))) static int last_enc2;
   int enc2_val = Enc2;
   int ret = enc2_val - last_enc2;
   last_enc2 = enc2_val;

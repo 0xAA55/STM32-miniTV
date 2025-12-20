@@ -190,20 +190,20 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-  static int enc1_last_bm = 0;
-  static int enc2_last_bm = 0;
-  static int main_btn_is_up = 0;
-  static int second_btn_is_up = 0;
-  static uint8_t enc1_a_buffer[4] = {0};
-  static uint8_t enc1_b_buffer[4] = {0};
-  static uint8_t enc2_a_buffer[4] = {0};
-  static uint8_t enc2_b_buffer[4] = {0};
-  static int enc1_a;
-  static int enc1_b;
-  static int enc2_a;
-  static int enc2_b;
-  static int enc1_bm;
-  static int enc2_bm;
+  __attribute__((section(".dtcm_bss"))) static int enc1_last_bm;
+  __attribute__((section(".dtcm_bss"))) static int enc2_last_bm;
+  __attribute__((section(".dtcm_bss"))) static int main_btn_is_up;
+  __attribute__((section(".dtcm_bss"))) static int second_btn_is_up;
+  __attribute__((section(".dtcm_bss"))) static uint8_t enc1_a_buffer[4];
+  __attribute__((section(".dtcm_bss"))) static uint8_t enc1_b_buffer[4];
+  __attribute__((section(".dtcm_bss"))) static uint8_t enc2_a_buffer[4];
+  __attribute__((section(".dtcm_bss"))) static uint8_t enc2_b_buffer[4];
+  __attribute__((section(".dtcm_bss"))) static int enc1_a;
+  __attribute__((section(".dtcm_bss"))) static int enc1_b;
+  __attribute__((section(".dtcm_bss"))) static int enc2_a;
+  __attribute__((section(".dtcm_bss"))) static int enc2_b;
+  __attribute__((section(".dtcm_bss"))) static int enc1_bm;
+  __attribute__((section(".dtcm_bss"))) static int enc2_bm;
 
   enc1_a = DenoisedPinRead(enc1_a_buffer, sizeof enc1_a_buffer, ENC1_A_GPIO_Port, ENC1_A_Pin);
   enc1_b = DenoisedPinRead(enc1_b_buffer, sizeof enc1_b_buffer, ENC1_B_GPIO_Port, ENC1_B_Pin);
