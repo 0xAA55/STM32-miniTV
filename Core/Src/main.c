@@ -369,8 +369,9 @@ HAL_StatusTypeDef TestSDRead()
   ret = HAL_SD_ReadBlocks_IT(&hsd1, sd_buffer, 0, 1);
   if (ret != HAL_OK) return ret;
   WaitForSDRXCplt(200);
-  if (sd_buffer[510] == 0x55 && sd_buffer[511] == 0xAA) return HAL_OK;
-  return HAL_ERROR;
+  ret = HAL_ERROR;
+  if (sd_buffer[510] == 0x55 && sd_buffer[511] == 0xAA) ret = HAL_OK;
+  HAL_SD_DeInit(&hsd1);
 }
 /* USER CODE END 0 */
 
