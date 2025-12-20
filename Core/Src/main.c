@@ -439,7 +439,6 @@ int main(void)
   int frame_counter = 0;
   uint32_t last_tick = HAL_GetTick();
   uint32_t delta_tick = 0;
-  int last_menu_level = 0;
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
@@ -586,7 +585,6 @@ int main(void)
 
     SwapFramebuffers();
     frame_counter += 1;
-    last_menu_level = GUICurMenuLevel;
 
     if (BAT_Voltage <= 3400 && !BAT_IsCharging && !BAT_IsFull)
       Suicide();
