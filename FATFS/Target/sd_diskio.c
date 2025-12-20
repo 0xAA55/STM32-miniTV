@@ -85,8 +85,6 @@ const Diskio_drvTypeDef  SD_Driver =
 
 /* USER CODE BEGIN beforeFunctionSection */
 /* can be used to modify / undefine following code or add new code */
-#undef SD_TIMEOUT
-#define SD_TIMEOUT 2000
 /* USER CODE END beforeFunctionSection */
 
 /* Private functions ---------------------------------------------------------*/
