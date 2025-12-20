@@ -52,7 +52,6 @@ __attribute__((section(".dtcm_bss"))) extern SD_HandleTypeDef hsd1;
 __attribute__((section(".dtcm_bss"))) extern SPI_HandleTypeDef hspi1;
 __attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_tx;
 __attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_rx;
-__attribute__((section(".dtcm_bss"))) extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 __attribute__((section(".dtcm_bss"))) extern LCD hlcd;
 __attribute__((section(".dtcm_data"))) extern Pixel565 (*CurDrawFramebuffer)[320];
 /* USER CODE END PD */
