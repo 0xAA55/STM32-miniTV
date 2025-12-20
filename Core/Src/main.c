@@ -349,6 +349,29 @@ void GetCurDirFileList()
     f_closedir(&dir);
   }
 }
+__attribute__((section(".itcm_code")))
+void BSP_SD_ReadCpltCallback(void)
+{
+  SD_Rx_Cplt = 1;
+}
+void WaitForSDRXCplt(uint32_t timeout)
+{
+  uint32_t until = HAL_GetTick() + timeout;
+  while(!SD_Rx_Cplt && HAL_GetTick() < until) __WFI();
+  SD_Rx_Cplt = 0;
+}
+HAL_StatusTypeDef TestSDRead()
+{
+  HAL_StatusTypeDef ret;
+  ret = HAL_SD_Init(&hsd1);
+  if (ret != HAL_OK) return ret;
+  static uint8_t sd_buffer[512];
+  ret = HAL_SD_ReadBlocks_IT(&hsd1, sd_buffer, 0, 1);
+  if (ret != HAL_OK) return ret;
+  WaitForSDRXCplt(200);
+  if (sd_buffer[510] == 0x55 && sd_buffer[511] == 0xAA) return HAL_OK;
+  return HAL_ERROR;
+}
 /* USER CODE END 0 */
 
 /**
@@ -434,6 +457,7 @@ int main(void)
   UpdatePowerRead();
   WaitForPresent();
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
+  TestSDRead();
   /* USER CODE END 2 */
 
   /* Infinite loop */
