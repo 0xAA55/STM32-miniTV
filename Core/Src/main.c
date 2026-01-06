@@ -31,7 +31,7 @@
 #include "qspixip.h"
 #include "dynalloc.h"
 #include "../../FlashROM/flashmap.h"
-#include "ff.h"
+#include "../../Phat/Phat/phat.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,7 +85,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_HS;
 /* USER CODE BEGIN PV */
 const size_t FramebufferWidth = 320;
 const size_t FramebufferHeight = 240;
-FATFS FatFs;
+Phat_t phat;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
@@ -309,46 +309,35 @@ void OnException()
     if (IsMainBtnClick()) Suicide();
   }
 }
-uint8_t BSP_SD_Init(void)
+PhatState GetCurDirFileList()
 {
-  uint8_t sd_state = MSD_OK;
-  /* Check if the SD card is plugged in the slot */
-  if (BSP_SD_IsDetected() != SD_PRESENT)
-  {
-    return MSD_ERROR_SD_NOT_PRESENT;
-  }
-  /* HAL SD initialization */
-  sd_state = HAL_SD_Init(&hsd1);
-  return sd_state;
-}
-void GetCurDirFileList()
-{
-  DIR dir;
-  FRESULT res;
-  res = f_opendir(&dir, GUIFolderPath);
+  PhatState res;
+  Phat_DirInfo_t dir_info = { 0 };
   memset(GUIFileList, 0, sizeof GUIFileList);
   for (size_t i = 0; i < NUM_FILE_ITEMS; i++)
   {
     GUIFileIsDir[i] = -1;
   }
-  if (res == FR_OK)
+
+  Phat_OpenRootDir(&phat, &dir_info);
+
+  for (size_t i = 0;; i++)
   {
-    FILINFO fno;
-    for (size_t i = 0;; i++)
+    res = Phat_NextDirItem(&dir_info);
+    if (res == PhatState_EndOfDirectory) break;
+    if (res != PhatState_OK) return res;
+
+    if (dir_info.LFN_name[0] == '.') continue;
+    if (i >= FirstFileIndex)
     {
-      res = f_readdir(&dir, &fno);
-      if (res != FR_OK || fno.fname[0] == 0) break;
-      if (fno.fname[0] == '.') continue;
-      if (i >= FirstFileIndex)
-      {
-        size_t item = i - FirstFileIndex;
-        if (item >= NUM_FILE_ITEMS) break;
-        strncpyW(GUIFileList[item], fno.fname, MAX_FILE_NAMELEN);
-        if (fno.fattrib & AM_DIR) GUIFileIsDir[item] = 1;
-      }
+      size_t item = i - FirstFileIndex;
+      if (item >= NUM_FILE_ITEMS) break;
+      strncpyW(GUIFileList[item], dir_info.LFN_name, dir_info.LFN_length + 1);
+      if (dir_info.attributes & ATTRIB_DIRECTORY) GUIFileIsDir[item] = 1;
     }
-    f_closedir(&dir);
   }
+  Phat_CloseDir(&dir_info);
+  return PhatState_OK;
 }
 /* USER CODE END 0 */
 
@@ -404,6 +393,7 @@ int main(void)
   MX_ADC1_Init();
   MX_USB_OTG_HS_PCD_Init();
   MX_DMA2D_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
@@ -506,7 +496,7 @@ int main(void)
         }
         if (main_btn_click)
         {
-          strcpyW(GUIFolderPath, (const WCHAR*) L"/");
+          strcpyW(GUIFolderPath, u"/");
           GUICurMenuLevel = 1;
         }
       }
@@ -518,22 +508,21 @@ int main(void)
           case 0: // TF card
             if (!FsMounted)
             {
-              uint32_t res;
-              if (HAL_SD_Init(&hsd1) != HAL_OK)
+              PhatState res;
+              if ((res = Phat_Init(&phat)) != PhatState_OK)
               {
-                res = hsd1.ErrorCode;
-                if (res == 0x10000000)
+                if (res == PhatState_DriverError)
                   strcpy(buf, "未检测到SD卡。请插入SD卡");
                 else
-                  snprintf(buf, sizeof buf, "初始化SD卡失败(%"PRIx32")，请尝试更换SD卡", res);
-                HAL_SD_DeInit(&hsd1);
+                  snprintf(buf, sizeof buf, "初始化SD卡失败(%s)，请尝试更换SD卡", Phat_StateToString(res));
+                Phat_DeInit(&phat);
                 DrawStandByScreen();
                 DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
-              else if ((res = f_mount(&FatFs, (const WCHAR*)L"0:", 1)) != FR_OK)
+              else if ((res = Phat_Mount(&phat, 0, 0)) != PhatState_OK)
               {
-                HAL_SD_DeInit(&hsd1);
-                snprintf(buf, sizeof buf, "无法挂载SD卡(%"PRIx32")，请尝试更换SD卡", res);
+                Phat_DeInit(&phat);
+                snprintf(buf, sizeof buf, "无法挂载SD卡(%s)，请尝试更换SD卡", Phat_StateToString(res));
                 DrawStandByScreen();
                 DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
               }
@@ -564,7 +553,7 @@ int main(void)
             {
               if (FsMounted)
               {
-                f_mount(&FatFs, (const WCHAR*)L":0", 0);
+                Phat_Unmount(&phat);
                 FsMounted = 0;
               }
               GUICurMenuLevel = 0;
@@ -965,10 +954,6 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.BusWide = SDMMC_BUS_WIDE_4B;
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
   hsd1.Init.ClockDiv = 1;
-  if (HAL_SD_Init(&hsd1) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN SDMMC1_Init 2 */
   HAL_SD_MspInit(&hsd1);
   /* USER CODE END SDMMC1_Init 2 */
