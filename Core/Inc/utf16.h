@@ -20,7 +20,7 @@ typedef struct UTF16Parser_s
 size_t strlenW(const uint16_t *utf16);
 uint16_t * strcpyW(uint16_t *destination, const uint16_t *source);
 uint16_t * strncpyW(uint16_t *destination, const uint16_t *source, size_t maxlen);
-int strcmpW(const uint16_t * str1, const uint16_t * str2);
+int strcmpW(const uint16_t *str1, const uint16_t *str2);
 UTF16Parser utf16_start_parse(const uint16_t *utf16);
 uint32_t utf16_to_utf32(UTF16Parser *p, uint32_t bad_char_code);
 void utf16_end_parse(UTF16Parser *p);
