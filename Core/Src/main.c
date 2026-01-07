@@ -131,6 +131,7 @@ uint8_t GUIFileType[NUM_FILE_ITEMS];
 int CurFileIndex;
 int FirstFileIndex;
 int FsMounted;
+char FormatBuf[256];
 __attribute__((section(".dtcm_bss"))) volatile int BAT_IsCharging;
 __attribute__((section(".dtcm_bss"))) volatile int BAT_IsFull;
 __attribute__((section(".dtcm_bss"))) volatile int Enc1;
@@ -353,6 +354,162 @@ PhatState GetCurDirFileList()
   Phat_CloseDir(&dir_info);
   return PhatState_OK;
 }
+void OnMainMenu(int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  UpdateEnc1MainMenuState(delta_tick, enc1_delta);
+  for (int y = 0; y < hlcd.yres; y++)
+  {
+    for (int x = 0; x < hlcd.xres; x++)
+    {
+      CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
+    }
+  }
+
+  int playbutton_anim_pos = GUIMenuAnim;
+  int usbbutton_anim_pos = GUIMenuAnim - 1024;
+  int optbutton_anim_pos = GUIMenuAnim - 2048;
+  int shutbutton_anim_pos = GUIMenuAnim - 3072;
+  int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
+  int usbbutton_size = (512 - imin(256, abs(usbbutton_anim_pos)));
+  int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
+  int shutbutton_size = (512 - imin(256, abs(shutbutton_anim_pos)));
+  int playbutton_x = 160 - playbutton_anim_pos * 120 / 1024;
+  int usbbutton_x = 160 - usbbutton_anim_pos * 120 / 1024;
+  int optbutton_x = 160 - optbutton_anim_pos * 120 / 1024;
+  int shutbutton_x = 160 - shutbutton_anim_pos * 120 / 1024;
+  Pixel565 ui_c1 = MakePixel565(0, 0, 0);
+  Pixel565 ui_c2 = MakePixel565(255, 255, 255);
+
+  DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
+  DrawUSBConnButton(usbbutton_x, 120, ui_c1, ui_c2, usbbutton_size);
+  DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
+  DrawShutdownButton(shutbutton_x, 120, ui_c1, ui_c2, shutbutton_size);
+  DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+  if (GUIMenuReady)
+  {
+    switch(GUICurMenu)
+    {
+      case 0:
+        strcpy(FormatBuf, "打开存储卡");
+        break;
+      case 1:
+        strcpy(FormatBuf, "连接USB");
+        break;
+      case 2:
+        strcpy(FormatBuf, "选项设置");
+        break;
+      case 3:
+        strcpy(FormatBuf, "关闭电源");
+        break;
+    }
+    DrawTextOpaque(120, 180, 200, 20, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+  }
+  if (enc1_click)
+  {
+    strcpyW(GUIFolderPath, u"");
+    GUICurMenuLevel = 1;
+  }
+}
+void OnFileListGUI(int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  if (!FsMounted)
+  {
+    PhatState res;
+    if ((res = Phat_Init(&phat)) != PhatState_OK)
+    {
+      if (res == PhatState_DriverError)
+        strcpy(FormatBuf, "未检测到SD卡。请插入SD卡");
+      else
+        snprintf(FormatBuf, sizeof FormatBuf, "初始化SD卡失败(%s)，请尝试更换SD卡", Phat_StateToString(res));
+      Phat_DeInit(&phat);
+      DrawStandByScreen();
+      DrawTextOpaque(40, 110, 240, 80, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+    }
+    else if ((res = Phat_Mount(&phat, 0, 0)) != PhatState_OK)
+    {
+      Phat_DeInit(&phat);
+      snprintf(FormatBuf, sizeof FormatBuf, "无法挂载SD卡(%s)，请尝试更换SD卡", Phat_StateToString(res));
+      DrawStandByScreen();
+      DrawTextOpaque(30, 110, 260, 80, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+    }
+    else
+    {
+      FsMounted = 1;
+      GetCurDirFileList();
+      CurFileIndex = 0;
+      FirstFileIndex = 0;
+    }
+  }
+  if (FsMounted)
+  {
+    int last_file_index = -1;
+    ClearScreen(MakePixel565(0, 0, 0));
+    if (enc1_delta)
+    {
+      int need_update_file_list = 0;
+      CurFileIndex += enc1_delta;
+      if (CurFileIndex < 0 ) CurFileIndex = 0;
+      if (last_file_index > 0)
+      {
+        if (CurFileIndex > last_file_index - 1) CurFileIndex = last_file_index - 1;
+      }
+      if (CurFileIndex > FirstFileIndex + (NUM_FILE_ITEMS - 1))
+      {
+        FirstFileIndex = CurFileIndex - (NUM_FILE_ITEMS - 1);
+        need_update_file_list = 1;
+      }
+      if (CurFileIndex < FirstFileIndex)
+      {
+        FirstFileIndex = CurFileIndex;
+        need_update_file_list = 1;
+      }
+      if (need_update_file_list) GetCurDirFileList();
+    }
+    for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+    {
+      if (GUIFileType[i] == 255)
+      {
+        last_file_index = FirstFileIndex + i;
+        break;
+      }
+    }
+    if (last_file_index > 0)
+    {
+      if (CurFileIndex > last_file_index - 1) CurFileIndex = last_file_index - 1;
+    }
+    SetWordWrap(0);
+    for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+    {
+      int file_index = FirstFileIndex + i;
+      int y = i * 17;
+      if (GUIFileType[i] != 255)
+        DrawFileIcon(0, y, GUIFileType[i]);
+      else
+        break;
+      DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
+      if (file_index == CurFileIndex)
+        InvertRect(17, y + 1, 280, 18, 1);
+    }
+    SetWordWrap(1);
+  }
+  if (enc1_click)
+  {
+
+  }
+  if (enc2_click)
+  {
+    if (FsMounted)
+    {
+      if (GUIFolderPath[0] == 0 || !strcmpW(GUIFolderPath, u"/"))
+      {
+        Phat_Unmount(&phat);
+        FsMounted = 0;
+        GUICurMenuLevel = 0;
+      }
+    }
+  }
+  DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+}
 /* USER CODE END 0 */
 
 /**
@@ -448,7 +605,6 @@ int main(void)
   while (1)
   {
     uint32_t cur_tick = HAL_GetTick();
-    static char buf[256];
     int enc1_click = IsEnc1Click();
     int enc2_click = IsEnc2Click();
     int enc1_delta = GetEnc1Delta();
@@ -459,121 +615,13 @@ int main(void)
     switch (GUICurMenuLevel)
     {
       case 0:
-      {
-        UpdateEnc1MainMenuState(delta_tick, enc1_delta);
-        for (int y = 0; y < hlcd.yres; y++)
-        {
-          for (int x = 0; x < hlcd.xres; x++)
-          {
-            CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
-          }
-        }
-
-        int playbutton_anim_pos = GUIMenuAnim;
-        int usbbutton_anim_pos = GUIMenuAnim - 1024;
-        int optbutton_anim_pos = GUIMenuAnim - 2048;
-        int shutbutton_anim_pos = GUIMenuAnim - 3072;
-        int playbutton_size = (512 - imin(256, abs(playbutton_anim_pos)));
-        int usbbutton_size = (512 - imin(256, abs(usbbutton_anim_pos)));
-        int optbutton_size = (512 - imin(256, abs(optbutton_anim_pos)));
-        int shutbutton_size = (512 - imin(256, abs(shutbutton_anim_pos)));
-        int playbutton_x = 160 - playbutton_anim_pos * 120 / 1024;
-        int usbbutton_x = 160 - usbbutton_anim_pos * 120 / 1024;
-        int optbutton_x = 160 - optbutton_anim_pos * 120 / 1024;
-        int shutbutton_x = 160 - shutbutton_anim_pos * 120 / 1024;
-        Pixel565 ui_c1 = MakePixel565(0, 0, 0);
-        Pixel565 ui_c2 = MakePixel565(255, 255, 255);
-
-        DrawTFCardButton(playbutton_x, 120, ui_c1, ui_c2, playbutton_size);
-        DrawUSBConnButton(usbbutton_x, 120, ui_c1, ui_c2, usbbutton_size);
-        DrawOptionButton(optbutton_x, 120, ui_c1, ui_c2, optbutton_size);
-        DrawShutdownButton(shutbutton_x, 120, ui_c1, ui_c2, shutbutton_size);
-        DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
-        if (GUIMenuReady)
-        {
-          switch(GUICurMenu)
-          {
-            case 0:
-              strcpy(buf, "打开存储卡");
-              break;
-            case 1:
-              strcpy(buf, "连接USB");
-              break;
-            case 2:
-              strcpy(buf, "选项设置");
-              break;
-            case 3:
-              strcpy(buf, "关闭电源");
-              break;
-          }
-          DrawTextOpaque(120, 180, 200, 20, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-        }
-        if (main_btn_click)
-        {
-          strcpyW(GUIFolderPath, u"/");
-          GUICurMenuLevel = 1;
-        }
-      }
-      break;
+        OnMainMenu(delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+        break;
       case 1:
-      {
         switch (GUICurMenu)
         {
           case 0: // TF card
-            if (!FsMounted)
-            {
-              PhatState res;
-              if ((res = Phat_Init(&phat)) != PhatState_OK)
-              {
-                if (res == PhatState_DriverError)
-                  strcpy(buf, "未检测到SD卡。请插入SD卡");
-                else
-                  snprintf(buf, sizeof buf, "初始化SD卡失败(%s)，请尝试更换SD卡", Phat_StateToString(res));
-                Phat_DeInit(&phat);
-                DrawStandByScreen();
-                DrawTextOpaque(40, 110, 240, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-              }
-              else if ((res = Phat_Mount(&phat, 0, 0)) != PhatState_OK)
-              {
-                Phat_DeInit(&phat);
-                snprintf(buf, sizeof buf, "无法挂载SD卡(%s)，请尝试更换SD卡", Phat_StateToString(res));
-                DrawStandByScreen();
-                DrawTextOpaque(30, 110, 260, 80, buf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
-              }
-              else
-              {
-                FsMounted = 1;
-                GetCurDirFileList();
-              }
-            }
-            if (FsMounted)
-            {
-              ClearScreen(MakePixel565(0, 0, 0));
-              SetWordWrap(0);
-              for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
-              {
-                int y = i * 17;
-                if (GUIFileIsDir[i] == 0)
-                  DrawFolderOrFile(0, i * 17, 0);
-                else if (GUIFileIsDir[i] == 1)
-                  DrawFolderOrFile(0, i * 17, 1);
-                else
-                  break;
-                DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
-              }
-              SetWordWrap(1);
-            }
-            if (second_btn_click)
-            {
-              if (FsMounted)
-              {
-                Phat_Unmount(&phat);
-                FsMounted = 0;
-              }
-              GUICurMenuLevel = 0;
-            }
-            DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
-            if (second_btn_click) GUICurMenuLevel = 0;
+            OnFileListGUI(delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
             break;
           case 1: // USB
             ClearScreen(MakePixel565(0, 0, 0));
@@ -594,7 +642,6 @@ int main(void)
             Suicide();
             break;
         }
-      }
     }
 
     SwapFramebuffers();
