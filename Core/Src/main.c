@@ -125,11 +125,13 @@ int GUICurMenu;
 int GUICurMenuLevel;
 int GUIMenuAnim;
 int GUIMenuReady;
-uint16_t GUIFolderPath[4096];
-uint16_t GUIFileList[NUM_FILE_ITEMS][MAX_FILE_NAMELEN];
-uint8_t GUIFileType[NUM_FILE_ITEMS];
-int CurFileIndex;
-int FirstFileIndex;
+Phat_DirInfo_t GUICurDir;
+int GUICurFileIndex;
+int GUIFirstFileIndex;
+int GUILastFileIndex;
+int GUIFileListNeedRedraw;
+WChar_t GUIFileName[256];
+uint8_t GUIFileType;
 int FsMounted;
 char FormatBuf[256];
 __attribute__((section(".dtcm_bss"))) volatile int BAT_IsCharging;
@@ -310,51 +312,28 @@ void OnException()
     if (IsEnc1Click()) Suicide();
   }
 }
-PhatState GetCurDirFileList()
+uint8_t GetCurFileType()
 {
-  PhatState res;
-  Phat_DirInfo_t dir_info = { 0 };
-  memset(GUIFileList, 0, sizeof GUIFileList);
-  for (size_t i = 0; i < NUM_FILE_ITEMS; i++)
+  uint8_t ret;
+  if (GUICurDir.attributes & ATTRIB_DIRECTORY)
+    ret = 0;
+  else
   {
-    GUIFileType[i] = -1;
-  }
-
-  Phat_OpenRootDir(&phat, &dir_info);
-
-  for (size_t i = 0;; i++)
-  {
-    res = Phat_NextDirItem(&dir_info);
-    if (res == PhatState_EndOfDirectory) break;
-    if (res != PhatState_OK) return res;
-
-    if (dir_info.LFN_name[0] == '.') continue;
-    if (i >= FirstFileIndex)
+    uint16_t *LFN_name = GUICurDir.LFN_name;
+    uint16_t *dot = LFN_name;
+    while(*dot) dot++;
+    while(dot > LFN_name && *dot != u'.') dot --;
+    if (dot == LFN_name)
+      ret = 1;
+    else
     {
-      size_t item = i - FirstFileIndex;
-      if (item >= NUM_FILE_ITEMS) break;
-      strncpyW(GUIFileList[item], dir_info.LFN_name, dir_info.LFN_length + 1);
-      if (dir_info.attributes & ATTRIB_DIRECTORY) GUIFileType[item] = 0;
-      else
-      {
-        wchar_t *LFN_name = (wchar_t *)dir_info.LFN_name;
-        wchar_t *dot = LFN_name;
-        while(*dot) dot++;
-        while(dot > LFN_name && *dot != u'.') dot --;
-        if (dot == LFN_name)
-          GUIFileType[item] = 1;
-        else
-        {
-          GUIFileType[item] = 1;
-          if (!strcmpW(dot, u".avi")) GUIFileType[item] = 2;
-        }
-      }
+      ret = 1;
+      if (!strcmpW(dot, u".avi")) ret = 2;
     }
   }
-  Phat_CloseDir(&dir_info);
-  return PhatState_OK;
+  return ret;
 }
-void OnMainMenu(int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   UpdateEnc1MainMenuState(delta_tick, enc1_delta);
   for (int y = 0; y < hlcd.yres; y++)
@@ -406,15 +385,40 @@ void OnMainMenu(int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, 
   }
   if (enc1_click)
   {
-    strcpyW(GUIFolderPath, u"");
     GUICurMenuLevel = 1;
+    GUICurFileIndex = 0;
+    GUIFirstFileIndex = 0;
   }
 }
-void OnFileListGUI(int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+static void QuitFileList()
 {
+  Phat_DeInit(&phat);
+  FsMounted = 0;
+  GUICurMenuLevel = 0;
+}
+static void UpdateLastFileIndex()
+{
+  PhatState res;
+  for(int i = 0;; i++)
+  {
+    res = Phat_NextDirItem(&GUICurDir);
+    if (res == PhatState_EndOfDirectory)
+    {
+      GUILastFileIndex = i - 1;
+      break;
+    }
+    if (res != PhatState_OK)
+    {
+      QuitFileList();
+      break;
+    }
+  }
+}
+void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  PhatState res;
   if (!FsMounted)
   {
-    PhatState res;
     if ((res = Phat_Init(&phat)) != PhatState_OK)
     {
       if (res == PhatState_DriverError)
@@ -435,77 +439,112 @@ void OnFileListGUI(int delta_tick, int enc1_delta, int enc1_click, int enc2_delt
     else
     {
       FsMounted = 1;
-      GetCurDirFileList();
-      CurFileIndex = 0;
-      FirstFileIndex = 0;
+      GUICurFileIndex = 0;
+      GUIFirstFileIndex = 0;
+      GUILastFileIndex = 0;
+      GUIFileListNeedRedraw = 1;
+      Phat_OpenRootDir(&phat, &GUICurDir);
+      UpdateLastFileIndex();
     }
   }
   if (FsMounted)
   {
-    int last_file_index = -1;
-    ClearScreen(MakePixel565(0, 0, 0));
     if (enc1_delta)
     {
-      int need_update_file_list = 0;
-      CurFileIndex += enc1_delta;
-      if (CurFileIndex < 0 ) CurFileIndex = 0;
-      if (last_file_index > 0)
-      {
-        if (CurFileIndex > last_file_index - 1) CurFileIndex = last_file_index - 1;
-      }
-      if (CurFileIndex > FirstFileIndex + (NUM_FILE_ITEMS - 1))
-      {
-        FirstFileIndex = CurFileIndex - (NUM_FILE_ITEMS - 1);
-        need_update_file_list = 1;
-      }
-      if (CurFileIndex < FirstFileIndex)
-      {
-        FirstFileIndex = CurFileIndex;
-        need_update_file_list = 1;
-      }
-      if (need_update_file_list) GetCurDirFileList();
+      GUICurFileIndex += enc1_delta;
+      GUIFileListNeedRedraw = 1;
     }
-    for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+    if (GUIFileListNeedRedraw)
     {
-      if (GUIFileType[i] == 255)
+      ClearScreen(MakePixel565(0, 0, 0));
+      if (GUICurFileIndex < 0 ) GUICurFileIndex = 0;
+      if (GUICurFileIndex > GUILastFileIndex) GUICurFileIndex = GUILastFileIndex;
+      if (GUIFirstFileIndex < 0) GUIFirstFileIndex = 0;
+      if (GUICurFileIndex > GUIFirstFileIndex + (NUM_FILE_ITEMS - 1))
       {
-        last_file_index = FirstFileIndex + i;
-        break;
+        GUIFirstFileIndex = GUICurFileIndex - (NUM_FILE_ITEMS - 1);
       }
+      if (GUICurFileIndex < GUIFirstFileIndex)
+      {
+        GUIFirstFileIndex = GUICurFileIndex;
+      }
+      if (GUIFirstFileIndex > GUILastFileIndex) GUIFirstFileIndex = GUILastFileIndex;
+      GUICurDir.cur_diritem = 0;
+      for (size_t i = 0; i < GUIFirstFileIndex; i++)
+      {
+        res = Phat_NextDirItem(&GUICurDir);
+        if (res == PhatState_EndOfDirectory) break;
+        if (res != PhatState_OK)
+        {
+          QuitFileList();
+          break;
+        }
+      }
+      SetWordWrap(0);
+      for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+      {
+        int file_index = GUIFirstFileIndex + i;
+        int y = i * 17;
+        uint8_t filetype = 0;
+        res = Phat_NextDirItem(&GUICurDir);
+        if (res == PhatState_EndOfDirectory) break;
+        if (res != PhatState_OK)
+        {
+          QuitFileList();
+          break;
+        }
+        filetype = GetCurFileType();
+        DrawFileIcon(0, y, filetype);
+        DrawTextW(17, y, 280, 20, GUICurDir.LFN_name, MakePixel565(255, 255, 255));
+        if (file_index == GUICurFileIndex)
+        {
+          InvertRect(17, y + 1, 280, 18, 1);
+          strcpyW(GUIFileName, GUICurDir.LFN_name);
+          GUIFileType = filetype;
+        }
+      }
+      SetWordWrap(1);
     }
-    if (last_file_index > 0)
+    if (enc1_click)
     {
-      if (CurFileIndex > last_file_index - 1) CurFileIndex = last_file_index - 1;
+      if (GUIFileType == 0)
+      {
+        res = Phat_ChDir(&GUICurDir, GUIFileName);
+        GUIFirstFileIndex = 0;
+        GUICurFileIndex = 0;
+        UpdateLastFileIndex();
+      }
+      GUIFileListNeedRedraw = 1;
     }
-    SetWordWrap(0);
-    for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
-    {
-      int file_index = FirstFileIndex + i;
-      int y = i * 17;
-      if (GUIFileType[i] != 255)
-        DrawFileIcon(0, y, GUIFileType[i]);
-      else
-        break;
-      DrawTextW(17, y, 280, 20, GUIFileList[i], MakePixel565(255, 255, 255));
-      if (file_index == CurFileIndex)
-        InvertRect(17, y + 1, 280, 18, 1);
-    }
-    SetWordWrap(1);
-  }
-  if (enc1_click)
-  {
-
   }
   if (enc2_click)
   {
     if (FsMounted)
     {
-      if (GUIFolderPath[0] == 0 || !strcmpW(GUIFolderPath, u"/"))
+      if (GUICurDir.dir_start_cluster <= 2)
+        QuitFileList();
+      else
       {
-        Phat_Unmount(&phat);
-        FsMounted = 0;
-        GUICurMenuLevel = 0;
+        res = Phat_ChDir(&GUICurDir, u"..");
+        if (res == PhatState_DirectoryNotFound)
+        {
+          Phat_OpenRootDir(&phat, &GUICurDir);
+          res = PhatState_OK;
+        }
+        if (res != PhatState_OK)
+          QuitFileList();
+        else
+        {
+          GUIFirstFileIndex = 0;
+          GUICurFileIndex = 0;
+          GUIFileListNeedRedraw = 1;
+          UpdateLastFileIndex();
+        }
       }
+    }
+    else
+    {
+      QuitFileList();
     }
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
@@ -615,13 +654,13 @@ int main(void)
     switch (GUICurMenuLevel)
     {
       case 0:
-        OnMainMenu(delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+        OnMainMenu(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
         break;
       case 1:
         switch (GUICurMenu)
         {
           case 0: // TF card
-            OnFileListGUI(delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+            OnFileListGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
             break;
           case 1: // USB
             ClearScreen(MakePixel565(0, 0, 0));
