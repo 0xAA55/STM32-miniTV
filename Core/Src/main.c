@@ -285,7 +285,7 @@ int IsEnc2Click()
 int GetEnc1Delta()
 {
   __attribute__((section(".dtcm_bss"))) static int last_enc1;
-  int enc1_val = Enc1;
+  int enc1_val = Enc1 / 2;
   int ret = enc1_val - last_enc1;
   last_enc1 = enc1_val;
   return ret;
@@ -293,7 +293,7 @@ int GetEnc1Delta()
 int GetEnc2Delta()
 {
   __attribute__((section(".dtcm_bss"))) static int last_enc2;
-  int enc2_val = Enc2;
+  int enc2_val = Enc2 / 2;
   int ret = enc2_val - last_enc2;
   last_enc2 = enc2_val;
   return ret;
