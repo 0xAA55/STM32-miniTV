@@ -15,7 +15,7 @@ extern const uint32_t Font17pxBitmap[];
 
 const uint32_t BatteryBMP_Width = 16;
 const uint32_t BatteryBMP_Height = 290;
-const uint32_t FolderBMP_Width = 34;
+const uint32_t FolderBMP_Width = 68;
 const uint32_t FolderBMP_Height = 17;
 const size_t NumFontChars = 7318;
 const size_t Font12pxBitmapPitch = 10908;
