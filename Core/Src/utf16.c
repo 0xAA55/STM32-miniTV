@@ -50,6 +50,14 @@ int strcmpW(const uint16_t *str1, const uint16_t *str2)
   return 0;
 }
 
+uint16_t *strcatW(uint16_t *destination, const uint16_t *source)
+{
+  uint16_t *ret = destination;
+  while(*destination) destination++;
+  while(*source) *destination++ = *source++;
+  return ret;
+}
+
 UTF16Parser utf16_start_parse(const uint16_t *utf16)
 {
   UTF16Parser ret =
