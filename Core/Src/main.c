@@ -127,7 +127,7 @@ int GUIMenuAnim;
 int GUIMenuReady;
 uint16_t GUIFolderPath[4096];
 uint16_t GUIFileList[NUM_FILE_ITEMS][MAX_FILE_NAMELEN];
-uint8_t GUIFileIsDir[NUM_FILE_ITEMS];
+uint8_t GUIFileType[NUM_FILE_ITEMS];
 int CurFileIndex;
 int FirstFileIndex;
 int FsMounted;
@@ -316,7 +316,7 @@ PhatState GetCurDirFileList()
   memset(GUIFileList, 0, sizeof GUIFileList);
   for (size_t i = 0; i < NUM_FILE_ITEMS; i++)
   {
-    GUIFileIsDir[i] = -1;
+    GUIFileType[i] = -1;
   }
 
   Phat_OpenRootDir(&phat, &dir_info);
@@ -333,7 +333,21 @@ PhatState GetCurDirFileList()
       size_t item = i - FirstFileIndex;
       if (item >= NUM_FILE_ITEMS) break;
       strncpyW(GUIFileList[item], dir_info.LFN_name, dir_info.LFN_length + 1);
-      if (dir_info.attributes & ATTRIB_DIRECTORY) GUIFileIsDir[item] = 1;
+      if (dir_info.attributes & ATTRIB_DIRECTORY) GUIFileType[item] = 0;
+      else
+      {
+        wchar_t *LFN_name = (wchar_t *)dir_info.LFN_name;
+        wchar_t *dot = LFN_name;
+        while(*dot) dot++;
+        while(dot > LFN_name && *dot != u'.') dot --;
+        if (dot == LFN_name)
+          GUIFileType[item] = 1;
+        else
+        {
+          GUIFileType[item] = 1;
+          if (!strcmpW(dot, u".avi")) GUIFileType[item] = 2;
+        }
+      }
     }
   }
   Phat_CloseDir(&dir_info);
