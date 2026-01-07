@@ -270,13 +270,13 @@ void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
   }
   GUIMenuReady = (GUIMenuAnim == target_menu);
 }
-int IsMainBtnClick()
+int IsEnc1Click()
 {
   int ret = MainBtnClick;
   MainBtnClick = 0;
   return ret;
 }
-int IsSecondBtnClick()
+int IsEnc2Click()
 {
   int ret = SecondBtnClick;
   SecondBtnClick = 0;
@@ -306,7 +306,7 @@ void OnException()
 {
   while(1)
   {
-    if (IsMainBtnClick()) Suicide();
+    if (IsEnc1Click()) Suicide();
   }
 }
 PhatState GetCurDirFileList()
@@ -435,8 +435,8 @@ int main(void)
   {
     uint32_t cur_tick = HAL_GetTick();
     static char buf[256];
-    int main_btn_click = IsMainBtnClick();
-    int second_btn_click = IsSecondBtnClick();
+    int enc1_click = IsEnc1Click();
+    int enc2_click = IsEnc2Click();
     int enc1_delta = GetEnc1Delta();
     int enc2_delta = GetEnc2Delta();
 
@@ -563,11 +563,11 @@ int main(void)
             break;
           case 1: // USB
             ClearScreen(MakePixel565(0, 0, 0));
-            if (second_btn_click) GUICurMenuLevel = 0;
+            if (enc2_click) GUICurMenuLevel = 0;
             break;
           case 2: // Option
             ClearScreen(MakePixel565(0, 0, 0));
-            if (second_btn_click) GUICurMenuLevel = 0;
+            if (enc2_click) GUICurMenuLevel = 0;
             break;
           case 3: // Shutdown
             for (int y = 0; y < hlcd.yres; y++)
