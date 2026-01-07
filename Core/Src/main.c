@@ -630,10 +630,10 @@ int main(void)
   DrawStandByScreen();
   SwapFramebuffers();
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
-  UseLargeFont();
-  UpdatePowerRead();
   WaitForPresent();
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
+  UseLargeFont();
+  UpdatePowerRead();
   /* USER CODE END 2 */
 
   /* Infinite loop */
