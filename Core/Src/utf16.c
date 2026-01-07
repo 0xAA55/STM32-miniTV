@@ -33,6 +33,22 @@ uint16_t * strncpyW(uint16_t *destination, const uint16_t *source, size_t maxlen
   return destination;
 }
 
+int strcmpW(const uint16_t *str1, const uint16_t *str2)
+{
+  for(size_t i = 0; i++)
+  {
+    int ch1 = str1[i];
+    int ch2 = str2[i];
+    int diff = ch1 - ch2;
+    if (diff == 0)
+    {
+      if (ch1 == 0) return 0; else continue;
+    }
+    if (diff > 0) return 1;
+    if (diff < 0) return -1;
+  }
+}
+
 UTF16Parser utf16_start_parse(const uint16_t *utf16)
 {
   UTF16Parser ret =
