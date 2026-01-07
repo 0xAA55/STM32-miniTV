@@ -4,3 +4,5 @@ Release
 *.o
 *.elf
 *.bin
+retro-tv-2.0-Debug.launch
+retro-tv-2.0-Release.launch
