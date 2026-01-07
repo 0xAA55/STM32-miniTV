@@ -28,6 +28,7 @@ typedef struct SrcPicture_s
   size_t pitch;
   uint32_t width;
   uint32_t height;
+  int vertical_invert;
 }SrcPicture;
 
 void Graphics_Init();

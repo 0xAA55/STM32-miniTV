@@ -829,6 +829,7 @@ void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, i
   {
     int sy = src_y + y;
     int ty = dy + y;
+    if (src->vertical_invert) sy = src->height - 1 - sy;
     const Pixel565 *row_ptr = (const Pixel565*)((uint8_t*)src->bitmap + src->pitch * sy);
     for (int x = 0; x < w; x++)
     {
@@ -846,6 +847,7 @@ void TransparentBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int 
   {
     int sy = src_y + y;
     int ty = dy + y;
+    if (src->vertical_invert) sy = src->height - 1 - sy;
     const Pixel565 *row_ptr = (const Pixel565*)((uint8_t*)src->bitmap + src->pitch * sy);
     for (int x = 0; x < w; x++)
     {
@@ -958,6 +960,7 @@ void DrawBattery(int percentage, int is_charging, int is_full)
     ((FLASH_MAP->BatteryBMP_Width * 2 - 1) / 4 + 1) * 4,
     FLASH_MAP->BatteryBMP_Width,
     FLASH_MAP->BatteryBMP_Height,
+    0,
   };
   int BatteryHeight = FLASH_MAP->BatteryBMP_Height / 29;
   int BatImageIndex = percentage * 14 / 100;
@@ -980,6 +983,7 @@ void DrawFolderOrFile(int x, int y, int is_folder)
     ((FLASH_MAP->FolderBMP_Width * 2 - 1) / 4 + 1) * 4,
     FLASH_MAP->FolderBMP_Width,
     FLASH_MAP->FolderBMP_Height,
+    0,
   };
   if (is_folder)
     TransparentBlt565(x, y, FLASH_MAP->FolderBMP_Width / 2, FLASH_MAP->FolderBMP_Height, &FolderFilePicture, 0, 0, MakePixel565(128, 128, 128));
