@@ -1,3 +1,6 @@
 [submodule "Phat"]
 	path = Phat
 	url = https://github.com/0xAA55/Phat.git
+[submodule "avi_read"]
+	path = avi_read
+	url = https://github.com/0xAA55/avi_read.git
