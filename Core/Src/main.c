@@ -32,6 +32,7 @@
 #include "dynalloc.h"
 #include "../../FlashROM/flashmap.h"
 #include "../../Phat/Phat/phat.h"
+#include "../../avi_read/avi_read/avi_reader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,12 +86,13 @@ PCD_HandleTypeDef hpcd_USB_OTG_HS;
 /* USER CODE BEGIN PV */
 const size_t FramebufferWidth = 320;
 const size_t FramebufferHeight = 240;
-Phat_t phat;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
 uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
 Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
+Phat_t phat;
+avi_reader avir;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

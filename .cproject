@@ -86,9 +86,10 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
-						<entry excluding="Phat/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Phat"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry excluding="Phat/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Phat"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
+						<entry excluding="avi_read/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="avi_read"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -187,9 +188,10 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
-						<entry excluding="Phat/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Phat"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry excluding="Phat/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Phat"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
+						<entry excluding="avi_read/test.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="avi_read"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
