@@ -392,8 +392,11 @@ void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, in
 }
 static void QuitFileList()
 {
-  Phat_DeInit(&phat);
-  FsMounted = 0;
+  if (FsMounted)
+  {
+    Phat_DeInit(&phat);
+    FsMounted = 0;
+  }
   GUICurMenuLevel = 0;
 }
 static void UpdateLastFileIndex()
