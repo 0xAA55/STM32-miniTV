@@ -606,7 +606,7 @@ int main(void)
   MX_I2S2_Init();
   MX_QUADSPI_Init();
   MX_ADC1_Init();
-  MX_USB_OTG_HS_PCD_Init();
+  // MX_USB_OTG_HS_PCD_Init();
   MX_DMA2D_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
