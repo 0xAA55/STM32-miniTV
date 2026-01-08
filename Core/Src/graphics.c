@@ -677,8 +677,8 @@ void GetTextSize(const char* text, int w, int h, uint32_t *width, uint32_t *heig
 {
   DrawDataGetSize dt = {0};
   Compose(0, 0, w, h, text, on_draw_get_size, &dt);
-  *width = dt.w;
-  *height = dt.h;
+  if (width) *width = dt.w;
+  if (height) *height = dt.h;
 }
 
 void DrawTextW(int x, int y, int w, int h, const uint16_t* text, Pixel565 text_color)
@@ -700,8 +700,8 @@ void GetTextSizeW(const uint16_t* text, int w, int h, uint32_t *width, uint32_t 
 {
   DrawDataGetSize dt = {0};
   ComposeW(0, 0, w, h, text, on_draw_get_size, &dt);
-  *width = dt.w;
-  *height = dt.h;
+  if (width) *width = dt.w;
+  if (height) *height = dt.h;
 }
 
 void DrawTextU(int x, int y, int w, int h, const uint32_t* text, Pixel565 text_color)
@@ -723,8 +723,8 @@ void GetTextSizeU(const uint32_t* text, int w, int h, uint32_t *width, uint32_t 
 {
   DrawDataGetSize dt = {0};
   ComposeU(0, 0, w, h, text, on_draw_get_size, &dt);
-  *width = dt.w;
-  *height = dt.h;
+  if (width) *width = dt.w;
+  if (height) *height = dt.h;
 }
 
 void FillRect(int x, int y, int w, int h, Pixel565 color)
