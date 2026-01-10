@@ -258,39 +258,6 @@ void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
 }
-void UpdateEnc1MainMenuState(int delta_tick, int enc_delta)
-{
-  int target_menu;
-  int menu_speed = 5 * delta_tick;
-  enc_delta = imax(-1, imin(enc_delta, 1));
-  GUICurMenu += enc_delta;
-  if (GUICurMenu < 0) GUICurMenu = 0;
-  if (GUICurMenu > 3) GUICurMenu = 3;
-  target_menu = GUICurMenu * 1024;
-  if (GUIMenuAnim < target_menu)
-  {
-    if (GUIMenuAnim + menu_speed >= target_menu)
-    {
-      GUIMenuAnim = target_menu;
-    }
-    else
-    {
-      GUIMenuAnim += menu_speed;
-    }
-  }
-  if (GUIMenuAnim > target_menu)
-  {
-    if (GUIMenuAnim - menu_speed <= target_menu)
-    {
-      GUIMenuAnim = target_menu;
-    }
-    else
-    {
-      GUIMenuAnim -= menu_speed;
-    }
-  }
-  GUIMenuReady = (GUIMenuAnim == target_menu);
-}
 int IsEnc1Click()
 {
   int ret = MainBtnClick;
@@ -353,7 +320,36 @@ uint8_t GetCurFileType()
 }
 void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
-  UpdateEnc1MainMenuState(delta_tick, enc1_delta);
+  int target_menu;
+  int menu_speed = 5 * delta_tick;
+  GUICurMenu += enc1_delta;
+  if (GUICurMenu < 0) GUICurMenu = 0;
+  if (GUICurMenu > 3) GUICurMenu = 3;
+  target_menu = GUICurMenu * 1024;
+  if (GUIMenuAnim < target_menu)
+  {
+    if (GUIMenuAnim + menu_speed >= target_menu)
+    {
+      GUIMenuAnim = target_menu;
+    }
+    else
+    {
+      GUIMenuAnim += menu_speed;
+    }
+  }
+  if (GUIMenuAnim > target_menu)
+  {
+    if (GUIMenuAnim - menu_speed <= target_menu)
+    {
+      GUIMenuAnim = target_menu;
+    }
+    else
+    {
+      GUIMenuAnim -= menu_speed;
+    }
+  }
+  GUIMenuReady = (GUIMenuAnim == target_menu);
+
   for (int y = 0; y < hlcd.yres; y++)
   {
     for (int x = 0; x < hlcd.xres; x++)
