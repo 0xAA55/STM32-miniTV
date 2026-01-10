@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,6 +162,21 @@ static uint16_t BSwap16(uint16_t val)
   return u2.u16 ;
 }
 __attribute__((section(".itcm_code")))
+void HAL_IncTick(void)
+{
+  uint32_t old_tick = uwTick;
+  uwTick += (uint32_t)uwTickFreq;
+  if (uwTick < old_tick) TickHigh ++;
+}
+__attribute__((section(".itcm_code")))
+uint64_t HAL_GetTick64()
+{
+  uint64_t ret;
+  __disable_irq();
+  ret = ((uint64_t)TickHigh << 32) | uwTick;
+  __enable_irq();
+  return ret;
+}
 __attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
