@@ -440,13 +440,83 @@ void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, in
         break;
     }
     DrawTextOpaque(120, 180, 200, 20, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+    if (enc1_click)
+    {
+      GUICurMenuLevel = 1;
+      GUICurFileIndex = 0;
+      GUIFirstFileIndex = 0;
+      GUIIsUsingFile = 0;
+    }
   }
-  if (enc1_click)
+}
+static void PrepareTextFile()
+{
+  PhatState res;
+  FileSize_t filesize;
+  const int OneScreenLinesS = FramebufferHeight / 12;
+  const int OneScreenLinesM = FramebufferHeight / 14;
+  const int OneScreenLinesL = FramebufferHeight / 17;
+  res = Phat_OpenFile(&GUICurDir, GUIFileName, 1, &CurFileStream1);
+  if (res != PhatState_OK)
   {
-    GUICurMenuLevel = 1;
-    GUICurFileIndex = 0;
-    GUIFirstFileIndex = 0;
+    ShowNotify(1000, "无法打开文件（%s）", Phat_StateToString(res));
+    return;
   }
+  Phat_GetFileSize(&CurFileStream1, &filesize);
+  if (filesize > (sizeof FILE_buffer) - 2)
+  {
+    Phat_CloseFile(&CurFileStream1);
+    ShowNotify(1000, "文件太大了。");
+    return;
+  }
+  res = Phat_ReadFile(&CurFileStream1, FILE_buffer, filesize, NULL);
+  if (res != PhatState_OK && res != PhatState_EndOfFile)
+  {
+    Phat_CloseFile(&CurFileStream1);
+    ShowNotify(1000, "读取文件失败。");
+    return;
+  }
+  FILE_buffer[filesize] = 0;
+  FILE_buffer[filesize + 1] = 0;
+  if (*(uint16_t*)FILE_buffer == 0xFFFE)
+  {
+    uint32_t max_height;
+    uint16_t *ptr = (uint16_t*)FILE_buffer;
+    while(*ptr)
+    {
+      *ptr = BSwap16(*ptr);
+      ptr ++;
+    }
+    UseSmallFont();
+    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosS = max_height / 12;
+    UseMediumFont();
+    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosM = max_height / 14;
+    UseLargeFont();
+    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosL = max_height / 17;
+  }
+  else
+  {
+    uint32_t max_height;
+    UseSmallFont();
+    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosS = max_height / 12;
+    UseMediumFont();
+    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosM = max_height / 14;
+    UseLargeFont();
+    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GUITextFileMaxReadPosL = max_height / 17;
+  }
+  Phat_CloseFile(&CurFileStream1);
+  GUITextFileReadPos = 0;
+  GUITextFileSize = filesize;
+  GUIIsUsingFile = 1;
+  if (GUITextFileMaxReadPosS > OneScreenLinesS) GUITextFileMaxReadPosS -= OneScreenLinesS; else GUITextFileMaxReadPosS = 0;
+  if (GUITextFileMaxReadPosM > OneScreenLinesM) GUITextFileMaxReadPosM -= OneScreenLinesM; else GUITextFileMaxReadPosM = 0;
+  if (GUITextFileMaxReadPosL > OneScreenLinesL) GUITextFileMaxReadPosL -= OneScreenLinesL; else GUITextFileMaxReadPosL = 0;
 }
 static void QuitFileList()
 {
