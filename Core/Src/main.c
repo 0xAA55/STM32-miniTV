@@ -136,12 +136,14 @@ static void MX_ADC1_Init(void);
 static void MX_DMA2D_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
+#ifndef DEBUG
 __attribute__((section(".itcm_code"))) void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd);
 __attribute__((section(".itcm_code"))) void BSP_SD_ReadCpltCallback(void);
 __attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
+#endif
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
