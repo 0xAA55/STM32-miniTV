@@ -161,6 +161,7 @@ static uint16_t BSwap16(uint16_t val)
   return u2.u16 ;
 }
 __attribute__((section(".itcm_code")))
+__attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   __attribute__((section(".dtcm_bss"))) static int adc_read1;
