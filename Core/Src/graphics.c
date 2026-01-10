@@ -285,6 +285,51 @@ static const HorzLine usb_conn_30[] =
   { 22 ,-23 , 6 },
 };
 
+static const HorzLine volume_max_9[] =
+{
+  {-7 , 4 , 1 }, {-6 ,-2 , 1 }, {-6 , 5 , 1 }, {-5 ,-3 , 2 },
+  {-5 , 2 , 1 }, {-5 , 6 , 1 }, {-4 ,-4 , 3 }, {-4 , 3 , 1 },
+  {-4 , 6 , 1 }, {-3 ,-8 , 7 }, {-3 , 0 , 1 }, {-3 , 3 , 1 },
+  {-3 , 7 , 1 }, {-2 ,-8 , 7 }, {-2 , 1 , 1 }, {-2 , 4 , 1 },
+  {-2 , 7 , 1 }, {-1 ,-8 , 7 }, {-1 , 1 , 1 }, {-1 , 4 , 1 },
+  {-1 , 7 , 1 }, { 0 ,-8 , 7 }, { 0 , 1 , 1 }, { 0 , 4 , 1 },
+  { 0 , 7 , 1 }, { 1 ,-8 , 7 }, { 1 , 1 , 1 }, { 1 , 4 , 1 },
+  { 1 , 7 , 1 }, { 2 ,-8 , 7 }, { 2 , 0 , 1 }, { 2 , 3 , 1 },
+  { 2 , 7 , 1 }, { 3 ,-4 , 3 }, { 3 , 3 , 1 }, { 3 , 6 , 1 },
+  { 4 ,-3 , 2 }, { 4 , 2 , 1 }, { 4 , 6 , 1 }, { 5 ,-2 , 1 },
+  { 5 , 5 , 1 }, { 6 , 4 , 1 },
+};
+
+static const HorzLine volume_mid_9[] =
+{
+  {-6 ,-2 , 1 }, {-5 ,-3 , 2 }, {-5 , 2 , 1 }, {-4 ,-4 , 3 },
+  {-4 , 3 , 1 }, {-3 ,-8 , 7 }, {-3 , 0 , 1 }, {-3 , 3 , 1 },
+  {-2 ,-8 , 7 }, {-2 , 1 , 1 }, {-2 , 4 , 1 }, {-1 ,-8 , 7 },
+  {-1 , 1 , 1 }, {-1 , 4 , 1 }, { 0 ,-8 , 7 }, { 0 , 1 , 1 },
+  { 0 , 4 , 1 }, { 1 ,-8 , 7 }, { 1 , 1 , 1 }, { 1 , 4 , 1 },
+  { 2 ,-8 , 7 }, { 2 , 0 , 1 }, { 2 , 3 , 1 }, { 3 ,-4 , 3 },
+  { 3 , 3 , 1 }, { 4 ,-3 , 2 }, { 4 , 2 , 1 }, { 5 ,-2 , 1 },
+};
+
+static const HorzLine volume_low_9[] =
+{
+  {-6 ,-2 , 1 }, {-5 ,-3 , 2 }, {-4 ,-4 , 3 }, {-3 ,-8 , 7 },
+  {-3 , 0 , 1 }, {-2 ,-8 , 7 }, {-2 , 1 , 1 }, {-1 ,-8 , 7 },
+  {-1 , 1 , 1 }, { 0 ,-8 , 7 }, { 0 , 1 , 1 }, { 1 ,-8 , 7 },
+  { 1 , 1 , 1 }, { 2 ,-8 , 7 }, { 2 , 0 , 1 }, { 3 ,-4 , 3 },
+  { 4 ,-3 , 2 }, { 5 ,-2 , 1 },
+};
+
+static const HorzLine volume_off_9[] =
+{
+  {-6 ,-2 , 1 }, {-5 ,-3 , 2 }, {-4 ,-4 , 3 }, {-3 ,-8 , 7 },
+  {-3 , 0 , 2 }, {-3 , 6 , 2 }, {-2 ,-8 , 7 }, {-2 , 1 , 2 },
+  {-2 , 5 , 2 }, {-1 ,-8 , 7 }, {-1 , 2 , 4 }, { 0 ,-8 , 7 },
+  { 0 , 3 , 2 }, { 1 ,-8 , 7 }, { 1 , 2 , 4 }, { 2 ,-8 , 7 },
+  { 2 , 1 , 2 }, { 2 , 5 , 2 }, { 3 ,-4 , 3 }, { 3 , 0 , 2 },
+  { 3 , 6 , 2 }, { 4 ,-3 , 2 }, { 5 ,-2 , 1 },
+};
+
 Pixel565 ColorFromPhaseSimple(uint32_t phase)
 {
   uint32_t phase_value = phase % 1536;
@@ -453,6 +498,11 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
   size_t char_index;
   int char_width;
   if (!code) return 0;
+  if (code == '\r')
+  {
+    cs->cur_x = cs->x;
+    return 1;
+  }
   if (code == '\n')
   {
     cs->cur_x = cs->x;
@@ -471,7 +521,7 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
       cs->cur_x = cs->x;
       cs->cur_y += CurrentFont.bitmap_height;
   }
-  if (cs->cur_y + CurrentFont.bitmap_height > cs->b) return 0;
+  if (cs->cur_y + (int)CurrentFont.bitmap_height > cs->b) return 0;
   cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
   cs->cur_x += char_width;
   return 1;
@@ -748,9 +798,9 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
 void DrawRect(int x, int y, int w, int h, Pixel565 color)
 {
   FillRect(x, y, w, 1, color);
-  FillRect(x, y + 1, x, h, color);
-  FillRect(x + w - 1, y + 1, x + w - 1, h, color);
-  FillRect(x + 1, y + h - 1, x + w - 2, 1, color);
+  FillRect(x, y + 1, 1, h - 1, color);
+  FillRect(x + w - 1, y + 1, 1, h - 1, color);
+  FillRect(x, y + h - 1, w, 1, color);
 }
 
 void InvertRect(int x, int y, int w, int h, int fill)
@@ -988,3 +1038,43 @@ void DrawFileIcon(int x, int y, int icon_index)
   TransparentBlt565(x, y, FLASH_MAP->FolderBMP_Height, FLASH_MAP->FolderBMP_Height, &FileIconPicture, (FLASH_MAP->FolderBMP_Height * icon_index) % FLASH_MAP->FolderBMP_Width, 0, MakePixel565(255, 0, 255));
 }
 
+void DrawNotifyInfo(int w, Pixel565 border_color, Pixel565 text_color, Pixel565 bg_color, const char* notify_text)
+{
+  const int border_width = 3;
+  int tx, ty, tw, th;
+  int bx, by, bw, bh;
+  GetTextSize(notify_text, w, FramebufferHeight, (uint32_t*)&tw, (uint32_t*)&th);
+  tx = FramebufferWidth / 2 - tw / 2;
+  ty = FramebufferHeight / 2 - th / 2;
+  bx = tx - border_width;
+  by = ty - border_width;
+  bw = tw + border_width * 2;
+  bh = th + border_width * 2;
+  FillRect(bx, by, bw, bh, bg_color);
+  DrawRect(bx - 1, by - 1, bw - 2, bh - 2, border_color);
+  DrawText(tx, ty, tw, th, notify_text, text_color);
+}
+
+void DrawVolume(int volume)
+{
+  const int bx = 262;
+  const int by = 100;
+  const int bw = 30;
+  const int bh = 130;
+  const int ix = bx + 10;
+  const int iy = by + 10;
+  const int iw = 10;
+  const int ih = 100;
+  const int cx = ix + 5;
+  const int cy = iy + ih + 9;
+  int fy = iy + (100 - volume) * 100 / ih;
+  int fh = volume * 100 / ih;
+  FillRect(bx, by, bw, bh, MakePixel565(127, 127, 127));
+  FillRect(ix, iy, iw, ih, MakePixel565(0, 0, 0));
+  FillRect(ix, fy, iw, fh, MakePixel565(100, 200, 255));
+  DrawRect(ix, iy, iw, ih, MakePixel565(0, 0, 0));
+  if (volume >= 80) DrawHorzLines(cx, cy, volume_max_9, (sizeof volume_max_9) / (sizeof volume_max_9[0]), MakePixel565(100, 200, 255), 512);
+  else if (volume >= 40) DrawHorzLines(cx, cy, volume_mid_9, (sizeof volume_mid_9) / (sizeof volume_mid_9[0]), MakePixel565(100, 200, 255), 512);
+  else if (volume > 1) DrawHorzLines(cx, cy, volume_low_9, (sizeof volume_low_9) / (sizeof volume_low_9[0]), MakePixel565(100, 200, 255), 512);
+  else DrawHorzLines(cx, cy, volume_off_9, (sizeof volume_off_9) / (sizeof volume_off_9[0]), MakePixel565(100, 200, 255), 512);
+}
