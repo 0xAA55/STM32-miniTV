@@ -394,6 +394,14 @@ void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, in
     }
   }
 
+  if (enc2_delta)
+  {
+    CurVolume += enc2_delta * 5;
+    if (CurVolume < 0) CurVolume = 0;
+    if (CurVolume > 100) CurVolume = 100;
+    ShowVolume(200);
+  }
+
   int playbutton_anim_pos = GUIMenuAnim;
   int usbbutton_anim_pos = GUIMenuAnim - 1024;
   int optbutton_anim_pos = GUIMenuAnim - 2048;
