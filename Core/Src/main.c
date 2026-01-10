@@ -700,6 +700,91 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
+void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  const int scroll_bar_y = 10;
+  const int scroll_bar_max_height = FramebufferHeight - scroll_bar_y;
+  int y;
+  int text_size = 17;
+  int max_read_pos = 0;
+  int lines_per_screen;
+  int scroll_bar_size;
+  int scroll_bar_movable_size;
+  int scroll_bar_pos;
+  GUITextFileReadPos += enc1_delta;
+  GUITextFileTextSize += enc2_delta;
+  if (GUITextFileTextSize < 0) GUITextFileTextSize = 0;
+  if (GUITextFileTextSize > 2) GUITextFileTextSize = 2;
+  ClearScreen(MakePixel565(0, 0, 0));
+  switch(GUITextFileTextSize)
+  {
+    case 0:
+      UseLargeFont();
+      text_size = 17;
+      max_read_pos = GUITextFileMaxReadPosL;
+      break;
+    case 1:
+      UseMediumFont();
+      text_size = 14;
+      max_read_pos = GUITextFileMaxReadPosM;
+      break;
+    case 2:
+      UseSmallFont();
+      text_size = 12;
+      max_read_pos = GUITextFileMaxReadPosS;
+      break;
+  }
+  if (GUITextFileReadPos > max_read_pos) GUITextFileReadPos = max_read_pos;
+  if (GUITextFileReadPos < 0) GUITextFileReadPos = 0;
+  y = -GUITextFileReadPos * text_size;
+  if (*(uint16_t*)FILE_buffer == 0xFEFF)
+    DrawTextW(0, y, GUITextAreaWidth, FramebufferHeight - y, (uint16_t*)FILE_buffer, MakePixel565(255, 255, 255));
+  else
+    DrawText(0, y, GUITextAreaWidth, FramebufferHeight - y, (char*)FILE_buffer, MakePixel565(255, 255, 255));
+  lines_per_screen = FramebufferHeight / text_size;
+  scroll_bar_size = lines_per_screen * scroll_bar_max_height / (max_read_pos + lines_per_screen);
+  scroll_bar_movable_size = scroll_bar_max_height - scroll_bar_size;
+  scroll_bar_pos = scroll_bar_y + GUITextFileReadPos * scroll_bar_movable_size / max_read_pos;
+  FillRect(FramebufferWidth - 2, scroll_bar_pos, 2, scroll_bar_size, MakePixel565(100, 200, 255));
+  UseLargeFont();
+  if (enc2_click)
+  {
+    GUIIsUsingFile = 0;
+  }
+  DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+}
+void OnUsingFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  //TODO
+  if (!FsMounted)
+  {
+    ShowNotify(1000, "未知错误");
+    QuitFileList();
+    return;
+  }
+  switch(GUIFileType)
+  {
+    default:
+      ShowNotify(1000, "未知错误");
+      QuitFileList();
+      break;
+    case 1: //Text file
+      OnUsingTextFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+      break;
+    case 2: //Video file
+      OnUsingVideoFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+      break;
+    case 3: //Bug file
+      ClearScreen(MakePixel565(0, 0, 0));
+      if (enc2_click)
+      {
+        GUIIsUsingFile = 0;
+      }
+      DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+      break;
+  }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -811,7 +896,10 @@ int main(void)
         switch (GUICurMenu)
         {
           case 0: // TF card
-            OnFileListGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+            if (!GUIIsUsingFile)
+              OnFileListGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
+            else
+              OnUsingFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
             break;
           case 1: // USB
             ClearScreen(MakePixel565(0, 0, 0));
