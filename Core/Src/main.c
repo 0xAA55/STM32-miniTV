@@ -518,6 +518,13 @@ static void PrepareTextFile()
   if (GUITextFileMaxReadPosM > OneScreenLinesM) GUITextFileMaxReadPosM -= OneScreenLinesM; else GUITextFileMaxReadPosM = 0;
   if (GUITextFileMaxReadPosL > OneScreenLinesL) GUITextFileMaxReadPosL -= OneScreenLinesL; else GUITextFileMaxReadPosL = 0;
 }
+static void QuitVideoFile()
+{
+  GUIIsUsingFile = 0;
+  Phat_CloseFile(&CurFileStream1);
+  Phat_CloseFile(&CurFileStream2);
+  Phat_CloseFile(&CurFileStream3);
+}
 void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
 {
   UNUSED(hjpeg);
@@ -570,6 +577,111 @@ void JPEG_Decode_DMA(void *decode_to)
     HWJPEG_is_running = 0;
     QuitVideoFile();
   }
+}
+void AVIPause()
+{
+  if (!AVIPaused)
+  {
+    AVIPaused = 1;
+    AVIPausePlayTime = HAL_GetTick64();
+  }
+}
+void AVIResume()
+{
+  if (AVIPaused)
+  {
+    uint64_t paused_duration = HAL_GetTick64() - AVIPausePlayTime;
+    AVIStartPlayTime += paused_duration;
+    AVIPaused = 0;
+  }
+}
+uint64_t AVIGetTime()
+{
+  return AVIPaused ? AVIPausePlayTime - AVIStartPlayTime : HAL_GetTick64() - AVIStartPlayTime;
+}
+static fssize_t AVIStreamRead(void *buffer, size_t len, void *userdata)
+{
+  size_t bytes_read;
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+
+  Phat_ReadFile(stream, buffer, len, &bytes_read);
+  return bytes_read;
+}
+static fssize_t AVIStreamTell(void *userdata)
+{
+  FileSize_t position;
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  Phat_GetFilePointer(stream, &position);
+  return position;
+}
+static fssize_t AVIStreamSeek(fsize_t offset, void *userdata)
+{
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  Phat_SeekFile(stream, offset);
+  return AVIStreamTell(userdata);
+}
+static void AVIPrintf(void *userdata, const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  ShowNotifyV(2000, fmt, ap);
+  va_end(ap);
+  UNUSED(userdata);
+}
+static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
+{
+  size_t bytes_read;
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  if (length > sizeof FILE_buffer) return;
+  while(HWJPEG_is_running) __WFI();
+
+  Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
+  if (length == bytes_read) JPEG_Decode_DMA(Framebuffer2);
+}
+static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
+{
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  //TODO
+}
+static void PrepareVideoFile()
+{
+  PhatState res;
+  wave_format_ex *avi_audio_format;
+  res = Phat_OpenFile(&GUICurDir, GUIFileName, 1, &CurFileStream1);
+  if (res != PhatState_OK)
+  {
+    ShowNotify(1000, "无法打开文件（%s）", Phat_StateToString(res));
+    goto FailExit;
+  }
+  res = Phat_OpenFile(&GUICurDir, GUIFileName, 1, &CurFileStream2);
+  if (res != PhatState_OK)
+  {
+    ShowNotify(1000, "无法打开文件（%s）", Phat_StateToString(res));
+    goto FailExit;
+  }
+  res = Phat_OpenFile(&GUICurDir, GUIFileName, 1, &CurFileStream3);
+  if (res != PhatState_OK)
+  {
+    ShowNotify(1000, "无法打开文件（%s）", Phat_StateToString(res));
+    goto FailExit;
+  }
+  memset(&avir, 0, sizeof avir);
+  memset(&avi_meta_stream, 0, sizeof avi_meta_stream);
+  memset(&avi_video_stream, 0, sizeof avi_video_stream);
+  memset(&avi_audio_stream, 0, sizeof avi_audio_stream);
+  if (!avi_reader_init(&avir, &CurFileStream1, AVIStreamRead, AVIStreamSeek, AVIStreamTell, AVIPrintf, PRINT_FATAL)) goto FailExit;
+  if (!avi_map_stream_readers(&avir, &CurFileStream2, &CurFileStream3, OnVideoCompressed, NULL, NULL, OnAudio, &avi_video_stream, &avi_audio_stream)) goto FailExit;
+  avi_audio_format = &avi_audio_stream.stream_info->audio_format;
+  if (avi_audio_format->wFormatTag != 1 && avi_audio_format->wFormatTag != 0xFFFE) goto FailExit;
+  if (avi_audio_format->wBitsPerSample != 16) goto FailExit;
+  if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto FailExit;
+  if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto FailExit;
+  i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
+  AVIStartPlayTime = HAL_GetTick64();
+  GUIIsUsingFile = 1;
+  return;
+FailExit:
+  QuitVideoFile();
 }
 static void QuitFileList()
 {
@@ -803,6 +915,44 @@ void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_c
   if (enc2_click)
   {
     GUIIsUsingFile = 0;
+  }
+  DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+}
+void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  uint64_t time = AVIGetTime();
+  int have_video = (avi_video_stream.r != 0);
+  int have_audio = (avi_audio_stream.r != 0);
+  if (!have_video && !have_audio)
+  {
+    QuitVideoFile();
+  }
+  CurDrawFramebuffer = Framebuffer2;
+  if (have_video)
+  {
+    fsize_t target_frame = avi_video_get_frame_number_by_time(&avi_video_stream, time);
+    avi_video_seek_to_frame_index(&avi_video_stream, target_frame, 1);
+  }
+
+  if (have_audio)
+  {
+
+  }
+
+  if ((have_video && avi_video_stream.is_no_more_packets) && (have_audio && avi_audio_stream.is_no_more_packets))
+  {
+    QuitVideoFile();
+  }
+  if (enc2_click)
+  {
+    QuitVideoFile();
+  }
+  if (enc2_delta)
+  {
+    CurVolume += enc2_delta * 5;
+    if (CurVolume < 0) CurVolume = 0;
+    if (CurVolume > 100) CurVolume = 100;
+    ShowVolume(200);
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
