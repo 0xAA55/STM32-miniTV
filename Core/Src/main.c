@@ -313,6 +313,26 @@ void OnException()
     if (IsEnc1Click()) Suicide();
   }
 }
+void ShowNotify(uint32_t duration, const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  vsnprintf(GUINotifyInfo, sizeof GUINotifyInfo, format, ap);
+  va_end(ap);
+  GUINotifyTimeUntil = HAL_GetTick() + duration;
+  GUINotifyShow = 1;
+}
+void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
+{
+  vsnprintf(GUINotifyInfo, sizeof GUINotifyInfo, format, ap);
+  GUINotifyTimeUntil = HAL_GetTick() + duration;
+  GUINotifyShow = 1;
+}
+void ShowVolume(uint32_t duration)
+{
+  GUIVolumeShowTimeUntil = HAL_GetTick() + duration;
+  GUIVolumeShow = 1;
+}
 uint8_t GetCurFileType()
 {
   uint8_t ret;
@@ -714,6 +734,22 @@ int main(void)
             Suicide();
             break;
         }
+    }
+
+    if (GUIVolumeShow)
+    {
+      if (cur_tick <= GUIVolumeShowTimeUntil)
+        DrawVolume(CurVolume);
+      else
+        GUIVolumeShow = 0;
+    }
+
+    if (GUINotifyShow)
+    {
+      if (cur_tick <= GUINotifyTimeUntil)
+        DrawNotifyInfo(280, MakePixel565(255, 255, 255), MakePixel565(255, 255, 255), MakePixel565(0, 0, 0), GUINotifyInfo);
+      else
+        GUINotifyShow = 0;
     }
 
     SwapFramebuffers();
