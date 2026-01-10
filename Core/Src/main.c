@@ -518,6 +518,59 @@ static void PrepareTextFile()
   if (GUITextFileMaxReadPosM > OneScreenLinesM) GUITextFileMaxReadPosM -= OneScreenLinesM; else GUITextFileMaxReadPosM = 0;
   if (GUITextFileMaxReadPosL > OneScreenLinesL) GUITextFileMaxReadPosL -= OneScreenLinesL; else GUITextFileMaxReadPosL = 0;
 }
+void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
+{
+  UNUSED(hjpeg);
+  HWJPEG_is_running = 0;
+}
+void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
+{
+  UNUSED(hjpeg);
+  // ShowNotify(200, "JPEG 解码错误");
+}
+void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
+{
+  UNUSED(hjpeg);
+  if (pInfo->ImageWidth > FramebufferWidth)
+  {
+    QuitVideoFile();
+    ShowNotify(1000, "视频像素宽度 %u 大于 %u，无法播放。", pInfo->ImageWidth, FramebufferWidth);
+  }
+  if (pInfo->ImageHeight > FramebufferHeight)
+  {
+    QuitVideoFile();
+    ShowNotify(1000, "视频像素高度 %u 大于 %u，无法播放。", pInfo->ImageHeight, FramebufferHeight);
+  }
+}
+void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
+{
+  uint32_t in_size = &FILE_buffer[sizeof FILE_buffer] - HWJPEG_src_pointer;
+  if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
+  HWJPEG_src_pointer += NbDecodedData;
+  HAL_JPEG_ConfigInputBuffer(hjpeg, HWJPEG_src_pointer, in_size);
+}
+void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
+{
+  HWJPEG_dst_pointer += OutDataLength;
+  HAL_JPEG_ConfigOutputBuffer(hjpeg, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT);
+}
+void JPEG_Wait_Decode()
+{
+  while(HWJPEG_is_running) __WFI();
+}
+void JPEG_Decode_DMA(void *decode_to)
+{
+  JPEG_Wait_Decode();
+  HWJPEG_src_pointer = FILE_buffer;
+  HWJPEG_dst_pointer = (uint8_t *)decode_to;
+  HWJPEG_is_running = 1;
+  SCB_CleanInvalidateDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
+  if (HAL_JPEG_Decode_DMA(&hjpeg, HWJPEG_src_pointer, JPEG_CHUNK_SIZE_IN, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK)
+  {
+    HWJPEG_is_running = 0;
+    QuitVideoFile();
+  }
+}
 static void QuitFileList()
 {
   if (FsMounted)
