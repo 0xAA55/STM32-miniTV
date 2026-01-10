@@ -21,18 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdlib.h>
-#include <string.h>
-#include "utf8.h"
-#include "utf16.h"
-#include "ili9341.h"
-#include "graphics.h"
-#include "fastmath.h"
-#include "qspixip.h"
-#include "dynalloc.h"
-#include "../../FlashROM/flashmap.h"
-#include "../../Phat/Phat/phat.h"
-#include "../../avi_read/avi_read/avi_reader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,18 +30,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-__attribute__((section(".dtcm_bss"))) extern ADC_HandleTypeDef hadc1;
-__attribute__((section(".dtcm_bss"))) extern DMA2D_HandleTypeDef hdma2d;
-__attribute__((section(".dtcm_bss"))) extern I2S_HandleTypeDef hi2s2;
-__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi2_tx;
-__attribute__((section(".dtcm_bss"))) extern JPEG_HandleTypeDef hjpeg;
-__attribute__((section(".dtcm_bss"))) extern QSPI_HandleTypeDef hqspi;
-__attribute__((section(".dtcm_bss"))) extern SD_HandleTypeDef hsd1;
-__attribute__((section(".dtcm_bss"))) extern SPI_HandleTypeDef hspi1;
-__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_tx;
-__attribute__((section(".dtcm_bss"))) extern DMA_HandleTypeDef hdma_spi1_rx;
-__attribute__((section(".dtcm_bss"))) extern LCD hlcd;
-__attribute__((section(".dtcm_data"))) extern Pixel565 (*CurDrawFramebuffer)[320];
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -81,18 +58,66 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 
-PCD_HandleTypeDef hpcd_USB_OTG_HS;
-
 /* USER CODE BEGIN PV */
-const size_t FramebufferWidth = 320;
-const size_t FramebufferHeight = 240;
+const int FramebufferWidth = 320;
+const int FramebufferHeight = 240;
+const int GUITextAreaWidth = FramebufferWidth - 3;
+int USB_SDCardReady;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
-uint8_t JPEG_buffer[320 * 240 * 2]; // Same size as the framebuffer
+uint8_t FILE_buffer[320 * 240 * 2]; // Same size as the framebuffer
 Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
 Phat_t phat;
 avi_reader avir;
+avi_stream_reader avi_meta_stream;
+avi_stream_reader avi_video_stream;
+avi_stream_reader avi_audio_stream;
+i2saudio_t i2saudio;
+int FsMounted;
+int CurVolume = 100;
+int GUICurMenu;
+int GUICurMenuLevel;
+int GUIMenuAnim;
+int GUIMenuReady;
+int GUICurFileIndex;
+int GUIFirstFileIndex;
+int GUILastFileIndex;
+WChar_t GUIFileName[MAX_FILE_NAMELEN];
+uint8_t GUIFileType;
+Phat_DirInfo_t GUICurDir;
+Phat_FileInfo_t CurFileStream1;
+Phat_FileInfo_t CurFileStream2;
+Phat_FileInfo_t CurFileStream3;
+volatile int GUIIsUsingFile;
+int GUITextFileSize;
+int GUITextFileTextSize;
+int GUITextFileReadPos;
+int GUITextFileMaxReadPosS;
+int GUITextFileMaxReadPosM;
+int GUITextFileMaxReadPosL;
+uint64_t AVIStartPlayTime;
+uint64_t AVIPausePlayTime;
+int AVIPaused;
+int GUINotifyShow;
+uint32_t GUINotifyTimeUntil;
+char GUINotifyInfo[256];
+int GUIVolumeShow;
+uint32_t GUIVolumeShowTimeUntil;
+char FormatBuf[256];
+volatile int BAT_IsCharging;
+volatile int BAT_IsFull;
+volatile int Enc1;
+volatile int Enc2;
+volatile uint32_t BAT_ADC_VAL;
+volatile int BAT_ADC_Sampling;
+volatile int MainBtnClick;
+volatile int SecondBtnClick;
+volatile int BAT_Voltage;
+volatile int HWJPEG_is_running;
+uint8_t* HWJPEG_src_pointer;
+uint8_t* HWJPEG_dst_pointer;
+volatile uint32_t TickHigh;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,30 +146,6 @@ __attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define NUM_FILE_ITEMS 14
-#define MAX_FILE_NAMELEN 256
-int GUICurMenu;
-int GUICurMenuLevel;
-int GUIMenuAnim;
-int GUIMenuReady;
-Phat_DirInfo_t GUICurDir;
-int GUICurFileIndex;
-int GUIFirstFileIndex;
-int GUILastFileIndex;
-int GUIFileListNeedRedraw;
-WChar_t GUIFileName[256];
-uint8_t GUIFileType;
-int FsMounted;
-char FormatBuf[256];
-__attribute__((section(".dtcm_bss"))) volatile int BAT_IsCharging;
-__attribute__((section(".dtcm_bss"))) volatile int BAT_IsFull;
-__attribute__((section(".dtcm_bss"))) volatile int Enc1;
-__attribute__((section(".dtcm_bss"))) volatile int Enc2;
-__attribute__((section(".dtcm_bss"))) volatile uint32_t BAT_ADC_VAL;
-__attribute__((section(".dtcm_bss"))) volatile int BAT_ADC_Sampling;
-__attribute__((section(".dtcm_bss"))) volatile int MainBtnClick;
-__attribute__((section(".dtcm_bss"))) volatile int SecondBtnClick;
-__attribute__((section(".dtcm_bss"))) volatile int BAT_Voltage;
 __attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
