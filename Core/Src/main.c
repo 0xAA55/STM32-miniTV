@@ -1375,7 +1375,6 @@ void MPU_Config(void)
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER5;
   MPU_InitStruct.BaseAddress = 0x30000000;
-  MPU_InitStruct.AccessPermission = MPU_REGION_PRIV_RW;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
 

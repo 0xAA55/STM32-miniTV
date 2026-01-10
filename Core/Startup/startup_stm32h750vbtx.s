@@ -52,6 +52,16 @@ defined in linker script */
 .word _edtcm_data
 .word _sdtcm_bss
 .word _edtcm_bss
+.word _sid2_data
+.word _sd2_data
+.word _ed2_data
+.word _sd2_bss
+.word _ed2_bss
+.word _sid3_data
+.word _sd3_data
+.word _ed3_data
+.word _sd3_bss
+.word _ed3_bss
 
 /**
  * @brief  This is the code that gets called when the processor first
@@ -112,6 +122,32 @@ CopyDTCMData:
   bgt CopyDTCMData
 CopyDTCMDataDone:
 
+/* Copy the D2 data segment initializers from flash to D2 */
+  ldr r0, =_sid2_data
+  ldr r1, =_sd2_data
+  ldr r2, =_ed2_data
+  subs r2, r2, r1
+  ble CopyD2DataDone
+CopyD2Data:
+  ldr r3, [r0], #4
+  str r3, [r1], #4
+  subs r2, r2, #4
+  bgt CopyD2Data
+CopyD2DataDone:
+
+/* Copy the D3 data segment initializers from flash to D3 */
+  ldr r0, =_sid3_data
+  ldr r1, =_sd3_data
+  ldr r2, =_ed3_data
+  subs r2, r2, r1
+  ble CopyD3DataDone
+CopyD3Data:
+  ldr r3, [r0], #4
+  str r3, [r1], #4
+  subs r2, r2, #4
+  bgt CopyD3Data
+CopyD3DataDone:
+
 /* Zero fill the bss segment. */
   ldr r2, =_sbss
   ldr r4, =_ebss
@@ -139,6 +175,34 @@ FillZeroDTCMbss:
 LoopFillZeroDTCMbss:
   cmp r2, r4
   bcc FillZeroDTCMbss
+
+/* Zero fill the D2 bss segment. */
+  ldr r2, =_sd2_bss
+  ldr r4, =_ed2_bss
+  movs r3, #0
+  b LoopFillZeroD2bss
+
+FillZeroD2bss:
+  str  r3, [r2]
+  adds r2, r2, #4
+
+LoopFillZeroD2bss:
+  cmp r2, r4
+  bcc FillZeroD2bss
+
+/* Zero fill the D3 bss segment. */
+  ldr r2, =_sd3_bss
+  ldr r4, =_ed3_bss
+  movs r3, #0
+  b LoopFillZeroD3bss
+
+FillZeroD3bss:
+  str  r3, [r2]
+  adds r2, r2, #4
+
+LoopFillZeroD3bss:
+  cmp r2, r4
+  bcc FillZeroD3bss
 
 /* Call static constructors */
     bl __libc_init_array

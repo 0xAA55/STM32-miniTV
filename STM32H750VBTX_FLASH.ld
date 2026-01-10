@@ -154,7 +154,7 @@ SECTIONS
 
   /* Uninitialized data section */
   . = ALIGN(4);
-  .bss :
+  .bss (NOLOAD) :
   {
     /* This is used by the startup in order to initialize the .bss section */
     _sbss = .;         /* define a global symbol at bss start */
@@ -167,6 +167,56 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM_D1
+
+  /* used by the startup to initialize DTCMRAM data */
+  _sid2_data = LOADADDR(.d2_data);
+
+  /* Initialized data sections goes into D2 RAM, load LMA copy after code */
+  .d2_data :
+  {
+    . = ALIGN(4);
+    _sd2_data = .;   /* create a global symbol at data start */
+    *(.d2_data)      /* .data sections */
+    *(.d2_data*)     /* .data* sections */
+    . = ALIGN(4);
+    _ed2_data = .;        /* define a global symbol at data end */
+  } >RAM_D2 AT> FLASH
+
+  /* Uninitialized data section */
+  .d2_bss (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _sd2_bss = .;   /* create a global symbol at D2 bss start */
+    *(.d2_bss)
+    *(.d2_bss*)
+    . = ALIGN(4);
+    _ed2_bss = .;        /* define a global symbol at D2 bss end */
+  } >RAM_D2
+
+  /* used by the startup to initialize DTCMRAM data */
+  _sid3_data = LOADADDR(.d3_data);
+
+  /* Initialized data sections goes into D2 RAM, load LMA copy after code */
+  .d3_data :
+  {
+    . = ALIGN(4);
+    _sd3_data = .;   /* create a global symbol at data start */
+    *(.d3_data)      /* .data sections */
+    *(.d3_data*)     /* .data* sections */
+    . = ALIGN(4);
+    _ed3_data = .;        /* define a global symbol at data end */
+  } >RAM_D3 AT> FLASH
+
+  /* Uninitialized data section */
+  .d3_bss (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _sd3_bss = .;   /* create a global symbol at D2 bss start */
+    *(.d3_bss)
+    *(.d3_bss*)
+    . = ALIGN(4);
+    _ed3_bss = .;        /* define a global symbol at D2 bss end */
+  } >RAM_D3
 
   /* used by the startup to initialize DTCMRAM data */
   _sidtcm_data = LOADADDR(.dtcm_data);
@@ -182,8 +232,8 @@ SECTIONS
     _edtcm_data = .;        /* define a global symbol at data end */
   } >DTCMRAM AT> FLASH
 
-  /* Initialized data sections goes into DTCMRAM, load LMA copy after code */
-  .dtcm_bss :
+  /* Uninitialized data section */
+  .dtcm_bss (NOLOAD) :
   {
     . = ALIGN(4);
     _sdtcm_bss = .;   /* create a global symbol at data start */
