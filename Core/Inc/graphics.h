@@ -18,8 +18,8 @@ typedef uint16_t Pixel565;
 extern Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
 extern Pixel565 (*CurDrawFramebuffer)[320];
 extern void SwapFramebuffers();
-extern const size_t FramebufferWidth;
-extern const size_t FramebufferHeight;
+extern const int FramebufferWidth;
+extern const int FramebufferHeight;
 extern void OnException();
 
 typedef struct SrcPicture_s
@@ -78,5 +78,7 @@ void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, in
 void DrawStandByScreen();
 void DrawBattery(int percentage, int is_charging, int is_full);
 void DrawFileIcon(int x, int y, int is_folder);
+void DrawNotifyInfo(int w, Pixel565 border_color, Pixel565 text_color, Pixel565 bg_color, const char* notify_text);
+void DrawVolume(int volume);
 
 #endif /* INC_GRAPHICS_H_ */
