@@ -573,7 +573,7 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
       GUICurFileIndex = 0;
       GUIFirstFileIndex = 0;
       GUILastFileIndex = 0;
-      GUIFileListNeedRedraw = 1;
+      GUIIsUsingFile = 0;
       Phat_OpenRootDir(&phat, &GUICurDir);
       UpdateLastFileIndex();
     }
@@ -583,69 +583,80 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
     if (enc1_delta)
     {
       GUICurFileIndex += enc1_delta;
-      GUIFileListNeedRedraw = 1;
     }
-    if (GUIFileListNeedRedraw)
+    ClearScreen(MakePixel565(0, 0, 0));
+    if (GUICurFileIndex < 0 ) GUICurFileIndex = 0;
+    if (GUICurFileIndex > GUILastFileIndex) GUICurFileIndex = GUILastFileIndex;
+    if (GUIFirstFileIndex < 0) GUIFirstFileIndex = 0;
+    if (GUICurFileIndex > GUIFirstFileIndex + (NUM_FILE_ITEMS - 1))
     {
-      ClearScreen(MakePixel565(0, 0, 0));
-      if (GUICurFileIndex < 0 ) GUICurFileIndex = 0;
-      if (GUICurFileIndex > GUILastFileIndex) GUICurFileIndex = GUILastFileIndex;
-      if (GUIFirstFileIndex < 0) GUIFirstFileIndex = 0;
-      if (GUICurFileIndex > GUIFirstFileIndex + (NUM_FILE_ITEMS - 1))
-      {
-        GUIFirstFileIndex = GUICurFileIndex - (NUM_FILE_ITEMS - 1);
-      }
-      if (GUICurFileIndex < GUIFirstFileIndex)
-      {
-        GUIFirstFileIndex = GUICurFileIndex;
-      }
-      if (GUIFirstFileIndex > GUILastFileIndex) GUIFirstFileIndex = GUILastFileIndex;
-      GUICurDir.cur_diritem = 0;
-      for (size_t i = 0; i < GUIFirstFileIndex; i++)
-      {
-        res = Phat_NextDirItem(&GUICurDir);
-        if (res == PhatState_EndOfDirectory) break;
-        if (res != PhatState_OK)
-        {
-          QuitFileList();
-          break;
-        }
-      }
-      SetWordWrap(0);
-      for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
-      {
-        int file_index = GUIFirstFileIndex + i;
-        int y = i * 17;
-        uint8_t filetype = 0;
-        res = Phat_NextDirItem(&GUICurDir);
-        if (res == PhatState_EndOfDirectory) break;
-        if (res != PhatState_OK)
-        {
-          QuitFileList();
-          break;
-        }
-        filetype = GetCurFileType();
-        DrawFileIcon(0, y, filetype);
-        DrawTextW(17, y, 280, 20, GUICurDir.LFN_name, MakePixel565(255, 255, 255));
-        if (file_index == GUICurFileIndex)
-        {
-          InvertRect(17, y + 1, 280, 18, 1);
-          strcpyW(GUIFileName, GUICurDir.LFN_name);
-          GUIFileType = filetype;
-        }
-      }
-      SetWordWrap(1);
+      GUIFirstFileIndex = GUICurFileIndex - (NUM_FILE_ITEMS - 1);
     }
+    if (GUICurFileIndex < GUIFirstFileIndex)
+    {
+      GUIFirstFileIndex = GUICurFileIndex;
+    }
+    if (GUIFirstFileIndex > GUILastFileIndex) GUIFirstFileIndex = GUILastFileIndex;
+    GUICurDir.cur_diritem = 0;
+    for (size_t i = 0; i < GUIFirstFileIndex; i++)
+    {
+      res = Phat_NextDirItem(&GUICurDir);
+      if (res == PhatState_EndOfDirectory) break;
+      if (res != PhatState_OK)
+      {
+        ShowNotify(1000, "列出文件失败（%s）", Phat_StateToString(res));
+        QuitFileList();
+        break;
+      }
+    }
+    SetWordWrap(0);
+    for(size_t i = 0; i < NUM_FILE_ITEMS; i++)
+    {
+      int file_index = GUIFirstFileIndex + i;
+      int y = i * 17;
+      uint8_t filetype = 0;
+      res = Phat_NextDirItem(&GUICurDir);
+      if (res == PhatState_EndOfDirectory) break;
+      if (res != PhatState_OK)
+      {
+        ShowNotify(1000, "列出文件失败（%s）", Phat_StateToString(res));
+        QuitFileList();
+        break;
+      }
+      filetype = GetCurFileType();
+      DrawFileIcon(0, y, filetype);
+      DrawTextW(17, y, 280, 20, GUICurDir.LFN_name, MakePixel565(255, 255, 255));
+      if (file_index == GUICurFileIndex)
+      {
+        InvertRect(17, y + 1, 280, 18, 1);
+        strcpyW(GUIFileName, GUICurDir.LFN_name);
+        GUIFileType = filetype;
+      }
+    }
+    SetWordWrap(1);
     if (enc1_click)
     {
-      if (GUIFileType == 0)
+      switch (GUIFileType)
       {
+      case 0: //Folder
         res = Phat_ChDir(&GUICurDir, GUIFileName);
         GUIFirstFileIndex = 0;
         GUICurFileIndex = 0;
         UpdateLastFileIndex();
+        break;
+      case 1: //Text file
+        PrepareTextFile();
+        break;
+      case 2: // Video file
+        PrepareVideoFile();
+        break;
+      case 3: // Bug file
+        ShowNotify(500, "无法打开文件");
+        break;
+      default: // Unknown file
+        ShowNotify(500, "无法打开文件");
+        break;
       }
-      GUIFileListNeedRedraw = 1;
     }
   }
   if (enc2_click)
@@ -663,12 +674,14 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
           res = PhatState_OK;
         }
         if (res != PhatState_OK)
+        {
+          ShowNotify(1000, "打开路径失败（%s）", Phat_StateToString(res));
           QuitFileList();
+        }
         else
         {
           GUIFirstFileIndex = 0;
           GUICurFileIndex = 0;
-          GUIFileListNeedRedraw = 1;
           UpdateLastFileIndex();
         }
       }
@@ -677,6 +690,13 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
     {
       QuitFileList();
     }
+  }
+  if (enc2_delta)
+  {
+    CurVolume += enc2_delta * 5;
+    if (CurVolume < 0) CurVolume = 0;
+    if (CurVolume > 100) CurVolume = 100;
+    ShowVolume(200);
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
