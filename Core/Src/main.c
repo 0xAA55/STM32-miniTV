@@ -148,6 +148,18 @@ __attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static uint16_t BSwap16(uint16_t val)
+{
+  union {
+    uint8_t u8s[2];
+    uint16_t u16;
+  }u1, u2;
+
+  u1.u16 = val;
+  u2.u8s[0] = u1.u8s[1];
+  u2.u8s[1] = u1.u8s[0];
+  return u2.u16 ;
+}
 __attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
