@@ -24,8 +24,6 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include "dynalloc.h"
-
 /**
  * Pointer to the current high watermark of the heap usage
  */
@@ -80,17 +78,7 @@ void *_sbrk(ptrdiff_t incr)
   return (void *)prev_heap_end;
 }
 
-void *malloc(size_t size)
+void *mem_sbrk(int incr)
 {
-  return DynAlloc_Alloc(size);
-}
-
-void *realloc(void *user_ptr, size_t new_size)
-{
-  return DynAlloc_Realloc(user_ptr, new_size);
-}
-
-void free(void *addr)
-{
-  DynAlloc_Free(addr);
+  return _sbrk(incr);
 }
