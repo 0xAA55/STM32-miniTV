@@ -600,7 +600,19 @@ void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, ui
 }
 void JPEG_Wait_Decode()
 {
-  while(HWJPEG_is_running) __WFI();
+  const uint32_t timeout = HAL_GetTick() + 200;
+  while(HWJPEG_is_running)
+  {
+    __WFI();
+    if (HAL_GetTick() > timeout)
+    {
+      ShowNotify(1000, "JPEG 解码超时");
+      goto FailExit;
+    }
+  }
+  return;
+FailExit:
+  QuitVideoFile();
 }
 void JPEG_Decode_DMA(void *decode_to)
 {
@@ -676,7 +688,7 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   size_t bytes_read;
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
   if (length > sizeof FILE_buffer) return;
-  while(HWJPEG_is_running) __WFI();
+  JPEG_Wait_Decode();
 
   Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
   if (length == bytes_read)
