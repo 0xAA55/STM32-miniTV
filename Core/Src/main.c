@@ -266,7 +266,7 @@ static Pixel565 DrawPixelBg(int x, int y, int time)
 }
 void SwapFramebuffers()
 {
-  SCB_CleanDCache();
+  SCB_CleanDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
   LCD_WriteGRAM_DMA(&hlcd, (void*)CurDrawFramebuffer, sizeof Framebuffer1 / sizeof Framebuffer1[0][0]);
   if (CurDrawFramebuffer == Framebuffer1)
     CurDrawFramebuffer = Framebuffer2;
