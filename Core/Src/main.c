@@ -733,14 +733,21 @@ static void PrepareVideoFile()
   if (!avi_reader_init(&avir, &CurFileStream1, AVIStreamRead, AVIStreamSeek, AVIStreamTell, AVIPrintf, PRINT_WARN)) goto FailExit;
   if (!avi_map_stream_readers(&avir, &CurFileStream2, &CurFileStream3, OnVideoCompressed, NULL, NULL, OnAudio, &avi_video_stream, &avi_audio_stream)) goto FailExit;
   avi_audio_format = &avi_audio_stream.stream_info->audio_format;
-  if (avi_audio_format->wFormatTag != 1 && avi_audio_format->wFormatTag != 0xFFFE) goto FailExit;
-  if (avi_audio_format->wBitsPerSample != 16) goto FailExit;
-  if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto FailExit;
-  if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto FailExit;
+  if (avi_video_stream.stream_info->stream_header.fccHandler != 0x47504A4D) goto BadVideoFormat;
+  if (avi_audio_format->wFormatTag != 1 && avi_audio_format->wFormatTag != 0xFFFE) goto BadAudioFormat;
+  if (avi_audio_format->wBitsPerSample != 16) goto BadAudioFormat;
+  if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto BadAudioFormat;
+  if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto BadAudioFormat;
   i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
   AVIStartPlayTime = HAL_GetTick64();
   GUIIsUsingFile = 1;
   return;
+BadVideoFormat:
+  ShowNotify(1000, "不支持的视频格式");
+  goto FailExit;
+BadAudioFormat:
+  ShowNotify(1000, "不支持的音频格式");
+  goto FailExit;
 FailExit:
   QuitVideoFile();
 }
