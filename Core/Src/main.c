@@ -119,8 +119,9 @@ volatile int MainBtnClick;
 volatile int SecondBtnClick;
 volatile int BAT_Voltage;
 volatile int HWJPEG_is_running;
-uint8_t* HWJPEG_src_pointer;
-uint8_t* HWJPEG_dst_pointer;
+volatile uint8_t* HWJPEG_src_pointer;
+volatile uint8_t* HWJPEG_dst_pointer;
+volatile size_t HWJPEG_src_size;
 volatile uint32_t TickHigh;
 /* USER CODE END PV */
 
@@ -582,7 +583,8 @@ void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pIn
 }
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 {
-  uint32_t in_size = &FILE_buffer[sizeof FILE_buffer] - HWJPEG_src_pointer;
+  uint32_t decoded = HWJPEG_src_pointer - FILE_buffer;
+  uint32_t in_size = HWJPEG_src_size - decoded;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
   HWJPEG_src_pointer += NbDecodedData;
   HAL_JPEG_ConfigInputBuffer(hjpeg, HWJPEG_src_pointer, in_size);
@@ -599,15 +601,21 @@ void JPEG_Wait_Decode()
 void JPEG_Decode_DMA(void *decode_to)
 {
   JPEG_Wait_Decode();
+  uint32_t in_size = HWJPEG_src_size;
+  if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
+  if (HAL_JPEG_Init(&hjpeg) != HAL_OK) goto FailExit;
+  if (HAL_JPEG_EnableHeaderParsing(&hjpeg) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer = FILE_buffer;
   HWJPEG_dst_pointer = (uint8_t *)decode_to;
   HWJPEG_is_running = 1;
   SCB_CleanInvalidateDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
-  if (HAL_JPEG_Decode_DMA(&hjpeg, HWJPEG_src_pointer, JPEG_CHUNK_SIZE_IN, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK)
-  {
-    HWJPEG_is_running = 0;
-    QuitVideoFile();
-  }
+  if (HAL_JPEG_Decode_DMA(&hjpeg, HWJPEG_src_pointer, in_size, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
+  HWJPEG_src_pointer += in_size;
+  return;
+FailExit:
+  HWJPEG_is_running = 0;
+  QuitVideoFile();
+  return;
 }
 void AVIPause()
 {
@@ -667,7 +675,12 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   while(HWJPEG_is_running) __WFI();
 
   Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
-  if (length == bytes_read) JPEG_Decode_DMA(Framebuffer2);
+  if (length == bytes_read)
+  {
+    HWJPEG_src_size = length;
+    LCD_WaitToIdle(&hlcd);
+    JPEG_Decode_DMA(Framebuffer2);
+  }
 }
 static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
 {
