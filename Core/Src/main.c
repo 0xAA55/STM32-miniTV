@@ -556,6 +556,8 @@ static void QuitVideoFile()
   Phat_CloseFile(&CurFileStream1);
   Phat_CloseFile(&CurFileStream2);
   Phat_CloseFile(&CurFileStream3);
+  HAL_JPEG_DeInit(&hjpeg);
+  HWJPEG_is_running = 0;
 }
 void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
 {
@@ -565,7 +567,9 @@ void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
 void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
 {
   UNUSED(hjpeg);
-  // ShowNotify(200, "JPEG 解码错误");
+  HAL_JPEG_DeInit(hjpeg);
+  HWJPEG_is_running = 0;
+  ShowNotify(200, "JPEG 解码错误");
 }
 void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
 {
