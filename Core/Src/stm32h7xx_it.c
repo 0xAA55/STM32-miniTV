@@ -72,6 +72,8 @@ __attribute__((section(".itcm_code"))) void HAL_PCD_IRQHandler(PCD_HandleTypeDef
 extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_spi2_tx;
+extern MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 extern JPEG_HandleTypeDef hjpeg;
 extern SD_HandleTypeDef hsd1;
 extern DMA_HandleTypeDef hdma_spi1_tx;
@@ -402,6 +404,21 @@ void JPEG_IRQHandler(void)
   /* USER CODE BEGIN JPEG_IRQn 1 */
 
   /* USER CODE END JPEG_IRQn 1 */
+}
+
+/**
+  * @brief This function handles MDMA global interrupt.
+  */
+void MDMA_IRQHandler(void)
+{
+  /* USER CODE BEGIN MDMA_IRQn 0 */
+
+  /* USER CODE END MDMA_IRQn 0 */
+  HAL_MDMA_IRQHandler(&hmdma_jpeg_infifo_th);
+  HAL_MDMA_IRQHandler(&hmdma_jpeg_outfifo_ne);
+  /* USER CODE BEGIN MDMA_IRQn 1 */
+
+  /* USER CODE END MDMA_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

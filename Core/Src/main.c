@@ -51,6 +51,8 @@ I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_tx;
 
 JPEG_HandleTypeDef hjpeg;
+MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 
 QSPI_HandleTypeDef hqspi;
 
@@ -128,6 +130,7 @@ void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
+static void MX_MDMA_Init(void);
 static void MX_SDMMC1_SD_Init(void);
 static void MX_JPEG_Init(void);
 static void MX_SPI1_Init(void);
@@ -1034,6 +1037,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  MX_MDMA_Init();
   MX_SDMMC1_SD_Init();
   MX_JPEG_Init();
   MX_SPI1_Init();
@@ -1041,8 +1045,8 @@ int main(void)
   MX_QUADSPI_Init();
   MX_ADC1_Init();
   MX_DMA2D_Init();
-  MX_CRC_Init();
   MX_USB_DEVICE_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
@@ -1587,6 +1591,23 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
+
+}
+
+/**
+  * Enable MDMA controller clock
+  */
+static void MX_MDMA_Init(void)
+{
+
+  /* MDMA controller clock enable */
+  __HAL_RCC_MDMA_CLK_ENABLE();
+  /* Local variables */
+
+  /* MDMA interrupt initialization */
+  /* MDMA_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(MDMA_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(MDMA_IRQn);
 
 }
 
