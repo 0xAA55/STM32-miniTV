@@ -591,12 +591,12 @@ void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
   uint32_t in_size = HWJPEG_src_size - decoded;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
   HWJPEG_src_pointer += NbDecodedData;
-  HAL_JPEG_ConfigInputBuffer(hjpeg, HWJPEG_src_pointer, in_size);
+  HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size);
 }
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
   HWJPEG_dst_pointer += OutDataLength;
-  HAL_JPEG_ConfigOutputBuffer(hjpeg, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT);
+  HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT);
 }
 void JPEG_Wait_Decode()
 {
@@ -625,7 +625,7 @@ void JPEG_Decode_DMA(void *decode_to)
   HWJPEG_dst_pointer = (uint8_t *)decode_to;
   HWJPEG_is_running = 1;
   SCB_CleanInvalidateDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
-  if (HAL_JPEG_Decode_DMA(&hjpeg, HWJPEG_src_pointer, in_size, HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
+  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer += in_size;
   return;
 FailExit:
