@@ -166,14 +166,12 @@ static uint16_t BSwap16(uint16_t val)
   u2.u8s[1] = u1.u8s[0];
   return u2.u16 ;
 }
-__attribute__((section(".itcm_code")))
 void HAL_IncTick(void)
 {
   uint32_t old_tick = uwTick;
   uwTick += (uint32_t)uwTickFreq;
   if (uwTick < old_tick) TickHigh ++;
 }
-__attribute__((section(".itcm_code")))
 uint64_t HAL_GetTick64()
 {
   uint64_t ret;
@@ -182,13 +180,12 @@ uint64_t HAL_GetTick64()
   __enable_irq();
   return ret;
 }
-__attribute__((section(".itcm_code")))
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  __attribute__((section(".dtcm_bss"))) static int adc_read1;
-  __attribute__((section(".dtcm_bss"))) static int adc_read2;
-  __attribute__((section(".dtcm_bss"))) static int adc_read3;
-  __attribute__((section(".dtcm_bss"))) static int adc_read4;
+  DTCM_BSS static int adc_read1;
+  DTCM_BSS static int adc_read2;
+  DTCM_BSS static int adc_read3;
+  DTCM_BSS static int adc_read4;
   if (hadc == &hadc1)
   {
     adc_read4 = adc_read3;

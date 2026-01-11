@@ -80,12 +80,19 @@ extern const int GUITextAreaWidth;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-uint64_t HAL_GetTick64();
 int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin);
 #ifndef DEBUG
+ITCM_CODE void *memset(void * dst, int val, size_t len);
+ITCM_CODE void *memcpy(void * dst, const void * src, size_t len);
+ITCM_CODE void *memmove(void * dst, const void * src, size_t len);
+ITCM_CODE uint64_t HAL_GetTick64();
+ITCM_CODE void HAL_IncTick(void);
 ITCM_CODE void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s);
 ITCM_CODE void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s);
 ITCM_CODE void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
+ITCM_CODE void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
+#else
+uint64_t HAL_GetTick64();
 #endif
 /* USER CODE END EFP */
 
