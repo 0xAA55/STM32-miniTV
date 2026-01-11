@@ -710,7 +710,7 @@ void JPEG_Wait_Decode()
 FailExit:
   QuitVideoFile();
 }
-void JPEG_Decode_DMA(void *decode_to)
+void JPEG_HWDecode(void *decode_to)
 {
   JPEG_Wait_Decode();
   uint32_t in_size = HWJPEG_src_size;
@@ -793,7 +793,7 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   {
     HWJPEG_src_size = length;
     LCD_WaitToIdle(&hlcd);
-    JPEG_Decode_DMA(Framebuffer2);
+    JPEG_HWDecode(Framebuffer2);
   }
 }
 static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
