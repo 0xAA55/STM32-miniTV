@@ -690,6 +690,7 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   if (length > sizeof FILE_buffer) return;
   JPEG_Wait_Decode();
 
+  Phat_SeekFile(stream, offset);
   Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
   if (length == bytes_read)
   {
