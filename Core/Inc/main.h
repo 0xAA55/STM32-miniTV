@@ -191,8 +191,9 @@ DTCM_BSS extern int AVIPaused;
 DTCM_BSS extern int USB_SDCardReady;
 
 extern Pixel565 Framebuffer1[240][320];
-D2_BSS extern Pixel565 Framebuffer2[240][320];
-extern uint8_t FILE_buffer[320 * 240 * 2]; // Same size as the framebuffer
+extern Pixel565 Framebuffer2[240][320];
+D2_BSS extern uint8_t JPEG_buffer[3][240][320];
+extern uint8_t FILE_buffer[65536]; // Same size as the framebuffer
 extern Phat_t phat;
 extern Phat_DirInfo_t GUICurDir;
 extern Phat_FileInfo_t CurFileStream1;
