@@ -62,6 +62,7 @@ void ADC_IRQHandler(void);
 void SPI1_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void OTG_HS_IRQHandler(void);
+void DMA2D_IRQHandler(void);
 void JPEG_IRQHandler(void);
 void MDMA_IRQHandler(void);
 /* USER CODE BEGIN EFP */
