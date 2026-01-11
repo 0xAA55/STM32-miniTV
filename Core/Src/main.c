@@ -316,20 +316,48 @@ void OnException()
     if (IsEnc1Click()) Suicide();
   }
 }
+void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
+{
+  char *from;
+  size_t size;
+  from = GUINotifyInfo;
+  size = sizeof GUINotifyInfo;
+  if (GUINotifyShow)
+  {
+    while(*from && size)
+    {
+      from ++;
+      size --;
+    }
+    if (!size)
+    {
+      from = GUINotifyInfo;
+      size = sizeof GUINotifyInfo;
+    }
+  }
+  if (from > GUINotifyInfo && *(from - 1) != '\n')
+  {
+    if (size)
+    {
+      *from ++ = '\n';
+      size --;
+    }
+    if (!size)
+    {
+      from = GUINotifyInfo;
+      size = sizeof GUINotifyInfo;
+    }
+  }
+  vsnprintf(from, size, format, ap);
+  GUINotifyTimeUntil = HAL_GetTick() + duration;
+  GUINotifyShow = 1;
+}
 void ShowNotify(uint32_t duration, const char *format, ...)
 {
   va_list ap;
   va_start(ap, format);
-  vsnprintf(GUINotifyInfo, sizeof GUINotifyInfo, format, ap);
+  ShowNotifyV(duration, format, ap);
   va_end(ap);
-  GUINotifyTimeUntil = HAL_GetTick() + duration;
-  GUINotifyShow = 1;
-}
-void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
-{
-  vsnprintf(GUINotifyInfo, sizeof GUINotifyInfo, format, ap);
-  GUINotifyTimeUntil = HAL_GetTick() + duration;
-  GUINotifyShow = 1;
 }
 void ShowVolume(uint32_t duration)
 {
