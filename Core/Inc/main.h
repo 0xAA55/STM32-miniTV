@@ -210,7 +210,8 @@ DTCM_BSS extern volatile int BAT_IsFull;
 DTCM_BSS extern volatile int HWJPEG_is_running;
 DTCM_BSS extern volatile uint8_t* HWJPEG_src_pointer;
 DTCM_BSS extern volatile uint8_t* HWJPEG_dst_pointer;
-DTCM_BSS extern volatile size_t HWJPEG_src_size;
+DTCM_BSS extern size_t HWJPEG_src_size;
+DTCM_BSS extern uint8_t* HWJPEG_dst_buffer;
 DTCM_BSS extern volatile uint32_t TickHigh;
 /* USER CODE END Private defines */
 

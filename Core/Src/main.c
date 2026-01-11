@@ -121,7 +121,8 @@ volatile int BAT_Voltage;
 volatile int HWJPEG_is_running;
 volatile uint8_t* HWJPEG_src_pointer;
 volatile uint8_t* HWJPEG_dst_pointer;
-volatile size_t HWJPEG_src_size;
+size_t HWJPEG_src_size;
+uint8_t* HWJPEG_dst_buffer;
 volatile uint32_t TickHigh;
 /* USER CODE END PV */
 
@@ -595,8 +596,11 @@ void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 }
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
+  size_t space = (size_t)(&HWJPEG_dst_buffer[sizeof Framebuffer1] - HWJPEG_dst_pointer);
+  if (space > JPEG_CHUNK_SIZE_OUT) space = JPEG_CHUNK_SIZE_OUT;
   HWJPEG_dst_pointer += OutDataLength;
-  HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT);
+  SCB_InvalidateDCache_by_Addr((uint32_t *)pDataOut, OutDataLength);
+  HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, space);
 }
 void JPEG_Wait_Decode()
 {
@@ -622,9 +626,10 @@ void JPEG_Decode_DMA(void *decode_to)
   if (HAL_JPEG_Init(&hjpeg) != HAL_OK) goto FailExit;
   if (HAL_JPEG_EnableHeaderParsing(&hjpeg) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer = FILE_buffer;
-  HWJPEG_dst_pointer = (uint8_t *)decode_to;
+  HWJPEG_dst_buffer = (uint8_t *)decode_to;
+  HWJPEG_dst_pointer = HWJPEG_dst_buffer;
   HWJPEG_is_running = 1;
-  SCB_CleanInvalidateDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
+  SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
   if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer += in_size;
   return;
