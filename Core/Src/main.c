@@ -718,12 +718,14 @@ void JPEG_HWDecode(void *decode_to)
   if (HAL_JPEG_Init(&hjpeg) != HAL_OK) goto FailExit;
   if (HAL_JPEG_EnableHeaderParsing(&hjpeg) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer = FILE_buffer;
-  HWJPEG_dst_buffer = (uint8_t *)decode_to;
+  HWJPEG_dst_buffer = (uint8_t *)JPEG_buffer;
   HWJPEG_dst_pointer = HWJPEG_dst_buffer;
-  HWJPEG_is_running = 1;
-  SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
-  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
-  HWJPEG_src_pointer += in_size;
+  // HWJPEG_is_running = 1;
+  // SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
+  // if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
+  if (HAL_JPEG_Decode(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT, 200) != HAL_OK) goto FailExit;
+  // JPEG_Wait_Decode();
+  DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)decode_to, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight);
   return;
 FailExit:
   HWJPEG_is_running = 0;
