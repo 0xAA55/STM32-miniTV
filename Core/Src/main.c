@@ -587,11 +587,11 @@ void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pIn
 }
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 {
-  uint32_t decoded = HWJPEG_src_pointer - FILE_buffer;
-  uint32_t in_size = HWJPEG_src_size - decoded;
+  size_t decoded = HWJPEG_src_pointer - FILE_buffer;
+  size_t in_size = HWJPEG_src_size - decoded;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
   HWJPEG_src_pointer += NbDecodedData;
-  HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size);
+  HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, (uint32_t)in_size);
 }
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
