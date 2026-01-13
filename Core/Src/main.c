@@ -124,7 +124,7 @@ volatile uint8_t* HWJPEG_src_pointer;
 volatile uint8_t* HWJPEG_dst_pointer;
 size_t HWJPEG_src_size;
 uint8_t* HWJPEG_dst_buffer;
-volatile JPEG_ConfTypeDef HWJpeg_info;
+JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
 /* USER CODE END PV */
 
@@ -685,6 +685,7 @@ static void QuitVideoFile()
   Phat_CloseFile(&CurFileStream3);
   HAL_JPEG_Abort(&hjpeg);
   HAL_JPEG_DeInit(&hjpeg);
+  memset(&HWJpeg_info, 0, sizeof HWJpeg_info);
   HWJPEG_is_running = 0;
 }
 void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
@@ -698,22 +699,6 @@ void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
   HAL_JPEG_DeInit(hjpeg);
   HWJPEG_is_running = 0;
   ShowNotify(200, "JPEG 解码错误");
-}
-void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
-{
-  UNUSED(hjpeg);
-  HWJpeg_info = *pInfo;
-  if (pInfo->ImageWidth > FramebufferWidth)
-  {
-    QuitVideoFile();
-    ShowNotify(1000, "视频像素宽度 %u 大于 %u，无法播放。", pInfo->ImageWidth, FramebufferWidth);
-  }
-  if (pInfo->ImageHeight > FramebufferHeight)
-  {
-    QuitVideoFile();
-    ShowNotify(1000, "视频像素高度 %u 大于 %u，无法播放。", pInfo->ImageHeight, FramebufferHeight);
-  }
-  DMA2D_Init(pInfo->ImageWidth, pInfo->ImageHeight, pInfo->ChromaSubsampling);
 }
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 {
