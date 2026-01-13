@@ -1694,7 +1694,7 @@ static void MX_SDMMC1_SD_Init(void)
 {
 
   /* USER CODE BEGIN SDMMC1_Init 0 */
-
+  #define HAL_SD_Init(x) HAL_OK
   /* USER CODE END SDMMC1_Init 0 */
 
   /* USER CODE BEGIN SDMMC1_Init 1 */
@@ -1706,9 +1706,12 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.BusWide = SDMMC_BUS_WIDE_4B;
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
   hsd1.Init.ClockDiv = 1;
+  if (HAL_SD_Init(&hsd1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN SDMMC1_Init 2 */
-  // TODO:
-  // Everytime you use STM32CubeMX to generate codes, be sure to remove the `HAL_SD_Init()` call above there.
+  #undef HAL_SD_Init
   HAL_SD_MspInit(&hsd1);
   /* USER CODE END SDMMC1_Init 2 */
 
