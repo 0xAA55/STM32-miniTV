@@ -156,6 +156,7 @@ __attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+__attribute__((optimize("O3")))
 static uint16_t BSwap16(uint16_t val)
 {
   union {
@@ -168,12 +169,14 @@ static uint16_t BSwap16(uint16_t val)
   u2.u8s[1] = u1.u8s[0];
   return u2.u16 ;
 }
+__attribute__((optimize("O3")))
 void HAL_IncTick(void)
 {
   uint32_t old_tick = uwTick;
   uwTick += (uint32_t)uwTickFreq;
   if (uwTick < old_tick) TickHigh ++;
 }
+__attribute__((optimize("O3")))
 uint64_t HAL_GetTick64()
 {
   uint64_t ret;
@@ -255,6 +258,7 @@ int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uin
   val += last;
   return val >= middle ? 1 : 0;
 }
+__attribute__((optimize("O3")))
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
   int r = FastCos(x - time / 16) / 2 + 512;
