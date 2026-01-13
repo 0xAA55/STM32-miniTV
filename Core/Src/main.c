@@ -1383,10 +1383,16 @@ int main(void)
               OnUsingFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
             break;
           case 1: // USB
-            ClearScreen(MakePixel565(0, 0, 0));
-            if (enc2_click) GUICurMenuLevel = 0;
+            DrawUSBMSCScreen();
+            USB_SDCardReady = 1;
+            if (enc2_click)
+            {
+              GUICurMenuLevel = 0;
+              USB_SDCardReady = 0;
+            }
             break;
           case 2: // Option
+            // TODO
             ClearScreen(MakePixel565(0, 0, 0));
             if (enc2_click) GUICurMenuLevel = 0;
             break;
