@@ -655,6 +655,7 @@ void SetWordWrap(int wrap)
   WordWrap = wrap;
 }
 
+__attribute__((optimize("O3")))
 static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
 {
   DrawDataTransparent *dt = (DrawDataTransparent*)userdata;
@@ -675,6 +676,7 @@ static void on_draw_transparent(void *userdata, int x, int y, size_t char_index)
   }
 }
 
+__attribute__((optimize("O3")))
 static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
 {
   DrawDataOpaque *dt = (DrawDataOpaque*)userdata;
@@ -697,6 +699,7 @@ static void on_draw_opaque(void *userdata, int x, int y, size_t char_index)
   }
 }
 
+__attribute__((optimize("O3")))
 static void on_draw_get_size(void *userdata, int x, int y, size_t char_index)
 {
   DrawDataGetSize *dt = (DrawDataGetSize*)userdata;
@@ -777,6 +780,7 @@ void GetTextSizeU(const uint32_t* text, int w, int h, uint32_t *width, uint32_t 
   if (height) *height = dt.h;
 }
 
+__attribute__((optimize("O3")))
 void FillRect(int x, int y, int w, int h, Pixel565 color)
 {
   int r = x + w;
@@ -795,6 +799,7 @@ void FillRect(int x, int y, int w, int h, Pixel565 color)
   }
 }
 
+__attribute__((optimize("O3")))
 void DrawRect(int x, int y, int w, int h, Pixel565 color)
 {
   FillRect(x, y, w, 1, color);
@@ -803,6 +808,7 @@ void DrawRect(int x, int y, int w, int h, Pixel565 color)
   FillRect(x, y + h - 1, w, 1, color);
 }
 
+__attribute__((optimize("O3")))
 void InvertRect(int x, int y, int w, int h, int fill)
 {
   if (fill)
@@ -836,6 +842,7 @@ void ClearScreen(Pixel565 color)
   FillRect(0, 0, FramebufferWidth, FramebufferHeight, color);
 }
 
+__attribute__((optimize("O3")))
 static int BitBltCheck(int *dx, int *dy, int *w, int *h, const SrcPicture* src, int *src_x, int *src_y)
 {
   if (*src_x < 0)
@@ -872,6 +879,7 @@ static int BitBltCheck(int *dx, int *dy, int *w, int *h, const SrcPicture* src, 
   return 1;
 }
 
+__attribute__((optimize("O3")))
 void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y)
 {
   if (!BitBltCheck(&dx, &dy, &w, &h, src, &src_x, &src_y)) return;
@@ -890,6 +898,7 @@ void BitBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, i
   }
 }
 
+__attribute__((optimize("O3")))
 void TransparentBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int src_x, int src_y, Pixel565 key)
 {
   if (!BitBltCheck(&dx, &dy, &w, &h, src, &src_x, &src_y)) return;
@@ -908,6 +917,7 @@ void TransparentBlt565(int dx, int dy, int w, int h, const SrcPicture* src, int 
   }
 }
 
+__attribute__((optimize("O3")))
 void DrawHorzLines(int x_center, int y_center, const HorzLine *lines, size_t count, Pixel565 color, int scaling)
 {
   if (scaling <= 0) return;
@@ -957,6 +967,7 @@ void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, in
   DrawHorzLines(x_center, y_center, shutdown_50, (sizeof shutdown_50) / (sizeof shutdown_50[0]), c2, scaling);
 }
 
+__attribute__((optimize("O3")))
 void DrawStandByScreen()
 {
   const Pixel565 colors1[] =
