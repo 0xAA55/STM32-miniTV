@@ -14,6 +14,7 @@ static void i2saudio_prep_audio_buffer(i2saudio_p i2sa)
   for(size_t i = 0; i < i2sa->audio_prepare_buffer_samples; i++) i2sa->cur_write_audio_buffer[i] = (int16_t)(i2sa->audio_prepare_buffer[i] * i2sa->volume / 100);
   for(size_t i = i2sa->audio_prepare_buffer_samples; i < AUDIO_BUFFER_HALFSIZE; i++) i2sa->cur_write_audio_buffer[i] = 0;
   i2sa->audio_prepare_buffer_samples = 0;
+  SCB_CleanDCache_by_Addr((uint32_t*)i2sa->cur_write_audio_buffer, AUDIO_BUFFER_HALFSIZE * 2);
 }
 
 void i2saudio_tx_half_cplt_callback(i2saudio_p i2sa)
