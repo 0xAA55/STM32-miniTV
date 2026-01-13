@@ -40,7 +40,7 @@ typedef struct
 
 int i2saudio_init(i2saudio_p i2sa, I2S_HandleTypeDef *hi2s, int volume, uint32_t sample_rate);
 int i2saudio_need_data(i2saudio_p i2sa);
-int i2saudio_feed_samples_to_play(i2saudio_p i2sa, uint16_t *samples, size_t count, int blocking, size_t* written);
+int i2saudio_feed_samples_to_play(i2saudio_p i2sa, uint16_t *samples, size_t count, size_t* written);
 void i2saudio_set_volume(i2saudio_p i2sa, int volume);
 int i2saudio_pause(i2saudio_p i2sa);
 int i2saudio_resume(i2saudio_p i2sa);

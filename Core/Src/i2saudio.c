@@ -104,7 +104,7 @@ int i2saudio_need_data(i2saudio_p i2sa)
   return !i2sa->audio_is_prepped;
 }
 
-int i2saudio_feed_samples_to_play(i2saudio_p i2sa, uint16_t *samples, size_t count, int blocking, size_t* written)
+int i2saudio_feed_samples_to_play(i2saudio_p i2sa, uint16_t *samples, size_t count, size_t* written)
 {
   if (!i2sa || !written) return 0;
   *written = 0;
@@ -121,48 +121,39 @@ int i2saudio_feed_samples_to_play(i2saudio_p i2sa, uint16_t *samples, size_t cou
         (*written) ++;
       }
     }
-    if (i2sa->audio_is_prepped)
+    else
     {
       if (!i2sa->audio_is_playing)
       {
-        i2sa->audio_is_playing = 1;
-        if (HAL_I2S_Transmit_DMA(i2sa->hi2s, (uint16_t*)i2sa->audio_buffer, AUDIO_BUFFER_SIZE) != HAL_OK)
+        i2saudio_prep_audio_buffer(i2sa);
+        if (i2sa->cur_write_audio_buffer == i2sa->audio_buffer)
         {
-          i2sa->audio_is_playing = 0;
-          return 0;
+          i2sa->cur_write_audio_buffer = i2sa->audio_buffer_half;
         }
-        if (blocking) __WFI();
-        else break;
+        else
+        {
+          i2sa->audio_is_prepped = 1;
+          i2sa->audio_is_playing = 1;
+          if (HAL_I2S_Transmit_DMA(i2sa->hi2s, (uint16_t*)i2sa->audio_buffer, AUDIO_BUFFER_SIZE) != HAL_OK)
+          {
+            i2sa->audio_is_playing = 0;
+            return 0;
+          }
+        }
       }
       else
       {
-        // Buffers are full, wait until played half of a buffer
-        if (blocking) __WFI();
-        else break;
-      }
-    }
-    else
-    {
-      if (i2sa->cur_write_audio_buffer == i2sa->audio_buffer)
-      {
-        i2saudio_prep_audio_buffer(i2sa);
-        i2sa->cur_write_audio_buffer = i2sa->audio_buffer_half;
-      }
-      else if (i2sa->cur_write_audio_buffer == i2sa->audio_buffer_half)
-      {
-        i2saudio_prep_audio_buffer(i2sa);
-        i2sa->audio_is_prepped = 1;
-        i2sa->audio_is_playing = 1;
-        if (HAL_I2S_Transmit_DMA(i2sa->hi2s, (uint16_t*)i2sa->audio_buffer, AUDIO_BUFFER_SIZE) != HAL_OK)
+        if (!i2sa->audio_is_prepped)
         {
-          i2sa->audio_is_playing = 0;
-          return 0;
+          i2saudio_prep_audio_buffer(i2sa);
+          i2sa->audio_is_prepped = 1;
         }
-        if (blocking) __WFI();
-        else break;
+        else
+        {
+          break;
+        }
       }
     }
-    if (!count) break;
-  }while (blocking);
+  } while (count);
   return 1;
 }
