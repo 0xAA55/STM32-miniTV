@@ -345,6 +345,10 @@ void Suicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
 }
+void Unsuicide()
+{
+  HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
+}
 void OnException()
 {
   while(1)
@@ -1342,7 +1346,7 @@ int main(void)
   Graphics_Init();
   DrawStandByScreen();
   SwapFramebuffers();
-  HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
+  Unsuicide();
   WaitForPresent();
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
   UseLargeFont();
@@ -1387,14 +1391,13 @@ int main(void)
             if (enc2_click) GUICurMenuLevel = 0;
             break;
           case 3: // Shutdown
-            for (int y = 0; y < hlcd.yres; y++)
-            {
-              for (int x = 0; x < hlcd.xres; x++)
-              {
-                CurDrawFramebuffer[y][x] = DrawPixelBg(x, y, cur_tick);
-              }
-            }
+            DrawStandByScreen();
             Suicide();
+            if (enc2_click)
+            {
+              GUICurMenuLevel = 0;
+              Unsuicide();
+            }
             break;
         }
     }
