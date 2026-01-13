@@ -88,6 +88,7 @@ int GUIMenuReady;
 int GUICurFileIndex;
 int GUIFirstFileIndex;
 int GUILastFileIndex;
+uint32_t GUIRefreshTime;
 WChar_t GUIFileName[MAX_FILE_NAMELEN];
 uint8_t GUIFileType;
 Phat_DirInfo_t GUICurDir;
@@ -1008,6 +1009,10 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
   }
   if (FsMounted)
   {
+    if (cur_tick - GUIRefreshTime > 1000)
+    {
+      Phat_FlushCache(&phat, 1);
+    }
     if (enc1_delta)
     {
       GUICurFileIndex += enc1_delta;
