@@ -47,4 +47,7 @@ int i2saudio_resume(i2saudio_p i2sa);
 int i2saudio_stop(i2saudio_p i2sa);
 int i2saudio_stop_and_change_sample_rate(i2saudio_p i2sa, uint32_t sample_rate);
 
+void i2saudio_tx_half_cplt_callback(i2saudio_p i2sa);
+void i2saudio_tx_full_cplt_callback(i2saudio_p i2sa);
+
 #endif /* INC_I2SAUDIO_H_ */

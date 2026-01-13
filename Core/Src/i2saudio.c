@@ -7,8 +7,6 @@
 
 #include "i2saudio.h"
 
-extern i2saudio_t i2saudio;
-
 void Error_Handler(void);
 
 static void i2saudio_prep_audio_buffer(i2saudio_p i2sa)
@@ -17,17 +15,17 @@ static void i2saudio_prep_audio_buffer(i2saudio_p i2sa)
   for(size_t i = i2sa->audio_prepare_buffer_samples; i < AUDIO_BUFFER_HALFSIZE; i++) i2sa->cur_write_audio_buffer[i] = 0;
   i2sa->audio_prepare_buffer_samples = 0;
 }
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
+
+void i2saudio_tx_half_cplt_callback(i2saudio_p i2sa)
 {
-  i2saudio.cur_write_audio_buffer = i2saudio.audio_buffer;
-  i2saudio_prep_audio_buffer(&i2saudio);
-  i2saudio.audio_is_prepped = 0;
+  i2sa->cur_write_audio_buffer = i2sa->audio_buffer;
+  i2sa->audio_is_prepped = 0;
 }
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
+
+void i2saudio_tx_full_cplt_callback(i2saudio_p i2sa)
 {
-  i2saudio.cur_write_audio_buffer = i2saudio.audio_buffer_half;
-  i2saudio_prep_audio_buffer(&i2saudio);
-  i2saudio.audio_is_prepped = 0;
+  i2sa->cur_write_audio_buffer = i2sa->audio_buffer_half;
+  i2sa->audio_is_prepped = 0;
 }
 
 void i2saudio_set_volume(i2saudio_p i2sa, int volume)
