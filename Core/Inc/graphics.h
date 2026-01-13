@@ -76,6 +76,7 @@ void DrawUSBConnButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int
 void DrawOptionButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawShutdownButton(int x_center, int y_center, Pixel565 c1, Pixel565 c2, int scaling);
 void DrawStandByScreen();
+void DrawUSBMSCScreen();
 void DrawBattery(int percentage, int is_charging, int is_full);
 void DrawFileIcon(int x, int y, int is_folder);
 void DrawNotifyInfo(int w, Pixel565 border_color, Pixel565 text_color, Pixel565 bg_color, const char* notify_text);

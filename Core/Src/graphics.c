@@ -1012,6 +1012,19 @@ void DrawStandByScreen()
   }
 }
 
+void DrawUSBMSCScreen()
+{
+  const SrcPicture BatteryPicture =
+  {
+    (const Pixel565*)FLASH_MAP->USBMSCBMP,
+    ((FLASH_MAP->USBMSCBMP_Width * 2 - 1) / 4 + 1) * 4,
+    FLASH_MAP->USBMSCBMP_Width,
+    FLASH_MAP->USBMSCBMP_Height,
+    0,
+  };
+  BitBlt565(0, 0, FramebufferWidth, FramebufferHeight, &BatteryPicture, 0, 0);
+}
+
 void DrawBattery(int percentage, int is_charging, int is_full)
 {
   const int BatLevels = 14;
