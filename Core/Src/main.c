@@ -925,7 +925,7 @@ static void PrepareVideoFile()
   memset(&avi_meta_stream, 0, sizeof avi_meta_stream);
   memset(&avi_video_stream, 0, sizeof avi_video_stream);
   memset(&avi_audio_stream, 0, sizeof avi_audio_stream);
-  if (!avi_reader_init(&avir, &CurFileStream1, AVIStreamRead, AVIStreamSeek, AVIStreamTell, AVIPrintf, PRINT_WARN)) goto FailExit;
+  if (!avi_reader_init(&avir, &CurFileStream1, AVIStreamRead, AVIStreamSeek, AVIStreamTell, AVIPrintf, PRINT_FATAL)) goto FailExit;
   if (!avi_map_stream_readers(&avir, &CurFileStream2, &CurFileStream3, OnVideoCompressed, NULL, NULL, OnAudio, &avi_video_stream, &avi_audio_stream)) goto FailExit;
   avi_audio_format = &avi_audio_stream.stream_info->audio_format;
   if (avi_video_stream.stream_info->stream_header.fccHandler != 0x47504A4D) goto BadVideoFormat;
