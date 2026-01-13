@@ -16,6 +16,10 @@
 #define LCD_TIMEOUT 100
 #endif
 
+#ifndef LCD_FUNC
+#define LCD_FUNC
+#endif
+
 typedef enum LCD_Color_Mode_e
 {
   LCD_RGB565 = 0x55,
@@ -44,7 +48,7 @@ typedef struct LCD_Pin_s
   uint32_t pin_bit;
 }LCD_Pin;
 
-LCD_Pin LCD_MakePin(GPIO_TypeDef *gpio, uint32_t pin_bit);
+LCD_FUNC LCD_Pin LCD_MakePin(GPIO_TypeDef *gpio, uint32_t pin_bit);
 
 typedef struct LCD_s
 {
@@ -65,9 +69,10 @@ typedef struct LCD_s
   int cur_window_y;
   int cur_window_r;
   int cur_window_b;
+  int is_16bit_mode;
   volatile int is_dma_active;
   uint8_t *dma_pointer;
-  size_t dma_bytes_to_go;
+  size_t dma_transfers_to_go;
 }LCD;
 
 typedef struct LCD_GPIO_s
@@ -91,29 +96,32 @@ HAL_StatusTypeDef LCD_Init
   LCD_Orient orient
 );
 
-HAL_StatusTypeDef LCD_Config(LCD *hlcd);
-void LCD_WaitToIdle(LCD *hlcd);
-HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
-HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
-HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline);
-HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient);
-HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode);
-HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y);
-HAL_StatusTypeDef LCD_SetWindow(LCD *hlcd, int x, int y, int r, int b);
-HAL_StatusTypeDef LCD_SetBrightness(LCD *hlcd, uint8_t brightness);
-HAL_StatusTypeDef LCD_GetBrightness(LCD *hlcd, uint8_t *brightness);
-HAL_StatusTypeDef LCD_ReadGRAM(LCD *hlcd, void *pixels, size_t count);
-HAL_StatusTypeDef LCD_WriteGRAM(LCD *hlcd, void *pixels, size_t count);
-HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count);
-HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count);
-HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, size_t count);
+LCD_FUNC HAL_StatusTypeDef LCD_Config(LCD *hlcd);
+LCD_FUNC void LCD_WaitToIdle(LCD *hlcd);
+LCD_FUNC HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
+LCD_FUNC HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
+LCD_FUNC HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline);
+LCD_FUNC HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient);
+LCD_FUNC HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode);
+LCD_FUNC HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y);
+LCD_FUNC HAL_StatusTypeDef LCD_SetBrightness(LCD *hlcd, uint8_t brightness);
+LCD_FUNC HAL_StatusTypeDef LCD_GetBrightness(LCD *hlcd, uint8_t *brightness);
+LCD_FUNC HAL_StatusTypeDef LCD_SetWindow(LCD *hlcd, int x, int y, int r, int b);
+LCD_FUNC HAL_StatusTypeDef LCD_ReadGRAM(LCD *hlcd, void *pixels, size_t count);
+LCD_FUNC HAL_StatusTypeDef LCD_WriteGRAM(LCD *hlcd, void *pixels, size_t count);
+LCD_FUNC HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count);
+LCD_FUNC HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count);
+LCD_FUNC HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, size_t count);
 
-size_t LCD_ReadPixels(LCD *hlcd, int x, int y, int w, int h, void *pixels);
-size_t LCD_WritePixels(LCD *hlcd, int x, int y, int w, int h, void *pixels);
-HAL_StatusTypeDef LCD_FillRect(LCD *hlcd, int x, int y, int w, int h, uint8_t R, uint8_t G, uint8_t B);
-HAL_StatusTypeDef LCD_FillRect2(LCD *hlcd, int x, int y, int r, int b, uint8_t R, uint8_t G, uint8_t B);
+LCD_FUNC size_t LCD_ReadPixels(LCD *hlcd, int x, int y, int w, int h, void *pixels);
+LCD_FUNC size_t LCD_WritePixels(LCD *hlcd, int x, int y, int w, int h, void *pixels);
+LCD_FUNC HAL_StatusTypeDef LCD_FillRect(LCD *hlcd, int x, int y, int w, int h, uint8_t R, uint8_t G, uint8_t B);
+LCD_FUNC HAL_StatusTypeDef LCD_FillRect2(LCD *hlcd, int x, int y, int r, int b, uint8_t R, uint8_t G, uint8_t B);
 
-Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
-Pixel666 MakePixel666(uint8_t R, uint8_t G, uint8_t B);
+LCD_FUNC Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B);
+LCD_FUNC Pixel666 MakePixel666(uint8_t R, uint8_t G, uint8_t B);
+
+LCD_FUNC void LCD_On_DMA_TX(LCD *hlcd);
+LCD_FUNC void LCD_On_DMA_RX(LCD *hlcd);
 
 #endif /* INC_ILI9341_H_ */

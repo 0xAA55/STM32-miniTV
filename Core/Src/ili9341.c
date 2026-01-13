@@ -8,12 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void LCD_On_DMA_TX(LCD *hlcd);
-void LCD_On_DMA_RX(LCD *hlcd);
+LCD_FUNC void LCD_On_DMA_TX(LCD *hlcd);
+LCD_FUNC void LCD_On_DMA_RX(LCD *hlcd);
 
-extern LCD hlcd;
-
-LCD_Pin LCD_MakePin(GPIO_TypeDef *gpio, uint32_t pin_bit)
+__attribute__((optimize("O3")))
+LCD_FUNC LCD_Pin LCD_MakePin(GPIO_TypeDef *gpio, uint32_t pin_bit)
 {
   LCD_Pin ret =
   {
@@ -23,62 +22,66 @@ LCD_Pin LCD_MakePin(GPIO_TypeDef *gpio, uint32_t pin_bit)
   return ret;
 }
 
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-  if (hspi == hlcd.hspi)
-  {
-    LCD_On_DMA_TX(&hlcd);
-  }
-}
-
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-  if (hspi == hlcd.hspi)
-  {
-    LCD_On_DMA_RX(&hlcd);
-  }
-}
-
-static void Pin_Low(LCD_Pin *pin)
+__attribute__((optimize("O3")))
+LCD_FUNC static void Pin_Low(LCD_Pin *pin)
 {
   pin->gpio->BSRR = pin->pin_bit << 16;
   // HAL_GPIO_WritePin(pin->gpio, pin->pin_bit, GPIO_PIN_RESET);
 }
 
-static void Pin_High(LCD_Pin *pin)
+__attribute__((optimize("O3")))
+LCD_FUNC static void Pin_High(LCD_Pin *pin)
 {
   pin->gpio->BSRR = pin->pin_bit;
   // HAL_GPIO_WritePin(pin->gpio, pin->pin_bit, GPIO_PIN_SET);
 }
 
-static uint16_t BSwap16(uint16_t val)
+__attribute__((optimize("O3")))
+LCD_FUNC int LCD_Enter16BitMode(LCD *hlcd)
 {
-  union {
-    uint16_t u16;
-    uint8_t u8[2];
-  } data;
-  data.u16 = val;
-  uint8_t temp = data.u8[0];
-  data.u8[0] = data.u8[1];
-  data.u8[1] = temp;
-  return data.u16;
-}
-
-static void BSwap16Multi(uint16_t *data, size_t count)
-{
-  for (size_t i = 0; i < count; i++)
+  HAL_StatusTypeDef ret = HAL_OK;
+  if (!hlcd->is_16bit_mode)
   {
-    data[i] = BSwap16(data[i]);
+    hlcd->hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hlcd->hspi->hdmatx->Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hlcd->hspi->hdmatx->Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hlcd->hspi->hdmarx->Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hlcd->hspi->hdmarx->Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    ret = HAL_SPI_Init(hlcd->hspi); if (ret != HAL_OK) return ret;
+    ret = HAL_DMA_Init(hlcd->hspi->hdmatx); if (ret != HAL_OK) return ret;
+    ret = HAL_DMA_Init(hlcd->hspi->hdmarx); if (ret != HAL_OK) return ret;
+    if (ret != HAL_OK) return ret;
+    hlcd->is_16bit_mode = 1;
   }
+  return ret;
 }
 
-void LCD_WaitToIdle(LCD *hlcd)
+__attribute__((optimize("O3")))
+LCD_FUNC int LCD_Ensure8BitMode(LCD *hlcd)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  if (hlcd->is_16bit_mode)
+  {
+    hlcd->hspi->Init.DataSize = SPI_DATASIZE_8BIT;
+    hlcd->hspi->hdmatx->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hlcd->hspi->hdmatx->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hlcd->hspi->hdmarx->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hlcd->hspi->hdmarx->Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    ret = HAL_SPI_Init(hlcd->hspi); if (ret != HAL_OK) return ret;
+    ret = HAL_DMA_Init(hlcd->hspi->hdmatx); if (ret != HAL_OK) return ret;
+    ret = HAL_DMA_Init(hlcd->hspi->hdmarx); if (ret != HAL_OK) return ret;
+    hlcd->is_16bit_mode = 0;
+  }
+  return ret;
+}
+
+LCD_FUNC void LCD_WaitToIdle(LCD *hlcd)
 {
   while (hlcd->is_dma_active)
     __WFI();
 }
 
-HAL_StatusTypeDef LCD_Init
+LCD_FUNC HAL_StatusTypeDef LCD_Init
 (
   LCD *hlcd,
   SPI_HandleTypeDef *hspi,
@@ -89,6 +92,7 @@ HAL_StatusTypeDef LCD_Init
   LCD_Orient orient
 )
 {
+  memset(hlcd, 0, sizeof *hlcd);
   hlcd->hspi = hspi;
   hlcd->hdma_spi_tx = hdma_spi_tx;
   hlcd->hdma_spi_rx = hdma_spi_rx;
@@ -100,12 +104,11 @@ HAL_StatusTypeDef LCD_Init
   hlcd->pin_miso = gpio->pin_miso;
   hlcd->color_mode = color_mode;
   hlcd->orient = orient;
-  hlcd->is_dma_active = 0;
 
   return HAL_OK;
 }
 
-static HAL_StatusTypeDef LCD_Transmit(LCD *hlcd, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_Transmit(LCD *hlcd, void *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   while (count >= 0xFFFF)
@@ -123,7 +126,7 @@ static HAL_StatusTypeDef LCD_Transmit(LCD *hlcd, uint8_t *data, size_t count)
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_Receive(LCD *hlcd, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_Receive(LCD *hlcd, void *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   while (count >= 0xFFFF)
@@ -141,7 +144,7 @@ static HAL_StatusTypeDef LCD_Receive(LCD *hlcd, uint8_t *data, size_t count)
   return ret;
 }
 
-static size_t min_size(size_t size1, size_t size2)
+LCD_FUNC static size_t LCD_min_size(size_t size1, size_t size2)
 {
   if (size1 <= size2)
     return size1;
@@ -149,40 +152,42 @@ static size_t min_size(size_t size1, size_t size2)
     return size2;
 }
 
-static HAL_StatusTypeDef LCD_Transmit_DMA(LCD *hlcd, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_Transmit_DMA(LCD *hlcd, void *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  size_t dma_size = min_size(0xFFFF, count);
+  size_t dma_size = LCD_min_size(0xFFFF, count);
   hlcd->is_dma_active = 1;
-  hlcd->dma_pointer = data + dma_size;
-  hlcd->dma_bytes_to_go = count - dma_size;
+  hlcd->dma_pointer = data + dma_size * (1 << hlcd->is_16bit_mode);
+  hlcd->dma_transfers_to_go = count - dma_size;
   ret = HAL_SPI_Transmit_DMA(hlcd->hspi, data, dma_size);
   if (ret != HAL_OK) hlcd->is_dma_active = 0;
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_Receive_DMA(LCD *hlcd, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_Receive_DMA(LCD *hlcd, void *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
-  size_t dma_size = min_size(0xFFFF, count);
+  size_t dma_size = LCD_min_size(0xFFFF, count);
   hlcd->is_dma_active = 1;
-  hlcd->dma_pointer = data + dma_size;
-  hlcd->dma_bytes_to_go = count - dma_size;
+  hlcd->dma_pointer = data + dma_size * (1 << hlcd->is_16bit_mode);
+  hlcd->dma_transfers_to_go = count - dma_size;
   ret = HAL_SPI_Receive_DMA(hlcd->hspi, data, dma_size);
   if (ret != HAL_OK) hlcd->is_dma_active = 0;
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_WriteCommand(LCD *hlcd, uint8_t cmd)
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteCommand(LCD *hlcd, uint8_t cmd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
+  ret = LCD_Ensure8BitMode(hlcd);
+  if (ret != HAL_OK) return ret;
   Pin_Low(&hlcd->pin_dc);
   ret = HAL_SPI_Transmit(hlcd->hspi, &cmd, 1, LCD_TIMEOUT);
   Pin_High(&hlcd->pin_dc);
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_WriteReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   ret = LCD_WriteCommand(hlcd, reg);
@@ -192,7 +197,7 @@ static HAL_StatusTypeDef LCD_WriteReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *dat
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_WriteReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   ret = LCD_WriteCommand(hlcd, reg);
@@ -202,23 +207,34 @@ static HAL_StatusTypeDef LCD_WriteReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t 
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_WriteReg8(LCD *hlcd, uint8_t reg, uint8_t data)
-{
-  return LCD_WriteReg8Multi(hlcd, reg, &data, 1);
-}
-
-static HAL_StatusTypeDef LCD_WriteReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteReg16Multi_DMA(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   ret = LCD_WriteCommand(hlcd, reg);
   if (ret != HAL_OK) return ret;
-  BSwap16Multi(data, count);
-  ret = LCD_Transmit(hlcd, (uint8_t*)data, count * 2);
+  LCD_Enter16BitMode(hlcd);
+  ret =  LCD_Transmit_DMA(hlcd, data, count);
   if (ret != HAL_OK) return ret;
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_ReadReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteReg8(LCD *hlcd, uint8_t reg, uint8_t data)
+{
+  return LCD_WriteReg8Multi(hlcd, reg, &data, 1);
+}
+
+LCD_FUNC static HAL_StatusTypeDef LCD_WriteReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  ret = LCD_WriteCommand(hlcd, reg);
+  if (ret != HAL_OK) return ret;
+  LCD_Enter16BitMode(hlcd);
+  ret = LCD_Transmit(hlcd, data, count);
+  if (ret != HAL_OK) return ret;
+  return ret;
+}
+
+LCD_FUNC static HAL_StatusTypeDef LCD_ReadReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
 {
   uint8_t z = 0;
   HAL_StatusTypeDef ret = HAL_OK;
@@ -231,7 +247,7 @@ static HAL_StatusTypeDef LCD_ReadReg8Multi(LCD *hlcd, uint8_t reg, uint8_t *data
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_ReadReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_ReadReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t *data, size_t count)
 {
   uint8_t z = 0;
   HAL_StatusTypeDef ret = HAL_OK;
@@ -244,12 +260,12 @@ static HAL_StatusTypeDef LCD_ReadReg8Multi_DMA(LCD *hlcd, uint8_t reg, uint8_t *
   return ret;
 }
 
-static HAL_StatusTypeDef LCD_ReadReg8(LCD *hlcd, uint8_t reg, uint8_t *data)
+LCD_FUNC static HAL_StatusTypeDef LCD_ReadReg8(LCD *hlcd, uint8_t reg, uint8_t *data)
 {
   return LCD_ReadReg8Multi(hlcd, reg, data, 1);
 }
 
-static HAL_StatusTypeDef LCD_ReadReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
+LCD_FUNC static HAL_StatusTypeDef LCD_ReadReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
 {
   uint8_t z = 0;
   HAL_StatusTypeDef ret = HAL_OK;
@@ -257,13 +273,27 @@ static HAL_StatusTypeDef LCD_ReadReg16Multi(LCD *hlcd, uint8_t reg, uint16_t *da
   if (ret != HAL_OK) return ret;
   ret = HAL_SPI_Transmit(hlcd->hspi, &z, 1, LCD_TIMEOUT);
   if (ret != HAL_OK) return ret;
-  ret = LCD_Receive(hlcd, (uint8_t*)data, count * 2);
+  LCD_Enter16BitMode(hlcd);
+  ret = LCD_Receive(hlcd, data, count);
   if (ret != HAL_OK) return ret;
-  BSwap16Multi(data, count);
   return ret;
 }
 
-HAL_StatusTypeDef LCD_Config(LCD *hlcd)
+LCD_FUNC static HAL_StatusTypeDef LCD_ReadReg16Multi_DMA(LCD *hlcd, uint8_t reg, uint16_t *data, size_t count)
+{
+  uint8_t z = 0;
+  HAL_StatusTypeDef ret = HAL_OK;
+  ret = LCD_WriteCommand(hlcd, reg);
+  if (ret != HAL_OK) return ret;
+  ret = HAL_SPI_Transmit(hlcd->hspi, &z, 1, LCD_TIMEOUT);
+  if (ret != HAL_OK) return ret;
+  LCD_Enter16BitMode(hlcd);
+  ret =  LCD_Receive_DMA(hlcd, data, count);
+  if (ret != HAL_OK) return ret;
+  return ret;
+}
+
+LCD_FUNC LCD_FUNC HAL_StatusTypeDef LCD_Config(LCD *hlcd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -289,7 +319,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_SWReset(LCD *hlcd)
+LCD_FUNC HAL_StatusTypeDef LCD_SWReset(LCD *hlcd)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -300,7 +330,7 @@ HAL_StatusTypeDef LCD_SWReset(LCD *hlcd)
   return ret;
 }
 
-HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id)
+LCD_FUNC HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint8_t buf[3];
@@ -315,7 +345,7 @@ HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *dr
   return ret;
 }
 
-HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline)
+LCD_FUNC HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -327,7 +357,7 @@ HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline)
   return ret;
 }
 
-HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient)
+LCD_FUNC HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint8_t o;
@@ -374,7 +404,7 @@ HAL_StatusTypeDef LCD_SetOrient(LCD *hlcd, LCD_Orient orient)
   return ret;
 }
 
-HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode)
+LCD_FUNC HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -397,7 +427,7 @@ HAL_StatusTypeDef LCD_SetColorMode(LCD *hlcd, LCD_Color_Mode color_mode)
   return ret;
 }
 
-HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y)
+LCD_FUNC HAL_StatusTypeDef LCD_VScroll(LCD *hlcd, int top, int lines, int dest_y)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint16_t scrolls[] = {top, lines, hlcd->yres - top - lines};
@@ -416,7 +446,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_SetWindow(LCD *hlcd, int x, int y, int r, int b)
+LCD_FUNC HAL_StatusTypeDef LCD_SetWindow(LCD *hlcd, int x, int y, int r, int b)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint16_t horz[] = {x, r};
@@ -440,7 +470,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_SetBrightness(LCD *hlcd, uint8_t brightness)
+LCD_FUNC HAL_StatusTypeDef LCD_SetBrightness(LCD *hlcd, uint8_t brightness)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -454,7 +484,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_GetBrightness(LCD *hlcd, uint8_t *brightness)
+LCD_FUNC HAL_StatusTypeDef LCD_GetBrightness(LCD *hlcd, uint8_t *brightness)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -468,7 +498,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_ReadGRAM(LCD *hlcd, void *pixels, size_t count)
+LCD_FUNC HAL_StatusTypeDef LCD_ReadGRAM(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -492,7 +522,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_WriteGRAM(LCD *hlcd, void *pixels, size_t count)
+LCD_FUNC HAL_StatusTypeDef LCD_WriteGRAM(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -516,7 +546,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
+LCD_FUNC HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -528,7 +558,7 @@ HAL_StatusTypeDef LCD_ReadGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
       ret = HAL_ERROR;
       goto ErrRet;
     case LCD_RGB565:
-      ret = LCD_ReadReg8Multi_DMA(hlcd, 0x2E, pixels, count * 2);
+      ret = LCD_ReadReg16Multi_DMA(hlcd, 0x2E, pixels, count);
       break;
     case LCD_RGB666:
       ret = LCD_ReadReg8Multi_DMA(hlcd, 0x2E, pixels, count * 3);
@@ -541,7 +571,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
+LCD_FUNC HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   LCD_WaitToIdle(hlcd);
@@ -553,7 +583,7 @@ HAL_StatusTypeDef LCD_WriteGRAM_DMA(LCD *hlcd, void *pixels, size_t count)
       ret = HAL_ERROR;
       goto ErrRet;
     case LCD_RGB565:
-      ret = LCD_WriteReg8Multi_DMA(hlcd, 0x2C, pixels, count * 2);
+      ret = LCD_WriteReg16Multi_DMA(hlcd, 0x2C, pixels, count);
       break;
     case LCD_RGB666:
       ret = LCD_WriteReg8Multi_DMA(hlcd, 0x2C, pixels, count * 3);
@@ -566,7 +596,7 @@ ErrRet:
   return ret;
 }
 
-HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, size_t count)
+LCD_FUNC HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, size_t count)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   Pixel565 pixel565;
@@ -583,11 +613,12 @@ HAL_StatusTypeDef LCD_FillGRAMColor(LCD *hlcd, uint8_t R, uint8_t G, uint8_t B, 
       ret = LCD_WriteCommand(hlcd, 0x2C);
       if (ret != HAL_OK) goto ErrRet;
 
-      pixel565 = BSwap16(MakePixel565(R, G, B));
+      pixel565 = MakePixel565(R, G, B);
 
+      LCD_Enter16BitMode(hlcd);
       for (size_t i = 0; i < count; i++)
       {
-        ret = HAL_SPI_Transmit(hlcd->hspi, (void *)&pixel565, 2, LCD_TIMEOUT);
+        ret = HAL_SPI_Transmit(hlcd->hspi, (void *)&pixel565, 1, LCD_TIMEOUT);
         if (ret != HAL_OK) goto ErrRet;
       }
       break;
@@ -610,7 +641,7 @@ ErrRet:
   return ret;
 }
 
-size_t LCD_ReadPixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
+LCD_FUNC size_t LCD_ReadPixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   int dx = 0, dy = 0, dw = w, dh = h;
@@ -673,7 +704,7 @@ size_t LCD_ReadPixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
   return num_read;
 }
 
-size_t LCD_WritePixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
+LCD_FUNC size_t LCD_WritePixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   int dx = 0, dy = 0, dw = w;
@@ -727,7 +758,7 @@ size_t LCD_WritePixels(LCD *hlcd, int x, int y, int w, int h, void *pixels)
   return num_write;
 }
 
-HAL_StatusTypeDef LCD_FillRect(LCD *hlcd, int x, int y, int w, int h, uint8_t R, uint8_t G, uint8_t B)
+LCD_FUNC HAL_StatusTypeDef LCD_FillRect(LCD *hlcd, int x, int y, int w, int h, uint8_t R, uint8_t G, uint8_t B)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   if (x >= hlcd->xres || y >= hlcd->yres || w <= 0 || h <= 0) return HAL_ERROR;
@@ -750,7 +781,7 @@ HAL_StatusTypeDef LCD_FillRect(LCD *hlcd, int x, int y, int w, int h, uint8_t R,
   return ret;
 }
 
-HAL_StatusTypeDef LCD_FillRect2(LCD *hlcd, int x, int y, int r, int b, uint8_t R, uint8_t G, uint8_t B)
+LCD_FUNC HAL_StatusTypeDef LCD_FillRect2(LCD *hlcd, int x, int y, int r, int b, uint8_t R, uint8_t G, uint8_t B)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   if (x >= hlcd->xres || y >= hlcd->yres || r < x || b < y) return HAL_ERROR;
@@ -773,11 +804,11 @@ HAL_StatusTypeDef LCD_FillRect2(LCD *hlcd, int x, int y, int r, int b, uint8_t R
   return ret;
 }
 
-void LCD_On_DMA_TX(LCD *hlcd)
+LCD_FUNC void LCD_On_DMA_TX(LCD *hlcd)
 {
-  if (hlcd->dma_bytes_to_go)
+  if (hlcd->dma_transfers_to_go)
   {
-    LCD_Transmit_DMA(hlcd, hlcd->dma_pointer, hlcd->dma_bytes_to_go);
+    LCD_Transmit_DMA(hlcd, hlcd->dma_pointer, hlcd->dma_transfers_to_go);
   }
   else
   {
@@ -786,11 +817,11 @@ void LCD_On_DMA_TX(LCD *hlcd)
   }
 }
 
-void LCD_On_DMA_RX(LCD *hlcd)
+LCD_FUNC void LCD_On_DMA_RX(LCD *hlcd)
 {
-  if (hlcd->dma_bytes_to_go)
+  if (hlcd->dma_transfers_to_go)
   {
-    LCD_Receive_DMA(hlcd, hlcd->dma_pointer, hlcd->dma_bytes_to_go);
+    LCD_Receive_DMA(hlcd, hlcd->dma_pointer, hlcd->dma_transfers_to_go);
   }
   else
   {
@@ -799,17 +830,17 @@ void LCD_On_DMA_RX(LCD *hlcd)
   }
 }
 
-Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B)
+__attribute__((optimize("O3")))
+LCD_FUNC Pixel565 MakePixel565(uint8_t R, uint8_t G, uint8_t B)
 {
-  return BSwap16
-  (
+  return
     ((Pixel565)B >> 3) |
     (((Pixel565)G >> 2) << 5) |
-    (((Pixel565)R >> 3) << 11)
-  );
+    (((Pixel565)R >> 3) << 11);
 }
 
-Pixel666 MakePixel666(uint8_t R, uint8_t G, uint8_t B)
+__attribute__((optimize("O3")))
+LCD_FUNC Pixel666 MakePixel666(uint8_t R, uint8_t G, uint8_t B)
 {
   Pixel666 ret = {R, G, B};
   return ret;
