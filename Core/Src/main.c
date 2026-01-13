@@ -1205,7 +1205,7 @@ void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_
     }
   }
 
-  if ((have_video && avi_video_stream.is_no_more_packets) && (have_audio && avi_audio_stream.is_no_more_packets))
+  if ((have_video && avi_video_stream.is_no_more_packets) || (have_audio && avi_audio_stream.is_no_more_packets))
   {
     QuitVideoFile();
   }
