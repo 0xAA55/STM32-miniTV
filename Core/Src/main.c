@@ -674,7 +674,6 @@ static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth
   HAL_DMA2D_PollForTransfer(&hdma2d, 33);
   /* copy the new decoded frame to the LCD Frame buffer*/
   HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
-
 }
 static void QuitVideoFile()
 {
@@ -1162,6 +1161,8 @@ void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_
     if (CurVolume > 100) CurVolume = 100;
     ShowVolume(200);
   }
+
+  HAL_DMA2D_PollForTransfer(&hdma2d, 33);
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 void OnUsingFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
