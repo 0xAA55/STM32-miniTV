@@ -636,7 +636,8 @@ static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth
 
   destination = (uint32_t)pDst + (yPos * FramebufferHeight + xPos) * 2;
 
-  HAL_DMA2D_PollForTransfer(&hdma2d, 25);  /* wait for the previous DMA2D transfer to ends */
+  /* wait for the previous DMA2D transfer to ends */
+  HAL_DMA2D_PollForTransfer(&hdma2d, 33);
   /* copy the new decoded frame to the LCD Frame buffer*/
   HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
 
@@ -644,9 +645,11 @@ static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth
 static void QuitVideoFile()
 {
   GUIIsUsingFile = 0;
+  i2saudio_stop(&i2saudio);
   Phat_CloseFile(&CurFileStream1);
   Phat_CloseFile(&CurFileStream2);
   Phat_CloseFile(&CurFileStream3);
+  HAL_JPEG_Abort(&hjpeg);
   HAL_JPEG_DeInit(&hjpeg);
   HWJPEG_is_running = 0;
 }
@@ -657,6 +660,7 @@ void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
 }
 void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
 {
+  HAL_JPEG_Abort(hjpeg);
   HAL_JPEG_DeInit(hjpeg);
   HWJPEG_is_running = 0;
   ShowNotify(200, "JPEG 解码错误");
@@ -684,7 +688,8 @@ void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
   decoded = HWJPEG_src_pointer - FILE_buffer;
   in_size = HWJPEG_src_size - decoded;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
-  HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, (uint32_t)in_size);
+  SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_src_pointer, in_size);
+  HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size);
 }
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
@@ -694,25 +699,30 @@ void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, ui
   SCB_InvalidateDCache_by_Addr((uint32_t *)pDataOut, OutDataLength);
   HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, space);
 }
-void JPEG_Wait_Decode()
+int JPEG_Wait_Decode(uint32_t timeout)
 {
-  const uint32_t timeout = HAL_GetTick() + 200;
+  const uint32_t wait_until = HAL_GetTick() + timeout;
   while(HWJPEG_is_running)
   {
     __WFI();
-    if (HAL_GetTick() > timeout)
+    if (hjpeg.hdmaout->Instance->CDAR >= (uint32_t)((uint8_t*)JPEG_buffer + sizeof JPEG_buffer))
+    {
+      HAL_JPEG_Abort(&hjpeg);
+      HAL_JPEG_DeInit(&hjpeg);
+      break;
+    }
+    if (HAL_GetTick() > wait_until)
     {
       ShowNotify(1000, "JPEG 解码超时");
       goto FailExit;
     }
   }
-  return;
+  return 1;
 FailExit:
-  QuitVideoFile();
+  return 0;
 }
 void JPEG_HWDecode(void *decode_to)
 {
-  JPEG_Wait_Decode();
   uint32_t in_size = HWJPEG_src_size;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
   if (HAL_JPEG_Init(&hjpeg) != HAL_OK) goto FailExit;
@@ -720,17 +730,31 @@ void JPEG_HWDecode(void *decode_to)
   HWJPEG_src_pointer = FILE_buffer;
   HWJPEG_dst_buffer = (uint8_t *)JPEG_buffer;
   HWJPEG_dst_pointer = HWJPEG_dst_buffer;
-  // HWJPEG_is_running = 1;
-  // SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_dst_pointer, sizeof Framebuffer1);
-  // if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto FailExit;
-  if (HAL_JPEG_Decode(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT, 200) != HAL_OK) goto FailExit;
-  // JPEG_Wait_Decode();
+  HWJPEG_is_running = 1;
+  SCB_CleanDCache_by_Addr((uint32_t *)FILE_buffer, in_size);
+  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto Skipped;
+  LCD_WaitToIdle(&hlcd);
+  if (HWJpeg_info.ImageWidth == 0 || HWJpeg_info.ImageHeight == 0)
+  {
+    HAL_JPEG_GetInfo(&hjpeg, &HWJpeg_info);
+    if (HWJpeg_info.ImageWidth == 0 || HWJpeg_info.ImageHeight == 0) goto Skipped;
+    DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling);
+  }
+  if (HWJpeg_info.ColorSpace != JPEG_YCBCR_COLORSPACE) goto Skipped;
+  if (!JPEG_Wait_Decode(50)) goto Skipped;
+  HAL_JPEG_Abort(&hjpeg);
+  HAL_JPEG_DeInit(&hjpeg);
   DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)decode_to, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight);
   return;
 FailExit:
   HWJPEG_is_running = 0;
+  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_TIMEOUT) ShowNotify(1000, "JPEG 解码超时");
   QuitVideoFile();
   return;
+Skipped:
+  HWJPEG_is_running = 0;
+  HAL_JPEG_Abort(&hjpeg);
+  HAL_JPEG_DeInit(&hjpeg);
 }
 void AVIPause()
 {
@@ -787,14 +811,12 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   size_t bytes_read;
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
   if (length > sizeof FILE_buffer) return;
-  JPEG_Wait_Decode();
 
   Phat_SeekFile(stream, offset);
   Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
   if (length == bytes_read)
   {
     HWJPEG_src_size = length;
-    LCD_WaitToIdle(&hlcd);
     JPEG_HWDecode(Framebuffer2);
   }
 }
