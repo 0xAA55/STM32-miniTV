@@ -185,6 +185,36 @@ uint64_t HAL_GetTick64()
   __enable_irq();
   return ret;
 }
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == hlcd.hspi)
+  {
+    LCD_On_DMA_TX(&hlcd);
+  }
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == hlcd.hspi)
+  {
+    LCD_On_DMA_RX(&hlcd);
+  }
+}
+void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
+{
+  if (hi2s == i2saudio.hi2s)
+  {
+    i2saudio_tx_half_cplt_callback(&i2saudio);
+  }
+}
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
+{
+  if (hi2s == i2saudio.hi2s)
+  {
+    i2saudio_tx_full_cplt_callback(&i2saudio);
+  }
+}
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   DTCM_BSS static int adc_read1;
