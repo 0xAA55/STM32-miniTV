@@ -7,6 +7,8 @@
 
 #include "fastmath.h"
 
+#pragma GCC optimize ("O3")
+
 const uint16_t CosTable[] =
 {
   1024,1024,1024,1024,1024,1024,1023,1023,1023,1022,1022,1022,1021,1021,1020,1020,
