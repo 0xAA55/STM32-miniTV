@@ -2,6 +2,7 @@
 
 extern const uint8_t BatteryBMP[];
 extern const uint8_t FolderBMP[];
+extern const uint8_t USBMSCBMP[];
 extern const uint16_t FontCodeTable[];
 extern const uint8_t Font12pxWidthTable[];
 extern const uint32_t Font12pxXTable[];
@@ -21,6 +22,8 @@ const size_t NumFontChars = 7318;
 const size_t Font12pxBitmapPitch = 10908;
 const size_t Font14pxBitmapPitch = 12668;
 const size_t Font17pxBitmapPitch = 14544;
+const uint32_t USBMSCBMP_Width = 320;
+const uint32_t USBMSCBMP_Height = 240;
 
 __attribute__((section(".flash_map")))
 const FlashMap_t FlashMap =
@@ -46,6 +49,10 @@ const FlashMap_t FlashMap =
 	Font17pxXTable,
 	(const uint8_t*)&Font17pxBitmap,
 	Font17pxBitmapPitch,
+	USBMSCBMP_Width,
+	USBMSCBMP_Height,
+	USBMSCBMP,
+	FLASH_VERSION,
 };
 
 size_t DummyEntry()

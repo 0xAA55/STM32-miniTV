@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define FLASH_VERSION 0x00010000
+
 typedef struct FlashMap_s
 {
 	uint32_t Signature;
@@ -27,6 +29,10 @@ typedef struct FlashMap_s
 	const uint32_t *Font17pxXTable;
 	const uint8_t *Font17pxBitmap;
 	const size_t Font17pxBitmapPitch;
+	uint32_t USBMSCBMP_Width;
+	uint32_t USBMSCBMP_Height;
+	const uint8_t *USBMSCBMP;
+	uint32_t Version;
 } FlashMap_t;
 
 #define FLASH_MAP ((const FlashMap_t *)0x90000000)
