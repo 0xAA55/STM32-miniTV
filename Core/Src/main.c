@@ -840,8 +840,64 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
 }
 static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
 {
+  size_t bytes_read;
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
-  //TODO
+  uint16_t channels = avi_audio_stream.stream_info->audio_format.nChannels;
+
+  i2saudio_set_volume(&i2saudio, CurVolume);
+  Phat_SeekFile(stream, offset);
+  while (length)
+  {
+    const size_t max_length_process = ((sizeof FILE_buffer) / 3) & 0xFFFFFFFC;
+    size_t length_process = length;
+    size_t written;
+    switch (channels)
+    {
+    case 1:
+      if (length_process > max_length_process)
+        length_process = max_length_process;
+      break;
+    case 2:
+      if (length > sizeof FILE_buffer)
+        length_process = sizeof FILE_buffer;
+      break;
+    default:
+      return;
+    }
+    Phat_ReadFile(stream, FILE_buffer, length_process, &bytes_read);
+    if (length_process == bytes_read)
+    {
+      uint16_t *samples;
+      size_t sample_count = 0;
+      if (channels == 1)
+      {
+        uint16_t *mono_samples = (uint16_t *)FILE_buffer;
+        size_t mono_sample_count = length_process / 2;
+        samples = (uint16_t *)FILE_buffer + mono_sample_count;
+        for (size_t i = 0; i < mono_sample_count; i++)
+        {
+          samples[i * 2 + 0] = mono_samples[i];
+          samples[i * 2 + 1] = mono_samples[i];
+        }
+        sample_count = mono_sample_count * 2;
+      }
+      else
+      {
+        samples = (uint16_t *)FILE_buffer;
+        sample_count = length_process / 2;
+      }
+      i2saudio_feed_samples_to_play(&i2saudio, samples, sample_count, &written);
+      length -= length_process;
+      if (written != sample_count)
+      {
+        ShowNotify(200, "音频丢包");
+      }
+    }
+    else
+    {
+      return;
+    }
+  }
 }
 static void PrepareVideoFile()
 {
@@ -1141,9 +1197,12 @@ void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_
     avi_video_seek_to_frame_index(&avi_video_stream, target_frame, 1);
   }
 
-  if (have_audio)
+  if (have_audio && !avi_audio_stream.is_no_more_packets)
   {
-
+    while (i2saudio_need_data(&i2saudio))
+    {
+      avi_stream_reader_move_to_next_packet(&avi_audio_stream, 1);
+    }
   }
 
   if ((have_video && avi_video_stream.is_no_more_packets) && (have_audio && avi_audio_stream.is_no_more_packets))
