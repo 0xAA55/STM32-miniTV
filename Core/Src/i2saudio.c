@@ -98,9 +98,9 @@ int i2saudio_stop(i2saudio_p i2sa)
   return 0;
 }
 
-int i2saudio_is_need_initial_data(i2saudio_p i2sa)
+int i2saudio_need_data(i2saudio_p i2sa)
 {
-  if (i2sa) return 0;
+  if (!i2sa) return 0;
   return !i2sa->audio_is_prepped;
 }
 
