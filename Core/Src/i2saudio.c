@@ -21,6 +21,7 @@ void i2saudio_tx_half_cplt_callback(i2saudio_p i2sa)
 {
   i2sa->cur_write_audio_buffer = i2sa->audio_buffer;
   i2sa->total_sample_played += AUDIO_BUFFER_HALFSIZE;
+  memset(i2sa->cur_write_audio_buffer, 0, sizeof i2sa->audio_buffer);
   i2sa->audio_is_prepped = 0;
 }
 
@@ -28,6 +29,7 @@ void i2saudio_tx_full_cplt_callback(i2saudio_p i2sa)
 {
   i2sa->cur_write_audio_buffer = i2sa->audio_buffer_half;
   i2sa->total_sample_played += AUDIO_BUFFER_HALFSIZE;
+  memset(i2sa->cur_write_audio_buffer, 0, sizeof i2sa->audio_buffer);
   i2sa->audio_is_prepped = 0;
 }
 
