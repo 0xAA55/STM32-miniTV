@@ -179,6 +179,20 @@ uint64_t HAL_GetTick64()
   __enable_irq();
   return ret;
 }
+ITCM_O3CODE
+void HAL_Delay(uint32_t Delay)
+{
+  uint64_t tickstart = HAL_GetTick64();
+  uint64_t wait = Delay;
+
+  /* Add a freq to guarantee minimum wait */
+  if (wait < HAL_MAX_DELAY)
+  {
+    wait += uwTickFreq;
+  }
+
+  while ((HAL_GetTick64() - tickstart) < wait) __WFI();
+}
 ITCM_CODE
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
