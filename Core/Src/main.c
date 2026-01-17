@@ -73,6 +73,8 @@ Pixel565 Framebuffer2[240][320];
 uint8_t FILE_buffer[65536];
 uint8_t JPEG_buffer[3][240][320];
 Pixel565 (*CurDrawFramebuffer)[320] = Framebuffer1;
+uint8_t *TXT_buffer = &JPEG_buffer[0][0][0];
+const size_t TXT_buffer_size = sizeof JPEG_buffer;
 Phat_t phat;
 avi_reader avir;
 avi_stream_reader avi_meta_stream;
@@ -555,6 +557,8 @@ static void PrepareTextFile()
 {
   PhatState res;
   FileSize_t filesize;
+  FileSize_t to_be_copied;
+  uint8_t *dst_ptr;
   const int OneScreenLinesS = FramebufferHeight / 12;
   const int OneScreenLinesM = FramebufferHeight / 14;
   const int OneScreenLinesL = FramebufferHeight / 17;
@@ -565,51 +569,61 @@ static void PrepareTextFile()
     return;
   }
   Phat_GetFileSize(&CurFileStream1, &filesize);
-  if (filesize > (sizeof FILE_buffer) - 2)
+  if (filesize > TXT_buffer_size - 2)
   {
     Phat_CloseFile(&CurFileStream1);
     ShowNotify(1000, "文件太大了。");
     return;
   }
-  res = Phat_ReadFile(&CurFileStream1, FILE_buffer, filesize, NULL);
-  if (res != PhatState_OK && res != PhatState_EndOfFile)
+  to_be_copied = filesize;
+  dst_ptr = TXT_buffer;
+  while(to_be_copied)
   {
-    Phat_CloseFile(&CurFileStream1);
-    ShowNotify(1000, "读取文件失败。");
-    return;
+    FileSize_t to_copy = to_be_copied;
+    if (to_copy > sizeof FILE_buffer) to_copy = sizeof FILE_buffer;
+    res = Phat_ReadFile(&CurFileStream1, FILE_buffer, to_copy, NULL);
+    if (res != PhatState_OK && res != PhatState_EndOfFile)
+    {
+      Phat_CloseFile(&CurFileStream1);
+      ShowNotify(1000, "读取文件失败。");
+      return;
+    }
+    memcpy(dst_ptr, FILE_buffer, to_copy);
+    dst_ptr += to_copy;
+    to_be_copied -= to_copy;
   }
-  FILE_buffer[filesize] = 0;
-  FILE_buffer[filesize + 1] = 0;
-  if (*(uint16_t*)FILE_buffer == 0xFFFE)
+  TXT_buffer[filesize] = 0;
+  TXT_buffer[filesize + 1] = 0;
+  if (*(uint16_t*)TXT_buffer == 0xFFFE)
   {
     uint32_t max_height;
-    uint16_t *ptr = (uint16_t*)FILE_buffer;
+    uint16_t *ptr = (uint16_t*)TXT_buffer;
     while(*ptr)
     {
       *ptr = BSwap16(*ptr);
       ptr ++;
     }
     UseSmallFont();
-    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSizeW((uint16_t*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosS = max_height / 12;
     UseMediumFont();
-    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSizeW((uint16_t*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosM = max_height / 14;
     UseLargeFont();
-    GetTextSizeW((uint16_t*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSizeW((uint16_t*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosL = max_height / 17;
   }
   else
   {
     uint32_t max_height;
     UseSmallFont();
-    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSize((char*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosS = max_height / 12;
     UseMediumFont();
-    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSize((char*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosM = max_height / 14;
     UseLargeFont();
-    GetTextSize((char*)FILE_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
+    GetTextSize((char*)TXT_buffer, GUITextAreaWidth, INT_MAX, NULL, &max_height);
     GUITextFileMaxReadPosL = max_height / 17;
   }
   Phat_CloseFile(&CurFileStream1);
@@ -1228,10 +1242,10 @@ void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int e
   if (GUITextFileReadPos > max_read_pos) GUITextFileReadPos = max_read_pos;
   if (GUITextFileReadPos < 0) GUITextFileReadPos = 0;
   y = -GUITextFileReadPos * text_size;
-  if (*(uint16_t*)FILE_buffer == 0xFEFF)
-    DrawTextW(0, y, GUITextAreaWidth, FramebufferHeight - y, (uint16_t*)FILE_buffer, MakePixel565(255, 255, 255));
+  if (*(uint16_t*)TXT_buffer == 0xFEFF)
+    DrawTextW(0, y, GUITextAreaWidth, FramebufferHeight - y, (uint16_t*)TXT_buffer, MakePixel565(255, 255, 255));
   else
-    DrawText(0, y, GUITextAreaWidth, FramebufferHeight - y, (char*)FILE_buffer, MakePixel565(255, 255, 255));
+    DrawText(0, y, GUITextAreaWidth, FramebufferHeight - y, (char*)TXT_buffer, MakePixel565(255, 255, 255));
   lines_per_screen = FramebufferHeight / text_size;
   scroll_bar_size = lines_per_screen * scroll_bar_max_height / (max_read_pos + lines_per_screen);
   scroll_bar_movable_size = scroll_bar_max_height - scroll_bar_size;
