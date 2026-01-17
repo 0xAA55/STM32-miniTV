@@ -36,6 +36,7 @@ typedef struct
   volatile uint32_t audio_prepare_buffer_samples;
   volatile int audio_is_playing;
   volatile int audio_is_prepped;
+  volatile uint64_t total_sample_played;
 } i2saudio_t, *i2saudio_p;
 
 int i2saudio_init(i2saudio_p i2sa, I2S_HandleTypeDef *hi2s, int volume, uint32_t sample_rate);
