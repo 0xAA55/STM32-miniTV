@@ -642,8 +642,9 @@ static void PrepareTextFile()
   * @retval None
   */
 ITCM_CODE
-static void DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
+HAL_StatusTypeDef DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
 {
+  HAL_StatusTypeDef ret;
   uint32_t cssMode = JPEG_420_SUBSAMPLING, inputLineOffset = 0;
 
   if(ChromaSampling == JPEG_420_SUBSAMPLING)
@@ -699,8 +700,9 @@ static void DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
   hdma2d.Instance          = DMA2D;
 
   /*##-4- DMA2D Initialization     ###########################################*/
-  HAL_DMA2D_Init(&hdma2d);
-  HAL_DMA2D_ConfigLayer(&hdma2d, 1);
+  ret = HAL_DMA2D_Init(&hdma2d);
+  if (ret != HAL_OK) return ret;
+  return HAL_DMA2D_ConfigLayer(&hdma2d, 1);
 }
 /**
   * @brief  Copy the Decoded image to the display Frame buffer.
@@ -711,9 +713,9 @@ static void DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
   * @retval None
   */
 ITCM_CODE
-static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth, uint16_t ImageHeight)
+HAL_StatusTypeDef DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth, uint16_t ImageHeight)
 {
-
+  HAL_StatusTypeDef ret;
   uint32_t xPos, yPos, destination;
 
   /*##-1- calculate the destination transfer address  ############*/
@@ -723,9 +725,10 @@ static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth
   destination = (uint32_t)pDst + (yPos * FramebufferHeight + xPos) * 2;
 
   /* wait for the previous DMA2D transfer to ends */
-  HAL_DMA2D_PollForTransfer(&hdma2d, 33);
+  ret = HAL_DMA2D_PollForTransfer(&hdma2d, 33);
+  if (ret != HAL_OK) return ret;
   /* copy the new decoded frame to the LCD Frame buffer*/
-  HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
+  return HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
 }
 ITCM_CODE
 static void QuitVideoFile()
