@@ -235,22 +235,22 @@ void SysTick_Handler(void)
   {
     case 0b0001:
     case 0b1000:
-      Enc1 -= 1;
+      Enc1 += 1;
       break;
     case 0b0010:
     case 0b0100:
-      Enc1 += 1;
+      Enc1 -= 1;
       break;
   }
   switch((enc2_last_bm << 2) | enc2_bm)
   {
     case 0b0001:
     case 0b1000:
-      Enc2 -= 1;
+      Enc2 += 1;
       break;
     case 0b0010:
     case 0b0100:
-      Enc2 += 1;
+      Enc2 -= 1;
       break;
   }
   enc1_last_bm = enc1_bm;
