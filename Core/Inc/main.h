@@ -148,6 +148,8 @@ DTCM_BSS extern DMA2D_HandleTypeDef hdma2d;
 DTCM_BSS extern I2S_HandleTypeDef hi2s2;
 DTCM_BSS extern DMA_HandleTypeDef hdma_spi2_tx;
 DTCM_BSS extern JPEG_HandleTypeDef hjpeg;
+DTCM_BSS extern MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+DTCM_BSS extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 DTCM_BSS extern QSPI_HandleTypeDef hqspi;
 DTCM_BSS extern SD_HandleTypeDef hsd1;
 DTCM_BSS extern SPI_HandleTypeDef hspi1;
@@ -159,7 +161,8 @@ DTCM_BSS extern avi_reader avir;
 DTCM_BSS extern avi_stream_reader avi_meta_stream;
 DTCM_BSS extern avi_stream_reader avi_video_stream;
 DTCM_BSS extern avi_stream_reader avi_audio_stream;
-DTCM_BSS extern __IO uint32_t uwTick;
+DTCM_BSS extern volatile uint32_t uwTick;
+DTCM_BSS extern volatile uint32_t TickHigh;
 DTCM_DATA extern uint32_t uwTickPrio;
 DTCM_DATA extern HAL_TickFreqTypeDef uwTickFreq;
 DTCM_BSS extern int FsMounted;
@@ -216,7 +219,6 @@ DTCM_BSS extern volatile uint8_t* HWJPEG_dst_pointer;
 DTCM_BSS extern size_t HWJPEG_src_size;
 DTCM_BSS extern uint8_t* HWJPEG_dst_buffer;
 DTCM_BSS extern JPEG_ConfTypeDef HWJpeg_info;
-DTCM_BSS extern volatile uint32_t TickHigh;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
