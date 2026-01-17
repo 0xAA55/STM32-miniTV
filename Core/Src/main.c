@@ -125,9 +125,10 @@ volatile int BAT_Voltage;
 volatile int HWJPEG_is_running;
 volatile uint8_t* HWJPEG_src_pointer;
 volatile uint8_t* HWJPEG_dst_pointer;
+volatile int HWJPEG_got_info;
 size_t HWJPEG_src_size;
 uint8_t* HWJPEG_dst_buffer;
-JPEG_ConfTypeDef HWJpeg_info;
+volatile JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
 jmp_buf USBFailJmp;
 /* USER CODE END PV */
@@ -762,7 +763,7 @@ static void QuitVideoFile()
   Phat_CloseFile(&CurFileStream3);
   HAL_JPEG_Abort(&hjpeg);
   HAL_JPEG_DeInit(&hjpeg);
-  memset(&HWJpeg_info, 0, sizeof HWJpeg_info);
+  memset((void*)&HWJpeg_info, 0, sizeof HWJpeg_info);
   HWJPEG_is_running = 0;
 }
 ITCM_CODE
@@ -800,6 +801,15 @@ void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, ui
   HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, space);
 }
 ITCM_CODE
+void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
+{
+  HWJpeg_info = *pInfo;
+  if (DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling) == HAL_OK)
+  {
+    HWJPEG_got_info = 1;
+  }
+}
+ITCM_CODE
 int JPEG_Wait_Decode(uint32_t timeout)
 {
   const uint32_t wait_until = HAL_GetTick() + timeout;
@@ -824,7 +834,7 @@ FailExit:
   return 0;
 }
 ITCM_CODE
-void JPEG_HWDecode(void *decode_to)
+HAL_StatusTypeDef JPEG_HWDecode(void *decode_to)
 {
   uint32_t in_size = HWJPEG_src_size;
   if (in_size > JPEG_CHUNK_SIZE_IN) in_size = JPEG_CHUNK_SIZE_IN;
@@ -833,22 +843,38 @@ void JPEG_HWDecode(void *decode_to)
   HWJPEG_src_pointer = FILE_buffer;
   HWJPEG_dst_buffer = (uint8_t *)JPEG_buffer;
   HWJPEG_dst_pointer = HWJPEG_dst_buffer;
+  HWJPEG_got_info = 0;
   HWJPEG_is_running = 1;
-  SCB_CleanDCache_by_Addr((uint32_t *)FILE_buffer, in_size);
-  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT) != HAL_OK) goto Skipped;
-  LCD_WaitToIdle(&hlcd);
-  if (HWJpeg_info.ImageWidth == 0 || HWJpeg_info.ImageHeight == 0)
+  memset((void*)&HWJpeg_info, 0, sizeof HWJpeg_info);
+  SCB_CleanDCache_by_Addr((uint32_t*)FILE_buffer, HWJPEG_src_size);
+  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT) != HAL_OK)
   {
-    HAL_JPEG_GetInfo(&hjpeg, &HWJpeg_info);
-    if (HWJpeg_info.ImageWidth == 0 || HWJpeg_info.ImageHeight == 0) goto Skipped;
-    DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling);
+    ShowNotify(200, "解码器外设启动失败");
+    goto Skipped;
   }
-  if (HWJpeg_info.ColorSpace != JPEG_YCBCR_COLORSPACE) goto Skipped;
-  if (!JPEG_Wait_Decode(50)) goto Skipped;
+  if (!JPEG_Wait_Decode(33)) goto Skipped;
+  if (!HWJPEG_got_info)
+  {
+    if (DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling) == HAL_OK)
+      HWJPEG_got_info = 1;
+    else
+    {
+      ShowNotify(200, "视频帧获取失败");
+      goto Skipped;
+    }
+  }
+  if (HWJpeg_info.ColorSpace == JPEG_CMYK_COLORSPACE)
+  {
+    ShowNotify(200, "不支持CMYK格式帧");
+    goto Skipped;
+  }
   HAL_JPEG_Abort(&hjpeg);
-  HAL_JPEG_DeInit(&hjpeg);
-  DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)decode_to, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight);
-  return;
+  if (DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)decode_to, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight) != HAL_OK)
+  {
+    ShowNotify(200, "DMA2D转换失败");
+    goto Skipped;
+  }
+  return HAL_OK;
 FailExit:
   HWJPEG_is_running = 0;
   if (hjpeg.ErrorCode & HAL_JPEG_ERROR_TIMEOUT) ShowNotify(1000, "视频画面解码超时");
@@ -856,11 +882,12 @@ FailExit:
   if (hjpeg.ErrorCode & HAL_JPEG_ERROR_QUANT_TABLE) ShowNotify(1000, "视频画面解码量化表错误");
   if (hjpeg.ErrorCode & HAL_JPEG_ERROR_HUFF_TABLE) ShowNotify(1000, "视频画面解码解压缩表错误");
   QuitVideoFile();
-  return;
+  return HAL_ERROR;
 Skipped:
   HWJPEG_is_running = 0;
   HAL_JPEG_Abort(&hjpeg);
   HAL_JPEG_DeInit(&hjpeg);
+  return HAL_OK;
 }
 ITCM_CODE
 void AVIPause()
@@ -935,7 +962,11 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   if (length == bytes_read)
   {
     HWJPEG_src_size = length;
-    JPEG_HWDecode(Framebuffer2);
+    JPEG_HWDecode(CurDrawFramebuffer);
+  }
+  else
+  {
+    ShowNotify(200, "读取视频帧失败");
   }
 }
 ITCM_CODE
@@ -1042,8 +1073,9 @@ static void PrepareVideoFile()
   if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto BadAudioFormat;
   if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto BadAudioFormat;
   i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
-  AVIStartPlayTime = HAL_GetTick64();
+  AVIPaused = 0;
   GUIIsUsingFile = 1;
+  AVIStartPlayTime = HAL_GetTick64();
   return;
 BadVideoFormat:
   ShowNotify(1000, "不支持的视频格式");
@@ -1307,7 +1339,6 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   {
     QuitVideoFile();
   }
-  CurDrawFramebuffer = Framebuffer2;
   if (have_video)
   {
     fsize_t target_frame = avi_video_get_frame_number_by_time(&avi_video_stream, time);
