@@ -1492,6 +1492,26 @@ void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_
       break;
   }
 }
+ITCM_CODE
+void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  ClearScreen(MakePixel565(0, 0, 0));
+
+
+
+
+
+
+  if (enc2_click) GUICurMenuLevel = 0;
+  if (enc2_delta)
+  {
+    CurVolume += enc2_delta * 5;
+    if (CurVolume < 0) CurVolume = 0;
+    if (CurVolume > 100) CurVolume = 100;
+    ShowVolume(200);
+  }
+}
+
 
 /* USER CODE END 0 */
 
@@ -1622,9 +1642,7 @@ int main(void)
             }
             break;
           case 2: // Option
-            // TODO
-            ClearScreen(MakePixel565(0, 0, 0));
-            if (enc2_click) GUICurMenuLevel = 0;
+            OnOptionsGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
             break;
           case 3: // Shutdown
             DrawStandByScreen();
