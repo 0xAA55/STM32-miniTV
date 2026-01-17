@@ -3,10 +3,15 @@
  *
  *  Created on: Jun 1, 2025
  *      Author: 0xaa55
+ *  Last modified: Jun 16, 2026
  */
 
 #include "my_string.h"
 #include <inttypes.h>
+
+#define MEMOPS_BM (MEMOPS_GRANULARITY - 1)
+
+#if MEMOPS_GRANULARITY != 1
 
 // https://gcc.gnu.org/onlinedocs/gcc/Function-Specific-Option-Pragmas.html
 // https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ftree-loop-distribute-patterns
@@ -17,8 +22,8 @@
 
 void *memset(void * dst, int val, size_t len)
 {
-  uint32_t *ptr_dst = dst;
-  size_t head = (size_t)ptr_dst & 0x3;
+  memops_t *ptr_dst = dst;
+  size_t head = (size_t)ptr_dst & MEMOPS_BM;
   if (head)
   {
     uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
@@ -29,22 +34,19 @@ void *memset(void * dst, int val, size_t len)
       *ptr_dst_ ++ = (uint8_t) val;
       head --;
     }
-    ptr_dst = (uint32_t *)ptr_dst_;
+    ptr_dst = (memops_t *)ptr_dst_;
   }
-  if (len >= 4 && ((size_t)ptr_dst & 3) == 0)
+  if (len >= MEMOPS_GRANULARITY && ((size_t)ptr_dst & MEMOPS_BM) == 0)
   {
     union {
-      uint8_t u8[4];
-      uint32_t u32;
-    } v4;
-    v4.u8[0] = (uint8_t) val;
-    v4.u8[1] = (uint8_t) val;
-    v4.u8[2] = (uint8_t) val;
-    v4.u8[3] = (uint8_t) val;
-    while (len >= 4)
+      uint8_t u8[MEMOPS_GRANULARITY];
+      memops_t uops;
+    } vops;
+    for (int i = 0; i < MEMOPS_GRANULARITY; i++) vops.u8[i] = (uint8_t) val;
+    while (len >= MEMOPS_GRANULARITY)
     {
-      *ptr_dst ++ = v4.u32;
-      len -= 4;
+      *ptr_dst ++ = vops.uops;
+      len -= MEMOPS_GRANULARITY;
     }
   }
   uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
@@ -58,10 +60,10 @@ void *memset(void * dst, int val, size_t len)
 
 void *memcpy(void * dst, const void * src, size_t len)
 {
-  uint32_t *ptr_dst = dst;
-  const uint32_t *ptr_src = src;
+  memops_t *ptr_dst = dst;
+  const memops_t *ptr_src = src;
   if (dst == src) return dst;
-  size_t head = (size_t)dst & 0x3;
+  size_t head = (size_t)dst & MEMOPS_BM;
   if (head)
   {
     uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
@@ -72,15 +74,15 @@ void *memcpy(void * dst, const void * src, size_t len)
       head --;
       len --;
     }
-    ptr_dst = (uint32_t *)ptr_dst_;
-    ptr_src = (uint32_t *)ptr_src_;
+    ptr_dst = (memops_t *)ptr_dst_;
+    ptr_src = (memops_t *)ptr_src_;
   }
-  if (((size_t)ptr_src & 3) == 0 && ((size_t)ptr_dst & 3) == 0)
+  if (((size_t)ptr_src & MEMOPS_BM) == 0 && ((size_t)ptr_dst & MEMOPS_BM) == 0)
   {
-    while (len >= 4)
+    while (len >= MEMOPS_GRANULARITY)
     {
       *ptr_dst++ = *ptr_src++;
-      len -= 4;
+      len -= MEMOPS_GRANULARITY;
     }
   }
   if (len)
@@ -106,9 +108,9 @@ void *memmove(void * dst, const void * src, size_t len)
   }
   else
   {
-    uint32_t *ptr_dst_end = (uint32_t *)((uint8_t*)dst + len);
-    uint32_t *ptr_src_end = (uint32_t *)((uint8_t*)src + len);
-    size_t tail = (size_t)ptr_dst_end & 0x3;
+    memops_t *ptr_dst_end = (memops_t *)((uint8_t*)dst + len);
+    memops_t *ptr_src_end = (memops_t *)((uint8_t*)src + len);
+    size_t tail = (size_t)ptr_dst_end & MEMOPS_BM;
     if (tail)
     {
       uint8_t *ptr_dst_end_ = (uint8_t *)ptr_dst_end;
@@ -119,15 +121,15 @@ void *memmove(void * dst, const void * src, size_t len)
         tail --;
         len --;
       }
-      ptr_dst_end = (uint32_t *)ptr_dst_end_;
-      ptr_src_end = (uint32_t *)ptr_src_end_;
+      ptr_dst_end = (memops_t *)ptr_dst_end_;
+      ptr_src_end = (memops_t *)ptr_src_end_;
     }
-    if (((size_t)ptr_src_end & 3) == 0 && ((size_t)ptr_dst_end & 3) == 0)
+    if (((size_t)ptr_src_end & MEMOPS_BM) == 0 && ((size_t)ptr_dst_end & MEMOPS_BM) == 0)
     {
-      while (len >= 4)
+      while (len >= MEMOPS_GRANULARITY)
       {
         *--ptr_dst_end = *--ptr_src_end;
-        len -= 4;
+        len -= MEMOPS_GRANULARITY;
       }
     }
     if (len)
@@ -144,4 +146,4 @@ void *memmove(void * dst, const void * src, size_t len)
   return dst;
 }
 
-
+#endif
