@@ -454,6 +454,7 @@ uint8_t GetCurFileType()
     {
       ret = 1;
       if (!strcmpW(dot, u".avi")) ret = 2;
+      if (!strcmpW(dot, u".rom")) ret = 3;
     }
   }
   return ret;
