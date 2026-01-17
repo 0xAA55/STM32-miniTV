@@ -106,10 +106,10 @@ uint64_t AVIStartPlayTime;
 uint64_t AVIPausePlayTime;
 int AVIPaused;
 int GUINotifyShow;
-uint32_t GUINotifyTimeUntil;
+uint64_t GUINotifyTimeUntil;
 char GUINotifyInfo[256];
 int GUIVolumeShow;
-uint32_t GUIVolumeShowTimeUntil;
+uint64_t GUIVolumeShowTimeUntil;
 char FormatBuf[256];
 volatile int BAT_IsCharging;
 volatile int BAT_IsFull;
@@ -414,7 +414,7 @@ void ShowNotify(uint32_t duration, const char *format, ...)
 ITCM_CODE
 void ShowVolume(uint32_t duration)
 {
-  GUIVolumeShowTimeUntil = HAL_GetTick() + duration;
+  GUIVolumeShowTimeUntil = HAL_GetTick64() + duration;
   GUIVolumeShow = 1;
 }
 ITCM_CODE
@@ -440,7 +440,7 @@ uint8_t GetCurFileType()
   return ret;
 }
 ITCM_CODE
-void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   int target_menu;
   int menu_speed = 5 * delta_tick;
@@ -1016,7 +1016,7 @@ static void UpdateLastFileIndex()
   }
 }
 ITCM_CODE
-void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   PhatState res;
   if (!FsMounted)
@@ -1176,7 +1176,7 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
-void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   const int scroll_bar_y = 10;
   const int scroll_bar_max_height = FramebufferHeight - scroll_bar_y;
@@ -1230,7 +1230,7 @@ void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_c
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
-void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   uint64_t time = AVIGetTime();
   int have_video = (avi_video_stream.r != 0);
@@ -1274,7 +1274,7 @@ void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
-void OnUsingFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   //TODO
   if (!FsMounted)
@@ -1397,11 +1397,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   int frame_counter = 0;
-  uint32_t last_tick = HAL_GetTick();
-  uint32_t delta_tick = 0;
+  uint64_t last_tick = HAL_GetTick64();
+  int delta_tick = 0;
   while (1)
   {
-    uint32_t cur_tick = HAL_GetTick();
+    uint64_t cur_tick = HAL_GetTick64();
     int enc1_click = IsEnc1Click();
     int enc2_click = IsEnc2Click();
     int enc1_delta = GetEnc1Delta();
