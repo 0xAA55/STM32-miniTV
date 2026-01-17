@@ -1641,6 +1641,7 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
   UseLargeFont();
+  GUIIsUsingFile = 0;
   return;
 FailExit:
   ClearScreen(MakePixel565(0, 0, 0));
