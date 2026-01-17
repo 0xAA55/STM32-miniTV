@@ -808,6 +808,7 @@ int JPEG_Wait_Decode(uint32_t timeout)
     __WFI();
     if (hjpeg.hdmaout->Instance->CDAR >= (uint32_t)((uint8_t*)JPEG_buffer + sizeof JPEG_buffer))
     {
+      ShowNotify(200, "视频画面数据错误");
       HAL_JPEG_Abort(&hjpeg);
       HAL_JPEG_DeInit(&hjpeg);
       break;
@@ -850,7 +851,10 @@ void JPEG_HWDecode(void *decode_to)
   return;
 FailExit:
   HWJPEG_is_running = 0;
-  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_TIMEOUT) ShowNotify(1000, "JPEG 解码超时");
+  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_TIMEOUT) ShowNotify(1000, "视频画面解码超时");
+  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_DMA) ShowNotify(1000, "视频画面解码通信错误");
+  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_QUANT_TABLE) ShowNotify(1000, "视频画面解码量化表错误");
+  if (hjpeg.ErrorCode & HAL_JPEG_ERROR_HUFF_TABLE) ShowNotify(1000, "视频画面解码解压缩表错误");
   QuitVideoFile();
   return;
 Skipped:
@@ -920,7 +924,11 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
 {
   size_t bytes_read;
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
-  if (length > sizeof FILE_buffer) return;
+  if (length > sizeof FILE_buffer)
+  {
+    ShowNotify(200, "帧原始大小 %"PRIfsize_t" 过大", length);
+    return;
+  }
 
   Phat_SeekFile(stream, offset);
   Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
@@ -988,6 +996,7 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
     }
     else
     {
+      ShowNotify(200, "读取音频失败");
       return;
     }
   }
