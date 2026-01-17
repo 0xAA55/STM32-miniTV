@@ -777,7 +777,7 @@ void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
   HAL_JPEG_Abort(hjpeg);
   HAL_JPEG_DeInit(hjpeg);
   HWJPEG_is_running = 0;
-  ShowNotify(200, "JPEG 解码错误");
+  ShowNotify(200, "视频画面解码错误");
 }
 ITCM_CODE
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
@@ -815,7 +815,7 @@ int JPEG_Wait_Decode(uint32_t timeout)
     }
     if (HAL_GetTick() > wait_until)
     {
-      ShowNotify(1000, "JPEG 解码超时");
+      ShowNotify(1000, "视频画面解码超时");
       goto FailExit;
     }
   }
@@ -1092,9 +1092,9 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
     if ((res = Phat_Init(&phat)) != PhatState_OK)
     {
       if (res == PhatState_DriverError)
-        strcpy(FormatBuf, "未检测到SD卡。请插入SD卡");
+        strcpy(FormatBuf, "未检测到存储卡。请插入存储卡");
       else
-        snprintf(FormatBuf, sizeof FormatBuf, "初始化SD卡失败(%s)，请尝试更换SD卡", Phat_StateToString(res));
+        snprintf(FormatBuf, sizeof FormatBuf, "初始化存储卡失败(%s)，请尝试更换存储卡", Phat_StateToString(res));
       Phat_DeInit(&phat);
       DrawStandByScreen();
       DrawTextOpaque(40, 110, 240, 80, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
@@ -1102,7 +1102,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
     else if ((res = Phat_Mount(&phat, 0, 0)) != PhatState_OK)
     {
       Phat_DeInit(&phat);
-      snprintf(FormatBuf, sizeof FormatBuf, "无法挂载SD卡(%s)，请尝试更换SD卡", Phat_StateToString(res));
+      snprintf(FormatBuf, sizeof FormatBuf, "无法挂载存储卡(%s)，请尝试更换存储卡", Phat_StateToString(res));
       DrawStandByScreen();
       DrawTextOpaque(30, 110, 260, 80, FormatBuf, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
     }
