@@ -186,6 +186,138 @@ HAL_StatusTypeDef QSPI_ChipErase(void)
   return HAL_OK;
 }
 
+HAL_StatusTypeDef QSPI_SectorErase(uint32_t address)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  QSPI_CommandTypeDef s_command = {0};
+
+  s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+  s_command.Instruction       = 0x06; // WE
+  s_command.AddressMode       = QSPI_ADDRESS_NONE;
+  s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+  s_command.DataMode          = QSPI_DATA_NONE;
+  s_command.DummyCycles       = 0;
+  s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
+  s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+  s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  s_command.Instruction = 0x20; // Erase sector
+  s_command.AddressMode = QSPI_ADDRESS_1_LINE;
+  s_command.Address = address;
+  s_command.AddressSize = QSPI_ADDRESS_24_BITS;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  for(;;)
+  {
+    uint8_t status;
+    s_command.Instruction = 0x05; // Read SR1
+    s_command.DataMode = QSPI_DATA_1_LINE;
+    s_command.NbData = 1;
+
+    ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    ret = HAL_QSPI_Receive(&hqspi, &status, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    if ((status & 1) == 0) break;
+    __WFI();
+  }
+}
+
+HAL_StatusTypeDef QSPI_32KBlockErase(uint32_t address)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  QSPI_CommandTypeDef s_command = {0};
+
+  s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+  s_command.Instruction       = 0x06; // WE
+  s_command.AddressMode       = QSPI_ADDRESS_NONE;
+  s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+  s_command.DataMode          = QSPI_DATA_NONE;
+  s_command.DummyCycles       = 0;
+  s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
+  s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+  s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  s_command.Instruction = 0x52; // Erase 32KB block
+  s_command.AddressMode = QSPI_ADDRESS_1_LINE;
+  s_command.Address = address;
+  s_command.AddressSize = QSPI_ADDRESS_24_BITS;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  for(;;)
+  {
+    uint8_t status;
+    s_command.Instruction = 0x05; // Read SR1
+    s_command.DataMode = QSPI_DATA_1_LINE;
+    s_command.NbData = 1;
+
+    ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    ret = HAL_QSPI_Receive(&hqspi, &status, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    if ((status & 1) == 0) break;
+    __WFI();
+  }
+}
+
+HAL_StatusTypeDef QSPI_64KBlockErase(uint32_t address)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+  QSPI_CommandTypeDef s_command = {0};
+
+  s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+  s_command.Instruction       = 0x06; // WE
+  s_command.AddressMode       = QSPI_ADDRESS_NONE;
+  s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+  s_command.DataMode          = QSPI_DATA_NONE;
+  s_command.DummyCycles       = 0;
+  s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
+  s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+  s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  s_command.Instruction = 0xD8; // Erase 64KB block
+  s_command.AddressMode = QSPI_ADDRESS_1_LINE;
+  s_command.Address = address;
+  s_command.AddressSize = QSPI_ADDRESS_24_BITS;
+
+  ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+  if (ret != HAL_OK) return ret;
+
+  for(;;)
+  {
+    uint8_t status;
+    s_command.Instruction = 0x05; // Read SR1
+    s_command.DataMode = QSPI_DATA_1_LINE;
+    s_command.NbData = 1;
+
+    ret = HAL_QSPI_Command(&hqspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    ret = HAL_QSPI_Receive(&hqspi, &status, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    if (ret != HAL_OK) return ret;
+
+    if ((status & 1) == 0) break;
+    __WFI();
+  }
+}
+
 HAL_StatusTypeDef QSPI_PageProgram(uint32_t address, void *data)
 {
   HAL_StatusTypeDef ret = HAL_OK;
