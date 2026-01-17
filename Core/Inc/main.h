@@ -31,7 +31,13 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#ifdef DEBUG
+#define ITCM_CODE
+#define ITCM_O3CODE __attribute__((optimize("O3")))
+#else
 #define ITCM_CODE __attribute__((section(".itcm_code")))
+#define ITCM_O3CODE __attribute__((section(".itcm_code"), optimize("O3")))
+#endif
 #define DTCM_DATA __attribute__((section(".dtcm_data"), aligned(4)))
 #define DTCM_BSS __attribute__((section(".dtcm_bss"), aligned(4)))
 #define D2_DATA __attribute__((section(".d2_data")))
@@ -80,58 +86,9 @@ extern const int GUITextAreaWidth;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin);
-#ifndef DEBUG
-ITCM_CODE void *memset(void * dst, int val, size_t len);
-ITCM_CODE void *memcpy(void * dst, const void * src, size_t len);
-ITCM_CODE void *memmove(void * dst, const void * src, size_t len);
+void OnUSBFail(void);
+ITCM_CODE int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin);
 ITCM_CODE uint64_t HAL_GetTick64();
-ITCM_CODE void HAL_IncTick(void);
-ITCM_CODE void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, const uint8_t *pData, uint16_t Size, uint32_t Timeout);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, const uint8_t *pTxData, uint8_t *pRxData,
-                                                    uint16_t Size, uint32_t Timeout);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Transmit_IT(SPI_HandleTypeDef *hspi, const uint8_t *pData, uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Receive_IT(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_TransmitReceive_IT(SPI_HandleTypeDef *hspi, const uint8_t *pTxData, uint8_t *pRxData,
-                                                       uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, const uint8_t *pData, uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, const uint8_t *pTxData, uint8_t *pRxData,
-                                                        uint16_t Size);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_DMAPause(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_DMAResume(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_DMAStop(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Abort(SPI_HandleTypeDef *hspi);
-ITCM_CODE HAL_StatusTypeDef HAL_SPI_Abort_IT(SPI_HandleTypeDef *hspi);
-ITCM_CODE void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi);
-ITCM_CODE void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi);
-ITCM_CODE void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s);
-ITCM_CODE void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s);
-ITCM_CODE void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
-ITCM_CODE void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
-ITCM_CODE HAL_StatusTypeDef  HAL_JPEG_Decode(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataIn, uint32_t InDataLength,
-                                             uint8_t *pDataOutMCU, uint32_t OutDataLength, uint32_t Timeout);
-ITCM_CODE HAL_StatusTypeDef  HAL_JPEG_Decode_IT(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataIn, uint32_t InDataLength,
-                                                uint8_t *pDataOutMCU, uint32_t OutDataLength);
-ITCM_CODE HAL_StatusTypeDef  HAL_JPEG_Decode_DMA(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataIn, uint32_t InDataLength,
-                                                 uint8_t *pDataOutMCU, uint32_t OutDataLength);
-ITCM_CODE HAL_StatusTypeDef  HAL_JPEG_Pause(JPEG_HandleTypeDef *hjpeg, uint32_t XferSelection);
-ITCM_CODE HAL_StatusTypeDef  HAL_JPEG_Resume(JPEG_HandleTypeDef *hjpeg, uint32_t XferSelection);
-ITCM_CODE HAL_StatusTypeDef HAL_JPEG_Abort(JPEG_HandleTypeDef *hjpeg);
-ITCM_CODE void HAL_JPEG_ConfigInputBuffer(JPEG_HandleTypeDef *hjpeg, uint8_t *pNewInputBuffer, uint32_t InDataLength);
-ITCM_CODE void HAL_JPEG_ConfigOutputBuffer(JPEG_HandleTypeDef *hjpeg, uint8_t *pNewOutputBuffer, uint32_t OutDataLength);
-ITCM_CODE void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo);
-ITCM_CODE void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg);
-ITCM_CODE void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg);
-ITCM_CODE void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData);
-ITCM_CODE void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength);
-ITCM_CODE void HAL_JPEG_IRQHandler(JPEG_HandleTypeDef *hjpeg);
-#else
-uint64_t HAL_GetTick64();
-#endif
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

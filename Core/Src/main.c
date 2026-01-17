@@ -145,19 +145,12 @@ static void MX_ADC1_Init(void);
 static void MX_DMA2D_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-#ifndef DEBUG
-__attribute__((section(".itcm_code"))) void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd);
-__attribute__((section(".itcm_code"))) void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd);
-__attribute__((section(".itcm_code"))) void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd);
-__attribute__((section(".itcm_code"))) void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd);
-__attribute__((section(".itcm_code"))) void BSP_SD_ReadCpltCallback(void);
-__attribute__((section(".itcm_code"))) void BSP_SD_WriteCpltCallback(void);
-#endif
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-__attribute__((optimize("O3")))
+ITCM_O3CODE
 static uint16_t BSwap16(uint16_t val)
 {
   union {
@@ -170,14 +163,14 @@ static uint16_t BSwap16(uint16_t val)
   u2.u8s[1] = u1.u8s[0];
   return u2.u16 ;
 }
-__attribute__((optimize("O3")))
+ITCM_O3CODE
 void HAL_IncTick(void)
 {
   uint32_t old_tick = uwTick;
   uwTick += (uint32_t)uwTickFreq;
   if (uwTick < old_tick) TickHigh ++;
 }
-__attribute__((optimize("O3")))
+ITCM_O3CODE
 uint64_t HAL_GetTick64()
 {
   uint64_t ret;
@@ -186,6 +179,7 @@ uint64_t HAL_GetTick64()
   __enable_irq();
   return ret;
 }
+ITCM_CODE
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == hlcd.hspi)
@@ -193,7 +187,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
     LCD_On_DMA_TX(&hlcd);
   }
 }
-
+ITCM_CODE
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == hlcd.hspi)
@@ -201,6 +195,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
     LCD_On_DMA_RX(&hlcd);
   }
 }
+ITCM_CODE
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
   if (hi2s == i2saudio.hi2s)
@@ -208,6 +203,7 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
     i2saudio_tx_half_cplt_callback(&i2saudio);
   }
 }
+ITCM_CODE
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
   if (hi2s == i2saudio.hi2s)
@@ -215,7 +211,7 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
     i2saudio_tx_full_cplt_callback(&i2saudio);
   }
 }
-
+ITCM_CODE
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   DTCM_BSS static int adc_read1;
@@ -232,11 +228,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     BAT_ADC_Sampling = 0;
   }
 }
+ITCM_CODE
 int GetBatteryVolatage(uint32_t adc_val)
 {
   int adc_voltage = (int)((adc_val * 3300) >> 16);
   return adc_voltage * 7 / 5;
 }
+ITCM_CODE
 int BatteryVolatageToPowerPercentage(int voltage)
 {
   if (BAT_IsCharging && voltage != 0)
@@ -248,10 +246,12 @@ int BatteryVolatageToPowerPercentage(int voltage)
   else
     return (voltage - 3500) * 20 / (3700 - 3500);
 }
+ITCM_CODE
 int GetPowerPercentage()
 {
   return BatteryVolatageToPowerPercentage(BAT_Voltage);
 }
+ITCM_CODE
 void UpdatePowerRead()
 {
   if (BAT_ADC_VAL == 0 && BAT_ADC_Sampling == 0)
@@ -273,6 +273,7 @@ void UpdatePowerRead()
     }
   }
 }
+ITCM_CODE
 int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin)
 {
   uint32_t val = 0;
@@ -289,7 +290,7 @@ int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uin
   val += last;
   return val >= middle ? 1 : 0;
 }
-__attribute__((optimize("O3")))
+ITCM_O3CODE
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
   int r = FastCos(x - time / 16) / 2 + 512;
@@ -300,6 +301,7 @@ static Pixel565 DrawPixelBg(int x, int y, int time)
   b = b * 255 / 1024;
   return MakePixel565(r, g, b);
 }
+ITCM_CODE
 void SwapFramebuffers()
 {
   SCB_CleanDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
@@ -309,22 +311,26 @@ void SwapFramebuffers()
   else
     CurDrawFramebuffer = Framebuffer1;
 }
+ITCM_CODE
 void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
 }
+ITCM_CODE
 int IsEnc1Click()
 {
   int ret = MainBtnClick;
   MainBtnClick = 0;
   return ret;
 }
+ITCM_CODE
 int IsEnc2Click()
 {
   int ret = SecondBtnClick;
   SecondBtnClick = 0;
   return ret;
 }
+ITCM_CODE
 int GetEnc1Delta()
 {
   __attribute__((section(".dtcm_bss"))) static int last_enc1;
@@ -333,6 +339,7 @@ int GetEnc1Delta()
   last_enc1 = enc1_val;
   return ret;
 }
+ITCM_CODE
 int GetEnc2Delta()
 {
   __attribute__((section(".dtcm_bss"))) static int last_enc2;
@@ -341,14 +348,17 @@ int GetEnc2Delta()
   last_enc2 = enc2_val;
   return ret;
 }
+ITCM_CODE
 void Suicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
 }
+ITCM_CODE
 void Unsuicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
 }
+ITCM_CODE
 void OnException()
 {
   while(1)
@@ -356,6 +366,7 @@ void OnException()
     if (IsEnc1Click()) Suicide();
   }
 }
+ITCM_CODE
 void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
 {
   char *from;
@@ -392,6 +403,7 @@ void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
   GUINotifyTimeUntil = HAL_GetTick() + duration;
   GUINotifyShow = 1;
 }
+ITCM_CODE
 void ShowNotify(uint32_t duration, const char *format, ...)
 {
   va_list ap;
@@ -399,11 +411,13 @@ void ShowNotify(uint32_t duration, const char *format, ...)
   ShowNotifyV(duration, format, ap);
   va_end(ap);
 }
+ITCM_CODE
 void ShowVolume(uint32_t duration)
 {
   GUIVolumeShowTimeUntil = HAL_GetTick() + duration;
   GUIVolumeShow = 1;
 }
+ITCM_CODE
 uint8_t GetCurFileType()
 {
   uint8_t ret;
@@ -425,6 +439,7 @@ uint8_t GetCurFileType()
   }
   return ret;
 }
+ITCM_CODE
 void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   int target_menu;
@@ -520,6 +535,7 @@ void OnMainMenu(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, in
     }
   }
 }
+ITCM_CODE
 static void PrepareTextFile()
 {
   PhatState res;
@@ -596,6 +612,7 @@ static void PrepareTextFile()
   * @param  ChromaSampling: YCbCr CHroma sampling : 4:2:0, 4:2:2 or 4:4:4
   * @retval None
   */
+ITCM_CODE
 static void DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
 {
   uint32_t cssMode = JPEG_420_SUBSAMPLING, inputLineOffset = 0;
@@ -664,6 +681,7 @@ static void DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
   * @param  ImageHeight: image Height
   * @retval None
   */
+ITCM_CODE
 static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth, uint16_t ImageHeight)
 {
 
@@ -680,6 +698,7 @@ static void DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth
   /* copy the new decoded frame to the LCD Frame buffer*/
   HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
 }
+ITCM_CODE
 static void QuitVideoFile()
 {
   GUIIsUsingFile = 0;
@@ -692,11 +711,13 @@ static void QuitVideoFile()
   memset(&HWJpeg_info, 0, sizeof HWJpeg_info);
   HWJPEG_is_running = 0;
 }
+ITCM_CODE
 void HAL_JPEG_DecodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
 {
   UNUSED(hjpeg);
   HWJPEG_is_running = 0;
 }
+ITCM_CODE
 void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
 {
   HAL_JPEG_Abort(hjpeg);
@@ -704,6 +725,7 @@ void HAL_JPEG_ErrorCallback(JPEG_HandleTypeDef *hjpeg)
   HWJPEG_is_running = 0;
   ShowNotify(200, "JPEG 解码错误");
 }
+ITCM_CODE
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 {
   size_t decoded, in_size;
@@ -714,6 +736,7 @@ void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
   SCB_CleanDCache_by_Addr((uint32_t *)HWJPEG_src_pointer, in_size);
   HAL_JPEG_ConfigInputBuffer(hjpeg, (uint8_t*)HWJPEG_src_pointer, in_size);
 }
+ITCM_CODE
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
   size_t space = (size_t)(&HWJPEG_dst_buffer[sizeof Framebuffer1] - HWJPEG_dst_pointer);
@@ -722,6 +745,7 @@ void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, ui
   SCB_InvalidateDCache_by_Addr((uint32_t *)pDataOut, OutDataLength);
   HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, space);
 }
+ITCM_CODE
 int JPEG_Wait_Decode(uint32_t timeout)
 {
   const uint32_t wait_until = HAL_GetTick() + timeout;
@@ -744,6 +768,7 @@ int JPEG_Wait_Decode(uint32_t timeout)
 FailExit:
   return 0;
 }
+ITCM_CODE
 void JPEG_HWDecode(void *decode_to)
 {
   uint32_t in_size = HWJPEG_src_size;
@@ -779,6 +804,7 @@ Skipped:
   HAL_JPEG_Abort(&hjpeg);
   HAL_JPEG_DeInit(&hjpeg);
 }
+ITCM_CODE
 void AVIPause()
 {
   if (!AVIPaused)
@@ -787,6 +813,7 @@ void AVIPause()
     AVIPausePlayTime = HAL_GetTick64();
   }
 }
+ITCM_CODE
 void AVIResume()
 {
   if (AVIPaused)
@@ -796,10 +823,12 @@ void AVIResume()
     AVIPaused = 0;
   }
 }
+ITCM_CODE
 uint64_t AVIGetTime()
 {
   return AVIPaused ? AVIPausePlayTime - AVIStartPlayTime : HAL_GetTick64() - AVIStartPlayTime;
 }
+ITCM_CODE
 static fssize_t AVIStreamRead(void *buffer, size_t len, void *userdata)
 {
   size_t bytes_read;
@@ -808,6 +837,7 @@ static fssize_t AVIStreamRead(void *buffer, size_t len, void *userdata)
   Phat_ReadFile(stream, buffer, len, &bytes_read);
   return bytes_read;
 }
+ITCM_CODE
 static fssize_t AVIStreamTell(void *userdata)
 {
   FileSize_t position;
@@ -815,12 +845,14 @@ static fssize_t AVIStreamTell(void *userdata)
   Phat_GetFilePointer(stream, &position);
   return position;
 }
+ITCM_CODE
 static fssize_t AVIStreamSeek(fsize_t offset, void *userdata)
 {
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
   Phat_SeekFile(stream, offset);
   return AVIStreamTell(userdata);
 }
+ITCM_CODE
 static void AVIPrintf(void *userdata, const char *fmt, ...)
 {
   va_list ap;
@@ -829,6 +861,7 @@ static void AVIPrintf(void *userdata, const char *fmt, ...)
   va_end(ap);
   UNUSED(userdata);
 }
+ITCM_CODE
 static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
 {
   size_t bytes_read;
@@ -843,6 +876,7 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
     JPEG_HWDecode(Framebuffer2);
   }
 }
+ITCM_CODE
 static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
 {
   size_t bytes_read;
@@ -904,6 +938,7 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
     }
   }
 }
+ITCM_CODE
 static void PrepareVideoFile()
 {
   PhatState res;
@@ -951,6 +986,7 @@ BadAudioFormat:
 FailExit:
   QuitVideoFile();
 }
+ITCM_CODE
 static void QuitFileList()
 {
   if (FsMounted)
@@ -960,6 +996,7 @@ static void QuitFileList()
   }
   GUICurMenuLevel = 0;
 }
+ITCM_CODE
 static void UpdateLastFileIndex()
 {
   PhatState res;
@@ -978,6 +1015,7 @@ static void UpdateLastFileIndex()
     }
   }
 }
+ITCM_CODE
 void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   PhatState res;
@@ -1137,6 +1175,7 @@ void OnFileListGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click,
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
+ITCM_CODE
 void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   const int scroll_bar_y = 10;
@@ -1190,6 +1229,7 @@ void OnUsingTextFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_c
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
+ITCM_CODE
 void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   uint64_t time = AVIGetTime();
@@ -1233,6 +1273,7 @@ void OnUsingVideoFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_
   HAL_DMA2D_PollForTransfer(&hdma2d, 33);
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
+ITCM_CODE
 void OnUsingFileGUI(int cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   //TODO
@@ -1445,6 +1486,7 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
+ITCM_CODE
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -1507,6 +1549,7 @@ void SystemClock_Config(void)
   * @brief Peripherals Common Clock Configuration
   * @retval None
   */
+ITCM_CODE
 void PeriphCommonClock_Config(void)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
@@ -1539,6 +1582,7 @@ void PeriphCommonClock_Config(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_ADC1_Init(void)
 {
 
@@ -1611,6 +1655,7 @@ static void MX_ADC1_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_CRC_Init(void)
 {
 
@@ -1642,6 +1687,7 @@ static void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_DMA2D_Init(void)
 {
 
@@ -1682,6 +1728,7 @@ static void MX_DMA2D_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_I2S2_Init(void)
 {
 
@@ -1718,6 +1765,7 @@ static void MX_I2S2_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_JPEG_Init(void)
 {
 
@@ -1744,6 +1792,7 @@ static void MX_JPEG_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_QUADSPI_Init(void)
 {
 
@@ -1779,6 +1828,7 @@ static void MX_QUADSPI_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_SDMMC1_SD_Init(void)
 {
 
@@ -1811,6 +1861,7 @@ static void MX_SDMMC1_SD_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_SPI1_Init(void)
 {
 
@@ -1857,6 +1908,7 @@ static void MX_SPI1_Init(void)
 /**
   * Enable DMA controller clock
   */
+ITCM_CODE
 static void MX_DMA_Init(void)
 {
 
@@ -1879,6 +1931,7 @@ static void MX_DMA_Init(void)
 /**
   * Enable MDMA controller clock
   */
+ITCM_CODE
 static void MX_MDMA_Init(void)
 {
 
@@ -1898,6 +1951,7 @@ static void MX_MDMA_Init(void)
   * @param None
   * @retval None
   */
+ITCM_CODE
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -2022,6 +2076,7 @@ static void MX_GPIO_Init(void)
 
  /* MPU Configuration */
 
+ITCM_CODE
 void MPU_Config(void)
 {
   MPU_Region_InitTypeDef MPU_InitStruct = {0};
