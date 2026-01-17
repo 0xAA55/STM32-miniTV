@@ -26,7 +26,7 @@ void *memset(void * dst, int val, size_t len)
   size_t head = (size_t)ptr_dst & MEMOPS_BM;
   if (head)
   {
-    uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
+    volatile uint8_t *ptr_dst_ = (volatile uint8_t *)ptr_dst;
     if (head > len) head = len;
     len -= head;
     while(head)
@@ -49,7 +49,7 @@ void *memset(void * dst, int val, size_t len)
       len -= MEMOPS_GRANULARITY;
     }
   }
-  uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
+  volatile uint8_t *ptr_dst_ = (volatile uint8_t *)ptr_dst;
   while (len)
   {
     *ptr_dst_ ++ = (uint8_t) val;
@@ -66,8 +66,8 @@ void *memcpy(void * dst, const void * src, size_t len)
   size_t head = (size_t)dst & MEMOPS_BM;
   if (head)
   {
-    uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
-    uint8_t *ptr_src_ = (uint8_t *)ptr_src;
+    volatile uint8_t *ptr_dst_ = (volatile uint8_t *)ptr_dst;
+    volatile uint8_t *ptr_src_ = (volatile uint8_t *)ptr_src;
     while(head && len)
     {
       *ptr_dst_++ = *ptr_src_++;
@@ -87,8 +87,8 @@ void *memcpy(void * dst, const void * src, size_t len)
   }
   if (len)
   {
-    uint8_t *ptr_dst_ = (uint8_t *)ptr_dst;
-    uint8_t *ptr_src_ = (uint8_t *)ptr_src;
+    volatile uint8_t *ptr_dst_ = (volatile uint8_t *)ptr_dst;
+    volatile uint8_t *ptr_src_ = (volatile uint8_t *)ptr_src;
 
     while (len)
     {
@@ -113,8 +113,8 @@ void *memmove(void * dst, const void * src, size_t len)
     size_t tail = (size_t)ptr_dst_end & MEMOPS_BM;
     if (tail)
     {
-      uint8_t *ptr_dst_end_ = (uint8_t *)ptr_dst_end;
-      uint8_t *ptr_src_end_ = (uint8_t *)ptr_src_end;
+      volatile uint8_t *ptr_dst_end_ = (volatile uint8_t *)ptr_dst_end;
+      volatile uint8_t *ptr_src_end_ = (volatile uint8_t *)ptr_src_end;
       while (tail && len)
       {
         *--ptr_dst_end_ = *--ptr_src_end_;
@@ -134,8 +134,8 @@ void *memmove(void * dst, const void * src, size_t len)
     }
     if (len)
     {
-      uint8_t *ptr_dst_end_ = (uint8_t *)ptr_dst_end;
-      uint8_t *ptr_src_end_ = (uint8_t *)ptr_src_end;
+      volatile uint8_t *ptr_dst_end_ = (volatile uint8_t *)ptr_dst_end;
+      volatile uint8_t *ptr_src_end_ = (volatile uint8_t *)ptr_src_end;
       while (len)
       {
         *--ptr_dst_end_ = *--ptr_src_end_;
