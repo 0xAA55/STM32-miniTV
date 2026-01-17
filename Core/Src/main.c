@@ -379,11 +379,35 @@ void Unsuicide()
 }
 ITCM_CODE
 void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
+ITCM_CODE
 void OnException()
 {
+  PhatState res;
+  res = Phat_Init(&phat);
+  if (res != PhatState_OK) goto Fail;
+
+  res = Phat_Mount(&phat, 0, 0);
+  if (res != PhatState_OK) goto Fail;
+
+  Phat_OpenRootDir(&phat, &GUICurDir);
+  res = Phat_OpenFile(&GUICurDir, u"FlashROM.rom", 1, &CurFileStream1);
+  if (res != PhatState_OK) goto Fail;
+
+  strcpyW(GUIFileName, GUICurDir.LFN_name);
+  GUICurMenuLevel = 1;
+  GUICurMenu = 0;
+  GUIIsUsingFile = 1;
+  GUIFileType = 3;
+  BugFileAgreed = 1;
+  QSPI_ExitMemoryMapMode();
+
+  OnUsingBugFileGUI(0, 0, 0, 0, 0, 0);
+  return;
+Fail:
   while(1)
   {
     if (IsEnc1Click()) Suicide();
+    __WFI();
   }
 }
 ITCM_CODE
