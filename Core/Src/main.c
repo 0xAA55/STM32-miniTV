@@ -129,6 +129,7 @@ size_t HWJPEG_src_size;
 uint8_t* HWJPEG_dst_buffer;
 JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
+jmp_buf USBFailJmp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -546,9 +547,30 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
     if (enc1_click)
     {
       GUICurMenuLevel = 1;
-      GUICurFileIndex = 0;
-      GUIFirstFileIndex = 0;
-      GUIIsUsingFile = 0;
+      switch(GUICurMenu)
+      {
+        case 0:
+          GUICurFileIndex = 0;
+          GUIFirstFileIndex = 0;
+          GUIIsUsingFile = 0;
+          break;
+        case 1:
+          switch (setjmp(USBFailJmp))
+          {
+          case 0:
+            MX_USB_DEVICE_Init();
+            break;
+          default:
+            GUICurMenuLevel = 0;
+            ShowNotify(1000, "请确保插入存储卡，连接电脑USB后，再进入此功能。");
+            break;
+          }
+          break;
+        case 2:
+          break;
+        case 3:
+          break;
+      }
     }
   }
 }
@@ -971,6 +993,11 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
   }
 }
 ITCM_CODE
+void OnUSBFail()
+{
+  longjmp(USBFailJmp, 1);
+}
+ITCM_CODE
 static void PrepareVideoFile()
 {
   PhatState res;
@@ -1378,7 +1405,7 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  #define MX_USB_DEVICE_Init(x)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -1395,6 +1422,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+  #undef MX_USB_DEVICE_Init
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
   const LCD_GPIO lcd_gpio = {

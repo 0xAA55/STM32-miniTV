@@ -50,6 +50,7 @@ extern "C" {
 #include <string.h>
 #include <stdarg.h>
 #include <limits.h>
+#include <setjmp.h>
 #include "utf8.h"
 #include "utf16.h"
 #include "ili9341.h"
