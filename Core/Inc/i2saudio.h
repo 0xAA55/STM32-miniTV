@@ -29,6 +29,7 @@ typedef struct
 {
   I2S_HandleTypeDef *hi2s;
   int volume;
+  uint32_t sample_rate;
   int16_t audio_buffer[AUDIO_BUFFER_HALFSIZE];
   int16_t audio_buffer_half[AUDIO_BUFFER_HALFSIZE];
   volatile int16_t* cur_write_audio_buffer;

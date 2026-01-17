@@ -43,6 +43,7 @@ int i2saudio_init(i2saudio_p i2sa, I2S_HandleTypeDef *hi2s, int volume, uint32_t
   memset(i2sa, 0, sizeof *i2sa);
   i2sa->hi2s = hi2s;
   i2sa->volume = volume;
+  i2sa->sample_rate = sample_rate;
   i2sa->cur_write_audio_buffer = i2sa->audio_buffer;
 
   hi2s->Instance = SPI2;
