@@ -1613,6 +1613,7 @@ int main(void)
             break;
           case 1: // USB
             DrawUSBMSCScreen();
+            DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
             USB_SDCardReady = 1;
             if (enc2_click)
             {
