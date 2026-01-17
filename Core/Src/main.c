@@ -1370,6 +1370,7 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   }
 
   HAL_DMA2D_PollForTransfer(&hdma2d, 33);
+  SCB_InvalidateDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
