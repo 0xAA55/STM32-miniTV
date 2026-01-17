@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define FASTFORWARD_TIME 5000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -914,6 +914,14 @@ uint64_t AVIGetTime()
   return AVIPaused ? AVIPausePlayTime - AVIStartPlayTime : HAL_GetTick64() - AVIStartPlayTime;
 }
 ITCM_CODE
+void AVISetTime(uint64_t time)
+{
+  if (AVIPaused)
+    AVIStartPlayTime = AVIPausePlayTime - time;
+  else
+    AVIStartPlayTime = HAL_GetTick64() - time;
+}
+ITCM_CODE
 static fssize_t AVIStreamRead(void *buffer, size_t len, void *userdata)
 {
   size_t bytes_read;
@@ -1346,10 +1354,73 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   uint64_t time = AVIGetTime();
   int have_video = (avi_video_stream.r != 0);
   int have_audio = (avi_audio_stream.r != 0);
+
   if (!have_video && !have_audio)
   {
     QuitVideoFile();
+    return;
   }
+  if (enc1_click)
+  {
+    if (AVIPaused)
+    {
+      fsize_t target_byte = avi_audio_get_target_byte_offset_by_time(&avi_audio_stream, time);
+      if (!avi_audio_seek_to_byte_offset(&avi_audio_stream, target_byte, 1))
+      {
+        QuitVideoFile();
+        return;
+      }
+      AVIResume();
+    }
+    else
+    {
+      AVIPause();
+      i2saudio_stop(&i2saudio);
+    }
+  }
+  if (enc1_delta)
+  {
+    if (enc1_delta < 0)
+    {
+      if (time > FASTFORWARD_TIME)
+      {
+        time -= FASTFORWARD_TIME;
+        ShowNotify(100, "快退%d秒", FASTFORWARD_TIME / 1000);
+      }
+      else
+      {
+        time = 0;
+        ShowNotify(100, "已经不能快退了");
+      }
+    }
+    else
+    {
+      if ((have_video && !avi_video_stream.is_no_more_packets) || (have_audio && !avi_audio_stream.is_no_more_packets))
+      {
+        time += FASTFORWARD_TIME;
+        ShowNotify(100, "快进%d秒", FASTFORWARD_TIME / 1000);
+      }
+      else
+      {
+        ShowNotify(100, "已经不能快进了");
+      }
+    }
+    AVISetTime(time);
+    if (have_audio && !AVIPaused)
+    {
+      fsize_t target_byte;
+      i2saudio_stop(&i2saudio);
+      target_byte = avi_audio_get_target_byte_offset_by_time(&avi_audio_stream, time);
+      if (!avi_audio_seek_to_byte_offset(&avi_audio_stream, target_byte, 1))
+      {
+        QuitVideoFile();
+        return;
+      }
+    }
+  }
+
+  SCB_CleanDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
+
   if (have_video)
   {
     fsize_t target_frame = avi_video_get_frame_number_by_time(&avi_video_stream, time);
@@ -1370,7 +1441,8 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
 
   if ((have_video && avi_video_stream.is_no_more_packets) || (have_audio && avi_audio_stream.is_no_more_packets))
   {
-    QuitVideoFile();
+    if (!AVIPaused) QuitVideoFile();
+    else avi_stream_reader_call_callback_functions(&avi_video_stream);
   }
   if (enc2_click)
   {
