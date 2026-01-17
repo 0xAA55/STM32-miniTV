@@ -131,6 +131,7 @@ uint8_t* HWJPEG_dst_buffer;
 volatile JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
 jmp_buf USBFailJmp;
+int BugFileAgreed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -377,6 +378,7 @@ void Unsuicide()
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
 }
 ITCM_CODE
+void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
 void OnException()
 {
   while(1)
@@ -1096,6 +1098,64 @@ FailExit:
   QuitVideoFile();
 }
 ITCM_CODE
+static void QuitBugFile()
+{
+  GUIIsUsingFile = 0;
+  Phat_CloseFile(&CurFileStream1);
+}
+ITCM_CODE
+static void PrepareBugFile()
+{
+  PhatState res;
+  FileSize_t size;
+  size_t bytes_read;
+  FlashMap_t *ptr = (FlashMap_t *)FILE_buffer;
+  res = Phat_OpenFile(&GUICurDir, GUIFileName, 1, &CurFileStream1);
+  if (res != PhatState_OK)
+  {
+    ShowNotify(1000, "无法打开文件（%s）", Phat_StateToString(res));
+    goto FailExit;
+  }
+  Phat_GetFileSize(&CurFileStream1, &size);
+  if (size < sizeof *ptr)
+  {
+    ShowNotify(1000, "文件太小，不是固件升级文件");
+    goto FailExit;
+  }
+  if (Phat_ReadFile(&CurFileStream1, ptr, sizeof *ptr, &bytes_read) == PhatState_DriverError)
+  {
+    ShowNotify(1000, "无法读取文件（%s）", Phat_StateToString(res));
+    goto FailExit;
+  }
+  if (bytes_read != sizeof *ptr)
+  {
+    ShowNotify(1000, "加载文件失败");
+    goto FailExit;
+  }
+  if (ptr->Signature == 0xAA55 && size <= 8 * 1024 * 1024)
+  {
+    BugFileAgreed = 0;
+    GUIIsUsingFile = 1;
+    return;
+  }
+  /*
+  if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFFF00000) && size <= 8 * 1024 * 1024)
+  {
+    if (ptr->Version < FLASH_MAP->Version)
+    {
+      ShowNotify(1000, "这个固件的版本低于当前固件的版本");
+      goto FailExit;
+    }
+    BugFileAgreed = 0;
+    GUIIsUsingFile = 1;
+    return;
+  }
+  */
+  ShowNotify(1000, "不是固件升级文件 %x %x %u", ptr->Signature, ptr->Version, size);
+FailExit:
+  QuitBugFile();
+}
+ITCM_CODE
 static void QuitFileList()
 {
   if (FsMounted)
@@ -1246,7 +1306,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
         PrepareVideoFile();
         break;
       case 3: // Bug file
-        ShowNotify(500, "无法打开文件");
+        PrepareBugFile();
         break;
       default: // Unknown file
         ShowNotify(500, "无法打开文件");
@@ -1484,9 +1544,101 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
+void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
+{
+  HAL_StatusTypeDef hres;
+  PhatState pres;
+  uint32_t program_address = 0;
+  FileSize_t filesize;
+
+  //TODO
+  ClearScreen(MakePixel565(0, 0, 0));
+  if (!BugFileAgreed)
+  {
+    DrawText(40, 100, 240, 140, "将要进行固件升级\n按下按钮1进行升级\n按下按钮2取消升级\n升级过程中不要移除内存卡\n也不要断电", MakePixel565(255, 255, 255));
+    DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+    if (enc1_click)
+    {
+      BugFileAgreed = 1;
+      UseDefaultFont();
+      QSPI_ExitMemoryMapMode();
+    }
+    if (enc2_click)
+    {
+      GUIIsUsingFile = 0;
+    }
+    return;
+  }
+
+  ClearScreen(MakePixel565(0, 0, 0));
+  DrawText(40, 100, 240, 140, "ERASING CHIP", MakePixel565(255, 255, 255));
+  SwapFramebuffers();
+  hres = QSPI_ChipErase();
+  if (hres != HAL_OK)
+  {
+    snprintf(FormatBuf, sizeof FormatBuf, "ERASE CHIP FAILED");
+    goto FailExit;
+  }
+  ClearScreen(MakePixel565(0, 0, 0));
+  DrawText(40, 100, 240, 140, "PROGRAMMING CHIP", MakePixel565(255, 255, 255));
+  SwapFramebuffers();
+
+  pres = Phat_SeekFile(&CurFileStream1, 0);
+  if (pres != PhatState_OK)
+  {
+    snprintf(FormatBuf, sizeof FormatBuf, "SEEK FILE FAILED");
+    goto FailExit;
+  }
+
+  Phat_GetFileSize(&CurFileStream1, &filesize);
+
+  while(program_address < filesize)
+  {
+    size_t bytes_to_read;
+    size_t bytes_read;
+    int percentage = program_address * 100 / filesize;
+    ClearScreen(MakePixel565(0, 0, 0));
+    snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING CHIP (%d %%)", percentage);
+    DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+    FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+    FillRect(40, 120, percentage * 240 / 100, 2, MakePixel565(255, 255, 255));
+    SwapFramebuffers();
+
+    bytes_to_read = filesize - program_address;
+    if (bytes_to_read > 256) bytes_to_read = 256;
+    memset(FILE_buffer, 0xFF, 256);
+    pres = Phat_ReadFile(&CurFileStream1, FILE_buffer, bytes_to_read, &bytes_read);
+    if (bytes_to_read != bytes_read)
+    {
+      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING CHIP FAILED: IO ERROR (%s)", Phat_StateToString(pres));
+      goto FailExit;
+    }
+    hres = QSPI_PageProgram(program_address, FILE_buffer);
+    if (hres != HAL_OK)
+    {
+      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING CHIP FAILED: QSPI PERIPHERAL ERROR");
+      goto FailExit;
+    }
+    program_address += 256;
+  }
+
+  QSPI_InitFlash();
+  QSPI_EnterMemoryMapMode();
+  UseLargeFont();
+  return;
+FailExit:
+  ClearScreen(MakePixel565(0, 0, 0));
+  DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+  SwapFramebuffers();
+  for(;;)
+  {
+    if (MainBtnClick || SecondBtnClick) Suicide();
+    __WFI();
+  }
+}
+ITCM_CODE
 void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
-  //TODO
   if (!FsMounted)
   {
     ShowNotify(1000, "未知错误");
@@ -1506,12 +1658,7 @@ void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_
       OnUsingVideoFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
       break;
     case 3: //Bug file
-      ClearScreen(MakePixel565(0, 0, 0));
-      if (enc2_click)
-      {
-        GUIIsUsingFile = 0;
-      }
-      DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+      OnUsingBugFileGUI(cur_tick, delta_tick, enc1_delta, enc1_click, enc2_delta, enc2_click);
       break;
   }
 }
