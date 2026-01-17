@@ -1214,10 +1214,21 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
       switch (GUIFileType)
       {
       case 0: //Folder
-        res = Phat_ChDir(&GUICurDir, GUIFileName);
-        GUIFirstFileIndex = 0;
-        GUICurFileIndex = 0;
-        UpdateLastFileIndex();
+        if (!strcmpW(GUIFileName, u"System Volume Information"))
+          ShowNotify(500, "无法进入文件夹");
+        else
+        {
+          res = Phat_ChDir(&GUICurDir, GUIFileName);
+          if (res != PhatState_OK)
+          {
+            ShowNotify(1000, "进入文件夹失败（%s）", Phat_StateToString(res));
+            QuitFileList();
+            break;
+          }
+          GUIFirstFileIndex = 0;
+          GUICurFileIndex = 0;
+          UpdateLastFileIndex();
+        }
         break;
       case 1: //Text file
         PrepareTextFile();
