@@ -919,7 +919,7 @@ static fssize_t AVIStreamRead(void *buffer, size_t len, void *userdata)
   size_t bytes_read;
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
 
-  Phat_ReadFile(stream, buffer, len, &bytes_read);
+  if (Phat_ReadFile(stream, buffer, len, &bytes_read) == PhatState_DriverError) QuitVideoFile();
   return bytes_read;
 }
 ITCM_CODE
@@ -958,7 +958,7 @@ static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
   }
 
   Phat_SeekFile(stream, offset);
-  Phat_ReadFile(stream, FILE_buffer, length, &bytes_read);
+  if (Phat_ReadFile(stream, FILE_buffer, length, &bytes_read) == PhatState_DriverError) QuitVideoFile();
   if (length == bytes_read)
   {
     HWJPEG_src_size = length;
@@ -1019,11 +1019,11 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
         sample_count = length_process / 2;
       }
       i2saudio_feed_samples_to_play(&i2saudio, samples, sample_count, &written);
-      length -= length_process;
       if (written != sample_count)
       {
         ShowNotify(200, "音频丢包");
       }
+      length -= length_process;
     }
     else
     {
@@ -1342,14 +1342,18 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   if (have_video)
   {
     fsize_t target_frame = avi_video_get_frame_number_by_time(&avi_video_stream, time);
-    avi_video_seek_to_frame_index(&avi_video_stream, target_frame, 1);
+    if (!avi_video_seek_to_frame_index(&avi_video_stream, target_frame, 1)) QuitVideoFile();
   }
 
-  if (have_audio && !avi_audio_stream.is_no_more_packets)
+  if (have_audio && !avi_audio_stream.is_no_more_packets && !AVIPaused)
   {
     while (i2saudio_need_data(&i2saudio))
     {
-      avi_stream_reader_move_to_next_packet(&avi_audio_stream, 1);
+      if (!avi_stream_reader_move_to_next_packet(&avi_audio_stream, 1))
+      {
+        QuitVideoFile();
+        return;
+      }
     }
   }
 
