@@ -33,8 +33,8 @@ typedef struct
   int16_t audio_buffer_half[AUDIO_BUFFER_HALFSIZE];
   volatile int16_t* cur_write_audio_buffer;
   int16_t audio_prepare_buffer[AUDIO_BUFFER_HALFSIZE];
-  volatile uint32_t audio_prepare_buffer_samples;
-  volatile int audio_is_playing;
+  uint32_t audio_prepare_buffer_samples;
+  int audio_is_playing;
   volatile int audio_is_prepped;
   volatile uint64_t total_sample_played;
 } i2saudio_t, *i2saudio_p;
