@@ -20,7 +20,7 @@
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
 #pragma GCC optimize ("O3")
 
-void *memset(void * dst, int val, size_t len)
+MEMOPS_FUNC void *memset(void * dst, int val, size_t len)
 {
   memops_t *ptr_dst = dst;
   size_t head = (size_t)ptr_dst & MEMOPS_BM;
@@ -58,7 +58,7 @@ void *memset(void * dst, int val, size_t len)
   return dst;
 }
 
-void *memcpy(void * dst, const void * src, size_t len)
+MEMOPS_FUNC void *memcpy(void * dst, const void * src, size_t len)
 {
   memops_t *ptr_dst = dst;
   const memops_t *ptr_src = src;
@@ -99,7 +99,7 @@ void *memcpy(void * dst, const void * src, size_t len)
   return dst;
 }
 
-void *memmove(void * dst, const void * src, size_t len)
+MEMOPS_FUNC void *memmove(void * dst, const void * src, size_t len)
 {
   if (dst == src) return dst;
   if (dst < src)

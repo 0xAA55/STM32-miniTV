@@ -147,6 +147,7 @@
 									<listOptionValue builtIn="false" value="PHAT_FUNC=__attribute__((section(&quot;.itcm_code&quot;)))"/>
 									<listOptionValue builtIn="false" value="AVI_FUNC=__attribute__((section(&quot;.itcm_code&quot;)))"/>
 									<listOptionValue builtIn="false" value="LCD_FUNC=__attribute__((section(&quot;.itcm_code&quot;)))"/>
+									<listOptionValue builtIn="false" value="MEMOPS_FUNC=__attribute__((section(&quot;.itcm_code&quot;)))"/>
 									<listOptionValue builtIn="false" value="SDMMC_SWDATATIMEOUT=200"/>
 									<listOptionValue builtIn="false" value="SDMMC_DATATIMEOUT=5000000"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
