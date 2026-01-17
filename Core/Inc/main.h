@@ -194,7 +194,7 @@ extern Phat_DirInfo_t GUICurDir;
 extern Phat_FileInfo_t CurFileStream1;
 extern Phat_FileInfo_t CurFileStream2;
 extern Phat_FileInfo_t CurFileStream3;
-D3_BSS extern i2saudio_t i2saudio;
+extern i2saudio_t i2saudio;
 DTCM_BSS extern int GUINotifyShow;
 DTCM_BSS extern uint32_t GUINotifyTimeUntil;
 DTCM_BSS extern char GUINotifyInfo[256];
