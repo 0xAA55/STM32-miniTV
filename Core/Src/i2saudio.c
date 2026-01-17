@@ -91,11 +91,13 @@ int i2saudio_resume(i2saudio_p i2sa)
 int i2saudio_stop(i2saudio_p i2sa)
 {
   if (!i2sa) return 0;
+  if (!i2sa->hi2s) return 1;
   if (HAL_I2S_DMAStop(i2sa->hi2s) == HAL_OK)
   {
     i2sa->total_sample_played = 0;
     i2sa->audio_is_playing = 0;
     i2sa->audio_is_prepped = 0;
+    i2sa->audio_prepare_buffer_samples = 0;
     i2sa->cur_write_audio_buffer = i2sa->audio_buffer;
     return 1;
   }
