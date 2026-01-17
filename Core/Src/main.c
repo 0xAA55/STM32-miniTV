@@ -385,6 +385,7 @@ void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
 {
   char *from;
   size_t size;
+  uint64_t new_time_until = HAL_GetTick64() + duration;
   from = GUINotifyInfo;
   size = sizeof GUINotifyInfo;
   if (GUINotifyShow)
@@ -414,7 +415,7 @@ void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
     }
   }
   vsnprintf(from, size, format, ap);
-  GUINotifyTimeUntil = HAL_GetTick() + duration;
+  if (new_time_until > GUINotifyTimeUntil) GUINotifyTimeUntil = new_time_until;
   GUINotifyShow = 1;
 }
 ITCM_CODE
