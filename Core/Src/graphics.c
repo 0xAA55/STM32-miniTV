@@ -589,7 +589,7 @@ void UseDefaultFont()
 
 void UseSmallFont()
 {
-  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  while (FLASH_MAP->Signature != 0xAA55 || !FLASH_MAP->FontCodeTable) ChangeFontFailed();
   font_t SmallFont =
   {
       FLASH_MAP->NumFontChars,
@@ -610,7 +610,7 @@ void UseSmallFont()
 
 void UseMediumFont()
 {
-  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  while (FLASH_MAP->Signature != 0xAA55 || !FLASH_MAP->FontCodeTable) ChangeFontFailed();
   font_t MediumFont =
   {
       FLASH_MAP->NumFontChars,
@@ -631,7 +631,7 @@ void UseMediumFont()
 
 void UseLargeFont()
 {
-  if (FLASH_MAP->Signature != 0xAA55) ChangeFontFailed();
+  while (FLASH_MAP->Signature != 0xAA55 || !FLASH_MAP->FontCodeTable) ChangeFontFailed();
   font_t LargeFont =
   {
       FLASH_MAP->NumFontChars,
