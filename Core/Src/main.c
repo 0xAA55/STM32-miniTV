@@ -1715,6 +1715,7 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
     if (CurVolume > 100) CurVolume = 100;
     ShowVolume(200);
   }
+  DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 
 
