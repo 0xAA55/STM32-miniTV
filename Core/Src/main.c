@@ -1160,6 +1160,12 @@ static void PrepareBugFile()
     ShowNotify(1000, "加载文件失败");
     goto FailExit;
   }
+  if (ptr->Signature == 0xAA55 && size <= 8 * 1024 * 1024)
+  {
+    BugFileAgreed = 0;
+    GUIIsUsingFile = 1;
+    return;
+  }
   if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFFF00000) && size <= 8 * 1024 * 1024)
   {
     if (ptr->Version < FLASH_MAP->Version)
