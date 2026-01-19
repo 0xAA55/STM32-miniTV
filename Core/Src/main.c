@@ -131,6 +131,7 @@ uint8_t* HWJPEG_dst_buffer;
 volatile JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
 jmp_buf USBFailJmp;
+jmp_buf SysErrorJmp;
 int BugFileAgreed;
 /* USER CODE END PV */
 
@@ -1815,6 +1816,16 @@ int main(void)
 
     UpdatePowerRead();
 
+    switch (setjmp(SysErrorJmp))
+    {
+    case 0:
+      break;
+    case 1:
+      GUICurMenuLevel = 0;
+      ShowNotify(1000, "系统错误。");
+      break;
+    }
+
     switch (GUICurMenuLevel)
     {
       case 0:
@@ -2598,6 +2609,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+  longjmp(SysErrorJmp, 1);
   __disable_irq();
   while (1)
   {
