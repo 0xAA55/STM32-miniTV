@@ -1295,10 +1295,10 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
       }
       filetype = GetCurFileType();
       DrawFileIcon(0, y, filetype);
-      DrawTextW(17, y, 280, 20, GUICurDir.LFN_name, MakePixel565(255, 255, 255));
+      DrawTextW(17, y, 300, 20, GUICurDir.LFN_name, MakePixel565(255, 255, 255));
       if (file_index == GUICurFileIndex)
       {
-        InvertRect(17, y + 1, 280, 18, 1);
+        InvertRect(17, y + 1, 300, 18, 1);
         strcpyW(GUIFileName, GUICurDir.LFN_name);
         GUIFileType = filetype;
       }
