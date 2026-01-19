@@ -1567,7 +1567,6 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
   uint32_t program_address = 0;
   FileSize_t filesize;
 
-  //TODO
   ClearScreen(MakePixel565(0, 0, 0));
   if (!BugFileAgreed)
   {
@@ -1586,15 +1585,6 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
     return;
   }
 
-  ClearScreen(MakePixel565(0, 0, 0));
-  DrawText(40, 100, 240, 140, "ERASING CHIP", MakePixel565(255, 255, 255));
-  SwapFramebuffers();
-  hres = QSPI_ChipErase();
-  if (hres != HAL_OK)
-  {
-    snprintf(FormatBuf, sizeof FormatBuf, "ERASE CHIP FAILED");
-    goto FailExit;
-  }
   ClearScreen(MakePixel565(0, 0, 0));
   DrawText(40, 100, 240, 140, "PROGRAMMING", MakePixel565(255, 255, 255));
   SwapFramebuffers();
