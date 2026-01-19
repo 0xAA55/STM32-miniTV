@@ -588,9 +588,12 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
           case 0:
             MX_USB_DEVICE_Init();
             break;
-          default:
+          case 1:
             GUICurMenuLevel = 0;
             ShowNotify(1000, "请确保插入存储卡，连接电脑USB后，再进入此功能。");
+          default:
+            GUICurMenuLevel = 0;
+            ShowNotify(1000, "系统错误。");
             break;
           }
           break;

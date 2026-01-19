@@ -188,6 +188,7 @@ DTCM_BSS extern uint64_t AVIStartPlayTime;
 DTCM_BSS extern uint64_t AVIPausePlayTime;
 DTCM_BSS extern int AVIPaused;
 DTCM_BSS extern int USB_SDCardReady;
+DTCM_BSS extern jmp_buf USBFailJmp;
 DTCM_BSS extern int BugFileAgreed;
 
 extern Pixel565 Framebuffer1[240][320];
