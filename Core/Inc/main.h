@@ -103,18 +103,24 @@ ITCM_CODE uint64_t HAL_GetTick64();
 #define BAT_PERC_GPIO_Port GPIOC
 #define PWCTRL_Pin GPIO_PIN_9
 #define PWCTRL_GPIO_Port GPIOE
-#define ENC1_PWR_SW_Pin GPIO_PIN_10
-#define ENC1_PWR_SW_GPIO_Port GPIOE
+#define ENC1_SW_Pin GPIO_PIN_10
+#define ENC1_SW_GPIO_Port GPIOE
+#define ENC1_SW_EXTI_IRQn EXTI15_10_IRQn
 #define ENC1_A_Pin GPIO_PIN_11
 #define ENC1_A_GPIO_Port GPIOE
+#define ENC1_A_EXTI_IRQn EXTI15_10_IRQn
 #define ENC1_B_Pin GPIO_PIN_12
 #define ENC1_B_GPIO_Port GPIOE
+#define ENC1_B_EXTI_IRQn EXTI15_10_IRQn
 #define ENC2_SW_Pin GPIO_PIN_13
 #define ENC2_SW_GPIO_Port GPIOE
+#define ENC2_SW_EXTI_IRQn EXTI15_10_IRQn
 #define ENC2_A_Pin GPIO_PIN_14
 #define ENC2_A_GPIO_Port GPIOE
+#define ENC2_A_EXTI_IRQn EXTI15_10_IRQn
 #define ENC2_B_Pin GPIO_PIN_15
 #define ENC2_B_GPIO_Port GPIOE
+#define ENC2_B_EXTI_IRQn EXTI15_10_IRQn
 #define BAT_CHRG_Pin GPIO_PIN_14
 #define BAT_CHRG_GPIO_Port GPIOB
 #define BAT_FULL_Pin GPIO_PIN_15
@@ -212,8 +218,8 @@ DTCM_BSS extern volatile int Enc1;
 DTCM_BSS extern volatile int Enc2;
 DTCM_BSS extern volatile uint32_t BAT_ADC_VAL;
 DTCM_BSS extern volatile int BAT_ADC_Sampling;
-DTCM_BSS extern volatile int MainBtnClick;
-DTCM_BSS extern volatile int SecondBtnClick;
+DTCM_BSS extern volatile int Enc1Click;
+DTCM_BSS extern volatile int Enc2Click;
 DTCM_BSS extern volatile int BAT_Voltage;
 DTCM_BSS extern volatile int BAT_IsCharging;
 DTCM_BSS extern volatile int BAT_IsFull;

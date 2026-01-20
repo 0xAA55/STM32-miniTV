@@ -119,8 +119,8 @@ volatile int Enc1;
 volatile int Enc2;
 volatile uint32_t BAT_ADC_VAL;
 volatile int BAT_ADC_Sampling;
-volatile int MainBtnClick;
-volatile int SecondBtnClick;
+volatile int Enc1Click;
+volatile int Enc2Click;
 volatile int BAT_Voltage;
 volatile int HWJPEG_is_running;
 volatile uint8_t* HWJPEG_src_pointer;
@@ -339,15 +339,15 @@ void WaitForPresent()
 ITCM_CODE
 int IsEnc1Click()
 {
-  int ret = MainBtnClick;
-  MainBtnClick = 0;
+  int ret = Enc1Click;
+  Enc1Click = 0;
   return ret;
 }
 ITCM_CODE
 int IsEnc2Click()
 {
-  int ret = SecondBtnClick;
-  SecondBtnClick = 0;
+  int ret = Enc2Click;
+  Enc2Click = 0;
   return ret;
 }
 ITCM_CODE
@@ -367,6 +367,83 @@ int GetEnc2Delta()
   int ret = enc2_val - last_enc2;
   last_enc2 = enc2_val;
   return ret;
+}
+ITCM_CODE
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  DTCM_BSS static int enc1_last_bm;
+  DTCM_BSS static int enc2_last_bm;
+  DTCM_BSS static int enc1_sw_is_up;
+  DTCM_BSS static int enc2_sw_is_up;
+  DTCM_BSS static uint8_t enc1_a_buffer[4];
+  DTCM_BSS static uint8_t enc1_b_buffer[4];
+  DTCM_BSS static uint8_t enc2_a_buffer[4];
+  DTCM_BSS static uint8_t enc2_b_buffer[4];
+  DTCM_BSS static int enc1_a;
+  DTCM_BSS static int enc1_b;
+  DTCM_BSS static int enc2_a;
+  DTCM_BSS static int enc2_b;
+  DTCM_BSS static int enc1_bm;
+  DTCM_BSS static int enc2_bm;
+
+  enc1_a = DenoisedPinRead(enc1_a_buffer, sizeof enc1_a_buffer, ENC1_A_GPIO_Port, ENC1_A_Pin);
+  enc1_b = DenoisedPinRead(enc1_b_buffer, sizeof enc1_b_buffer, ENC1_B_GPIO_Port, ENC1_B_Pin);
+  enc2_a = DenoisedPinRead(enc2_a_buffer, sizeof enc2_a_buffer, ENC2_A_GPIO_Port, ENC2_A_Pin);
+  enc2_b = DenoisedPinRead(enc2_b_buffer, sizeof enc2_b_buffer, ENC2_B_GPIO_Port, ENC2_B_Pin);
+  enc1_bm = (enc1_a << 1) | (enc1_b);
+  enc2_bm = (enc2_a << 1) | (enc2_b);
+  BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
+  BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
+  switch((enc1_last_bm << 2) | enc1_bm)
+  {
+    case 0b0001:
+    case 0b1000:
+      Enc1 += 1;
+      break;
+    case 0b0010:
+    case 0b0100:
+      Enc1 -= 1;
+      break;
+  }
+  switch((enc2_last_bm << 2) | enc2_bm)
+  {
+    case 0b0001:
+    case 0b1000:
+      Enc2 += 1;
+      break;
+    case 0b0010:
+    case 0b0100:
+      Enc2 -= 1;
+      break;
+  }
+  enc1_last_bm = enc1_bm;
+  enc2_last_bm = enc2_bm;
+  switch(HAL_GPIO_ReadPin(ENC1_SW_GPIO_Port, ENC1_SW_Pin))
+  {
+    default:
+      if (enc1_sw_is_up)
+      {
+        enc1_sw_is_up = 0;
+        Enc1Click = 1;
+      }
+      break;
+    case GPIO_PIN_SET:
+      enc1_sw_is_up = 1;
+      break;
+  }
+  switch(HAL_GPIO_ReadPin(ENC2_SW_GPIO_Port, ENC2_SW_Pin))
+  {
+    default:
+      if (enc2_sw_is_up)
+      {
+        enc2_sw_is_up = 0;
+        Enc2Click = 1;
+      }
+      break;
+    case GPIO_PIN_SET:
+      enc2_sw_is_up = 1;
+      break;
+  }
 }
 ITCM_CODE
 void Suicide()
@@ -1160,15 +1237,9 @@ static void PrepareBugFile()
     ShowNotify(1000, "加载文件失败");
     goto FailExit;
   }
-  if (ptr->Signature == 0xAA55 && size <= 8 * 1024 * 1024)
+  if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFF000000) && size <= 8 * 1024 * 1024)
   {
-    BugFileAgreed = 0;
-    GUIIsUsingFile = 1;
-    return;
-  }
-  if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFFF00000) && size <= 8 * 1024 * 1024)
-  {
-    if (ptr->Version < FLASH_MAP->Version)
+    if (!(FLASH_MAP->Version & 0xFF000000) && ptr->Version < FLASH_MAP->Version)
     {
       ShowNotify(1000, "这个固件的版本低于当前固件的版本");
       goto FailExit;
@@ -1667,7 +1738,7 @@ FailExit:
   SwapFramebuffers();
   for(;;)
   {
-    if (MainBtnClick || SecondBtnClick) Suicide();
+    if (Enc1Click || Enc2Click) Suicide();
     __WFI();
   }
 }
@@ -2447,11 +2518,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PWCTRL_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ENC1_PWR_SW_Pin ENC1_A_Pin ENC1_B_Pin ENC2_SW_Pin
+  /*Configure GPIO pins : ENC1_SW_Pin ENC1_A_Pin ENC1_B_Pin ENC2_SW_Pin
                            ENC2_A_Pin ENC2_B_Pin */
-  GPIO_InitStruct.Pin = ENC1_PWR_SW_Pin|ENC1_A_Pin|ENC1_B_Pin|ENC2_SW_Pin
+  GPIO_InitStruct.Pin = ENC1_SW_Pin|ENC1_A_Pin|ENC1_B_Pin|ENC2_SW_Pin
                           |ENC2_A_Pin|ENC2_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
@@ -2496,6 +2567,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(ENC1_SW_EXTI_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(ENC1_SW_EXTI_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

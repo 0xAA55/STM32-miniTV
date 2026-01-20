@@ -46,21 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-#if !DEBUG
-__attribute__((section(".itcm_code"))) void SysTick_Handler(void);
-__attribute__((section(".itcm_code"))) void DMA1_Stream0_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void DMA1_Stream1_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void DMA1_Stream2_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void ADC_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void SPI1_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void SDMMC1_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void OTG_HS_IRQHandler(void);
-__attribute__((section(".itcm_code"))) void HAL_DMA_IRQHandler(DMA_HandleTypeDef *hdma);
-__attribute__((section(".itcm_code"))) void HAL_ADC_IRQHandler(ADC_HandleTypeDef *hadc);
-__attribute__((section(".itcm_code"))) void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi);
-__attribute__((section(".itcm_code"))) void HAL_SD_IRQHandler(SD_HandleTypeDef *hsd);
-__attribute__((section(".itcm_code"))) void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
-#endif
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -208,79 +194,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-  __attribute__((section(".dtcm_bss"))) static int enc1_last_bm;
-  __attribute__((section(".dtcm_bss"))) static int enc2_last_bm;
-  __attribute__((section(".dtcm_bss"))) static int main_btn_is_up;
-  __attribute__((section(".dtcm_bss"))) static int second_btn_is_up;
-  __attribute__((section(".dtcm_bss"))) static uint8_t enc1_a_buffer[4];
-  __attribute__((section(".dtcm_bss"))) static uint8_t enc1_b_buffer[4];
-  __attribute__((section(".dtcm_bss"))) static uint8_t enc2_a_buffer[4];
-  __attribute__((section(".dtcm_bss"))) static uint8_t enc2_b_buffer[4];
-  __attribute__((section(".dtcm_bss"))) static int enc1_a;
-  __attribute__((section(".dtcm_bss"))) static int enc1_b;
-  __attribute__((section(".dtcm_bss"))) static int enc2_a;
-  __attribute__((section(".dtcm_bss"))) static int enc2_b;
-  __attribute__((section(".dtcm_bss"))) static int enc1_bm;
-  __attribute__((section(".dtcm_bss"))) static int enc2_bm;
 
-  enc1_a = DenoisedPinRead(enc1_a_buffer, sizeof enc1_a_buffer, ENC1_A_GPIO_Port, ENC1_A_Pin);
-  enc1_b = DenoisedPinRead(enc1_b_buffer, sizeof enc1_b_buffer, ENC1_B_GPIO_Port, ENC1_B_Pin);
-  enc2_a = DenoisedPinRead(enc2_a_buffer, sizeof enc2_a_buffer, ENC2_A_GPIO_Port, ENC2_A_Pin);
-  enc2_b = DenoisedPinRead(enc2_b_buffer, sizeof enc2_b_buffer, ENC2_B_GPIO_Port, ENC2_B_Pin);
-  enc1_bm = (enc1_a << 1) | (enc1_b);
-  enc2_bm = (enc2_a << 1) | (enc2_b);
-  BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
-  BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
-  switch((enc1_last_bm << 2) | enc1_bm)
-  {
-    case 0b0001:
-    case 0b1000:
-      Enc1 += 1;
-      break;
-    case 0b0010:
-    case 0b0100:
-      Enc1 -= 1;
-      break;
-  }
-  switch((enc2_last_bm << 2) | enc2_bm)
-  {
-    case 0b0001:
-    case 0b1000:
-      Enc2 += 1;
-      break;
-    case 0b0010:
-    case 0b0100:
-      Enc2 -= 1;
-      break;
-  }
-  enc1_last_bm = enc1_bm;
-  enc2_last_bm = enc2_bm;
-  switch(HAL_GPIO_ReadPin(ENC1_PWR_SW_GPIO_Port, ENC1_PWR_SW_Pin))
-  {
-    default:
-      if (main_btn_is_up)
-      {
-        main_btn_is_up = 0;
-        MainBtnClick = 1;
-      }
-      break;
-    case GPIO_PIN_SET:
-      main_btn_is_up = 1;
-      break;
-  }
-  switch(HAL_GPIO_ReadPin(ENC2_SW_GPIO_Port, ENC2_SW_Pin))
-  {
-    default:
-      if (second_btn_is_up)
-      {
-        second_btn_is_up = 0;
-        SecondBtnClick = 1;
-      }
-      break;
-    case GPIO_PIN_SET:
-      second_btn_is_up = 1;
-      break;
-  }
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -363,6 +277,25 @@ void SPI1_IRQHandler(void)
   /* USER CODE BEGIN SPI1_IRQn 1 */
 
   /* USER CODE END SPI1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(ENC1_SW_Pin);
+  HAL_GPIO_EXTI_IRQHandler(ENC1_A_Pin);
+  HAL_GPIO_EXTI_IRQHandler(ENC1_B_Pin);
+  HAL_GPIO_EXTI_IRQHandler(ENC2_SW_Pin);
+  HAL_GPIO_EXTI_IRQHandler(ENC2_A_Pin);
+  HAL_GPIO_EXTI_IRQHandler(ENC2_B_Pin);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /**
