@@ -194,7 +194,8 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
+  BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
+  BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */

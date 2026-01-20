@@ -371,8 +371,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   enc2_b = (HAL_GPIO_ReadPin(ENC2_B_GPIO_Port, ENC2_B_Pin) == GPIO_PIN_SET);
   enc1_bm = (enc1_a << 1) | (enc1_b);
   enc2_bm = (enc2_a << 1) | (enc2_b);
-  BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
-  BAT_IsFull = (HAL_GPIO_ReadPin(BAT_FULL_GPIO_Port, BAT_FULL_Pin) == GPIO_PIN_RESET);
   switch((enc1_last_bm << 2) | enc1_bm)
   {
     case 0b0001:
