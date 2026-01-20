@@ -293,23 +293,6 @@ void UpdatePowerRead()
     }
   }
 }
-ITCM_CODE
-int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin)
-{
-  uint32_t val = 0;
-  uint8_t last;
-  uint32_t middle = buffer_size >> 1;
-  for (size_t i = 0; i < buffer_size - 1; i++)
-  {
-    uint8_t next = buffer[i + 1];
-    val += next;
-    buffer[i] = next;
-  }
-  last = (HAL_GPIO_ReadPin(GPIO, Pin) == GPIO_PIN_SET ? 1 : 0);
-  buffer[buffer_size - 1] = last;
-  val += last;
-  return val >= middle ? 1 : 0;
-}
 ITCM_O3CODE
 static Pixel565 DrawPixelBg(int x, int y, int time)
 {
@@ -375,10 +358,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   DTCM_BSS static int enc2_last_bm;
   DTCM_BSS static int enc1_sw_is_up;
   DTCM_BSS static int enc2_sw_is_up;
-  DTCM_BSS static uint8_t enc1_a_buffer[4];
-  DTCM_BSS static uint8_t enc1_b_buffer[4];
-  DTCM_BSS static uint8_t enc2_a_buffer[4];
-  DTCM_BSS static uint8_t enc2_b_buffer[4];
   DTCM_BSS static int enc1_a;
   DTCM_BSS static int enc1_b;
   DTCM_BSS static int enc2_a;
@@ -386,10 +365,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   DTCM_BSS static int enc1_bm;
   DTCM_BSS static int enc2_bm;
 
-  enc1_a = DenoisedPinRead(enc1_a_buffer, sizeof enc1_a_buffer, ENC1_A_GPIO_Port, ENC1_A_Pin);
-  enc1_b = DenoisedPinRead(enc1_b_buffer, sizeof enc1_b_buffer, ENC1_B_GPIO_Port, ENC1_B_Pin);
-  enc2_a = DenoisedPinRead(enc2_a_buffer, sizeof enc2_a_buffer, ENC2_A_GPIO_Port, ENC2_A_Pin);
-  enc2_b = DenoisedPinRead(enc2_b_buffer, sizeof enc2_b_buffer, ENC2_B_GPIO_Port, ENC2_B_Pin);
+  enc1_a = (HAL_GPIO_ReadPin(ENC1_A_GPIO_Port, ENC1_A_Pin) == GPIO_PIN_SET);
+  enc1_b = (HAL_GPIO_ReadPin(ENC1_B_GPIO_Port, ENC1_B_Pin) == GPIO_PIN_SET);
+  enc2_a = (HAL_GPIO_ReadPin(ENC2_A_GPIO_Port, ENC2_A_Pin) == GPIO_PIN_SET);
+  enc2_b = (HAL_GPIO_ReadPin(ENC2_B_GPIO_Port, ENC2_B_Pin) == GPIO_PIN_SET);
   enc1_bm = (enc1_a << 1) | (enc1_b);
   enc2_bm = (enc2_a << 1) | (enc2_b);
   BAT_IsCharging = (HAL_GPIO_ReadPin(BAT_CHRG_GPIO_Port, BAT_CHRG_Pin) == GPIO_PIN_RESET);
