@@ -181,7 +181,7 @@ USBD_StorageTypeDef USBD_Storage_Interface_fops_HS =
 int8_t STORAGE_Init_HS(uint8_t lun)
 {
   /* USER CODE BEGIN 9 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   if (!BSP_OpenDevice(phat.driver.userdata)) return USBD_FAIL;
   return USBD_OK;
   /* USER CODE END 9 */
@@ -197,7 +197,7 @@ int8_t STORAGE_Init_HS(uint8_t lun)
 int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
   /* USER CODE BEGIN 10 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   HAL_SD_CardInfoTypeDef info;
   if (HAL_SD_GetCardInfo(&hsd1, &info) != HAL_OK) return USBD_FAIL;
 
@@ -215,7 +215,7 @@ int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_
 int8_t STORAGE_IsReady_HS(uint8_t lun)
 {
   /* USER CODE BEGIN 11 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   return USBD_OK;
   /* USER CODE END 11 */
 }
@@ -228,7 +228,7 @@ int8_t STORAGE_IsReady_HS(uint8_t lun)
 int8_t STORAGE_IsWriteProtected_HS(uint8_t lun)
 {
   /* USER CODE BEGIN 12 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   return USBD_OK;
   /* USER CODE END 12 */
 }
@@ -244,7 +244,7 @@ int8_t STORAGE_IsWriteProtected_HS(uint8_t lun)
 int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 13 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   if (!BSP_ReadSector(buf, blk_addr, blk_len, phat.driver.userdata)) return USBD_FAIL;
   return (USBD_OK);
   /* USER CODE END 13 */
@@ -261,7 +261,7 @@ int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t bl
 int8_t STORAGE_Write_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 14 */
-  if (lun != 0 || !USB_SDCardReady) return USBD_FAIL;
+  if (lun != 0 || FsMounted) return USBD_FAIL;
   if (!BSP_WriteSector(buf, blk_addr, blk_len, phat.driver.userdata)) return USBD_FAIL;
   return (USBD_OK);
   /* USER CODE END 14 */

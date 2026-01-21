@@ -66,7 +66,6 @@ DMA_HandleTypeDef hdma_spi1_rx;
 const int FramebufferWidth = 320;
 const int FramebufferHeight = 240;
 const int GUITextAreaWidth = FramebufferWidth - 3;
-int USB_SDCardReady;
 LCD hlcd;
 Pixel565 Framebuffer1[240][320];
 Pixel565 Framebuffer2[240][320];
@@ -1898,11 +1897,9 @@ int main(void)
           case 1: // USB
             DrawUSBMSCScreen();
             DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
-            USB_SDCardReady = 1;
             if (enc2_click)
             {
               GUICurMenuLevel = 0;
-              USB_SDCardReady = 0;
             }
             break;
           case 2: // Option
