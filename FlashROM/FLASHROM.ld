@@ -1,5 +1,5 @@
 /* Entry Point */
-ENTRY(DummyEntry)
+ENTRY(GetFlashMap)
 
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM_D1) + LENGTH(RAM_D1);    /* end of RAM */

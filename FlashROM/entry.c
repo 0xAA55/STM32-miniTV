@@ -55,8 +55,7 @@ const FlashMap_t FlashMap =
 	FLASH_VERSION,
 };
 
-size_t DummyEntry()
+const FlashMap_t *GetFlashMap()
 {
-	size_t ptr = (size_t)&FlashMap;
-	return ptr;
+	return &FlashMap;
 }
