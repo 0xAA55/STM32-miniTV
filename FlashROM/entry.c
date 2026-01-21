@@ -13,6 +13,7 @@ extern const uint32_t Font14pxBitmap[];
 extern const uint8_t Font17pxWidthTable[];
 extern const uint32_t Font17pxXTable[];
 extern const uint32_t Font17pxBitmap[];
+extern const uint16_t CP936Pairs[][2];
 
 const uint32_t BatteryBMP_Width = 16;
 const uint32_t BatteryBMP_Height = 290;
@@ -24,6 +25,9 @@ const size_t Font14pxBitmapPitch = 12668;
 const size_t Font17pxBitmapPitch = 14544;
 const uint32_t USBMSCBMP_Width = 320;
 const uint32_t USBMSCBMP_Height = 240;
+const uint32_t NumCP936Pairs = 21791;
+
+size_t CP936_to_Unicode(char **cp936_char, uint16_t *utf_16, uint16_t char_for_fail);
 
 __attribute__((section(".flash_map")))
 const FlashMap_t FlashMap =
@@ -53,6 +57,9 @@ const FlashMap_t FlashMap =
 	USBMSCBMP_Height,
 	USBMSCBMP,
 	FLASH_VERSION,
+	CP936Pairs,
+	NumCP936Pairs,
+	CP936_to_Unicode,
 };
 
 const FlashMap_t *GetFlashMap()

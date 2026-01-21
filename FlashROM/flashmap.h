@@ -33,6 +33,9 @@ typedef struct FlashMap_s
 	uint32_t USBMSCBMP_Height;
 	const uint8_t *USBMSCBMP;
 	uint32_t Version;
+	const uint16_t (*CP936Pairs)[2];
+	const uint32_t NumCP936Pairs;
+	size_t (*CP936_to_Unicode)(char **pp_cp936_char, uint16_t *utf_16, uint16_t char_for_fail);
 } FlashMap_t;
 
 #define FLASH_MAP ((const FlashMap_t *)0x90000000)
