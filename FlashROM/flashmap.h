@@ -8,15 +8,15 @@
 
 typedef struct FlashMap_s
 {
-	uint32_t Signature;
-	uint32_t BatteryBMP_Width;
-	uint32_t BatteryBMP_Height;
+	const uint32_t Signature;
+	const uint32_t BatteryBMP_Width;
+	const uint32_t BatteryBMP_Height;
 	const uint8_t *BatteryBMP;
-	uint32_t FolderBMP_Width;
-	uint32_t FolderBMP_Height;
+	const uint32_t FolderBMP_Width;
+	const uint32_t FolderBMP_Height;
 	const uint8_t *FolderBMP;
 	const uint16_t *FontCodeTable;
-	size_t NumFontChars;
+	const size_t NumFontChars;
 	const uint8_t *Font12pxWidthTable;
 	const uint32_t *Font12pxXTable;
 	const uint8_t *Font12pxBitmap;
@@ -29,10 +29,10 @@ typedef struct FlashMap_s
 	const uint32_t *Font17pxXTable;
 	const uint8_t *Font17pxBitmap;
 	const size_t Font17pxBitmapPitch;
-	uint32_t USBMSCBMP_Width;
-	uint32_t USBMSCBMP_Height;
+	const uint32_t USBMSCBMP_Width;
+	const uint32_t USBMSCBMP_Height;
 	const uint8_t *USBMSCBMP;
-	uint32_t Version;
+	const uint32_t Version;
 	const uint16_t (*CP936Pairs)[2];
 	const uint32_t NumCP936Pairs;
 	size_t (*CP936_to_Unicode)(char **pp_cp936_char, uint16_t *utf_16, uint16_t char_for_fail);
