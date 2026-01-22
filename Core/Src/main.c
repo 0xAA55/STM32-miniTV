@@ -314,6 +314,13 @@ void SwapFramebuffers()
     CurDrawFramebuffer = Framebuffer1;
 }
 ITCM_CODE
+void UnswapFramebuffers()
+{
+  Pixel565 *AnotherBuffer = (Pixel565 *)Framebuffer1;
+  if (AnotherBuffer == (Pixel565 *)CurDrawFramebuffer) AnotherBuffer = (Pixel565 *)Framebuffer2;
+  memcpy(CurDrawFramebuffer, AnotherBuffer, sizeof Framebuffer1);
+}
+ITCM_CODE
 void UnsaturateScreen()
 {
   for (int y = 0; y < hlcd.yres; y++)
@@ -994,38 +1001,36 @@ HAL_StatusTypeDef JPEG_HWDecode(void *decode_to)
   if (HAL_JPEG_Init(&hjpeg) != HAL_OK) goto FailExit;
   if (HAL_JPEG_EnableHeaderParsing(&hjpeg) != HAL_OK) goto FailExit;
   HWJPEG_src_pointer = FILE_buffer;
-  HWJPEG_dst_buffer = (uint8_t *)JPEG_buffer;
-  HWJPEG_dst_pointer = HWJPEG_dst_buffer;
+  HWJPEG_dst_pointer = (uint8_t *)JPEG_buffer;
   HWJPEG_got_info = 0;
   HWJPEG_is_running = 1;
   memset((void*)&HWJpeg_info, 0, sizeof HWJpeg_info);
   SCB_CleanDCache_by_Addr((uint32_t*)FILE_buffer, HWJPEG_src_size);
-  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_buffer, JPEG_CHUNK_SIZE_OUT) != HAL_OK)
+  if (HAL_JPEG_Decode_DMA(&hjpeg, (uint8_t*)FILE_buffer, in_size, (uint8_t*)HWJPEG_dst_pointer, JPEG_CHUNK_SIZE_OUT) != HAL_OK)
   {
     ShowNotify(200, "解码器外设启动失败");
     goto Skipped;
   }
   if (!JPEG_Wait_Decode(33)) goto Skipped;
-  if (!HWJPEG_got_info)
+  HAL_JPEG_Abort(&hjpeg);
+  if (HWJPEG_got_info)
   {
-    if (DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling) == HAL_OK)
-      HWJPEG_got_info = 1;
-    else
+    if (DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)CurDrawFramebuffer, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight) != HAL_OK)
     {
-      ShowNotify(200, "视频帧获取失败");
+      ShowNotify(200, "视频画面转码失败");
+    }
+    if (HAL_DMA2D_PollForTransfer(&hdma2d, 33) != HAL_OK)
+    {
+      ShowNotify(200, "视频画面转码超时");
       goto Skipped;
     }
+    SCB_InvalidateDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
+    UnsaturateScreen();
   }
-  if (HWJpeg_info.ColorSpace == JPEG_CMYK_COLORSPACE)
+  else
   {
-    ShowNotify(200, "不支持CMYK格式帧");
-    goto Skipped;
-  }
-  HAL_JPEG_Abort(&hjpeg);
-  if (DMA2D_CopyBuffer((uint32_t*)JPEG_buffer, (uint32_t*)decode_to, HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight) != HAL_OK)
-  {
-    ShowNotify(200, "DMA2D转换失败");
-    goto Skipped;
+    UnswapFramebuffers();
+    HAL_JPEG_DeInit(&hjpeg);
   }
   return HAL_OK;
 FailExit:
@@ -1660,10 +1665,6 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
     ShowVolume(200);
   }
 
-  HAL_DMA2D_PollForTransfer(&hdma2d, 33);
-  SCB_InvalidateDCache_by_Addr((uint32_t*)CurDrawFramebuffer, sizeof Framebuffer1);
-
-  UnsaturateScreen();
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
 ITCM_CODE
