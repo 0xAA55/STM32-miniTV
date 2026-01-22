@@ -990,7 +990,7 @@ int JPEG_Wait_Decode(uint32_t timeout)
     }
     if (HAL_GetTick() > wait_until)
     {
-      ShowNotify(1000, "视频画面解码超时");
+      ShowNotify(200, "视频画面解码超时");
       goto FailExit;
     }
   }
