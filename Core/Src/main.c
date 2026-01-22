@@ -1235,6 +1235,7 @@ static void PrepareVideoFile()
   if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto BadAudioFormat;
   i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
   AVIPaused = 0;
+  DrawStandByScreen();
   GUIIsUsingFile = 1;
   AVIStartPlayTime = HAL_GetTick64();
   return;
