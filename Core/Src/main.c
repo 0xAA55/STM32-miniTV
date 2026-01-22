@@ -899,11 +899,16 @@ void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 ITCM_CODE
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
-  size_t space = (size_t)(&HWJPEG_dst_buffer[sizeof Framebuffer1] - HWJPEG_dst_pointer);
-  if (space > JPEG_CHUNK_SIZE_OUT) space = JPEG_CHUNK_SIZE_OUT;
+  size_t next_block_size;
   HWJPEG_dst_pointer += OutDataLength;
-  SCB_InvalidateDCache_by_Addr((uint32_t *)pDataOut, OutDataLength);
-  HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, space);
+  if (!HWJPEG_got_info)
+  {
+    ShowNotify(200, "视频画面信息解码错误");
+    return;
+  }
+  next_block_size = (sizeof JPEG_buffer) - ((size_t)HWJPEG_dst_pointer - (size_t)JPEG_buffer);
+  if (next_block_size > JPEG_CHUNK_SIZE_OUT) next_block_size = JPEG_CHUNK_SIZE_OUT;
+  HAL_JPEG_ConfigOutputBuffer(hjpeg, (uint8_t*)HWJPEG_dst_pointer, next_block_size);
 }
 ITCM_CODE
 void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
