@@ -769,46 +769,36 @@ static void PrepareTextFile()
   * @retval None
   */
 ITCM_CODE
-HAL_StatusTypeDef DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSampling)
+HAL_StatusTypeDef DMA2D_Init(uint16_t ImageWidth, uint16_t ImageHeight, uint32_t ColorSpace, uint32_t ChromaSampling)
 {
   HAL_StatusTypeDef ret;
-  uint32_t cssMode = JPEG_420_SUBSAMPLING, inputLineOffset = 0;
+  uint32_t input_mode;
+  uint32_t css_mode = DMA2D_NO_CSS;
 
-  if(ChromaSampling == JPEG_420_SUBSAMPLING)
+  UNUSED(ImageHeight);
+
+  switch(ColorSpace)
   {
-    cssMode = DMA2D_CSS_420;
-
-    inputLineOffset = xsize % 16;
-    if(inputLineOffset != 0)
+  case JPEG_GRAYSCALE_COLORSPACE:
+    input_mode = DMA2D_INPUT_L8;
+    break;
+  case JPEG_YCBCR_COLORSPACE:
+    input_mode = DMA2D_INPUT_YCBCR;
+    switch(ChromaSampling)
     {
-      inputLineOffset = 16 - inputLineOffset;
+    case JPEG_444_SUBSAMPLING: css_mode = DMA2D_NO_CSS; break;
+    case JPEG_422_SUBSAMPLING: css_mode = DMA2D_CSS_422; break;
+    case JPEG_420_SUBSAMPLING: css_mode = DMA2D_CSS_420; break;
+    default: return HAL_ERROR;
     }
-  }
-  else if(ChromaSampling == JPEG_444_SUBSAMPLING)
-  {
-    cssMode = DMA2D_NO_CSS;
-
-    inputLineOffset = xsize % 8;
-    if(inputLineOffset != 0)
-    {
-      inputLineOffset = 8 - inputLineOffset;
-    }
-  }
-  else if(ChromaSampling == JPEG_422_SUBSAMPLING)
-  {
-    cssMode = DMA2D_CSS_422;
-
-    inputLineOffset = xsize % 16;
-    if(inputLineOffset != 0)
-    {
-      inputLineOffset = 16 - inputLineOffset;
-    }
+    break;
+  default: return HAL_ERROR;
   }
 
   /*##-1- Configure the DMA2D Mode, Color Mode and output offset #############*/
-  hdma2d.Init.Mode         = DMA2D_M2M_PFC;
-  hdma2d.Init.ColorMode    = DMA2D_OUTPUT_RGB565;
-  hdma2d.Init.OutputOffset = FramebufferWidth - xsize;
+  hdma2d.Init.Mode          = DMA2D_M2M_PFC;
+  hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB565;
+  hdma2d.Init.OutputOffset  = FramebufferWidth - ImageWidth;
   hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;  /* No Output Alpha Inversion*/
   hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;     /* No Output Red & Blue swap */
 
@@ -818,13 +808,13 @@ HAL_StatusTypeDef DMA2D_Init(uint16_t xsize, uint16_t ysize, uint32_t ChromaSamp
   /*##-3- Foreground Configuration ###########################################*/
   hdma2d.LayerCfg[1].AlphaMode = DMA2D_REPLACE_ALPHA;
   hdma2d.LayerCfg[1].InputAlpha = 0xFF;
-  hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_YCBCR;
-  hdma2d.LayerCfg[1].ChromaSubSampling = cssMode;
-  hdma2d.LayerCfg[1].InputOffset = inputLineOffset;
+  hdma2d.LayerCfg[1].InputColorMode = input_mode;
+  hdma2d.LayerCfg[1].ChromaSubSampling = css_mode;
+  hdma2d.LayerCfg[1].InputOffset = 0;
   hdma2d.LayerCfg[1].RedBlueSwap = DMA2D_RB_REGULAR; /* No ForeGround Red/Blue swap */
   hdma2d.LayerCfg[1].AlphaInverted = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */
 
-  hdma2d.Instance          = DMA2D;
+  hdma2d.Instance = DMA2D;
 
   /*##-4- DMA2D Initialization     ###########################################*/
   ret = HAL_DMA2D_Init(&hdma2d);
