@@ -1374,7 +1374,12 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
   {
     if (cur_tick - GUIRefreshTime > 1000)
     {
-      Phat_FlushCache(&phat, 1);
+      res = Phat_FlushCache(&phat, 1);
+      if (res != PhatState_OK)
+      {
+        ShowNotify(1000, "刷新缓存失败（%s）", Phat_StateToString(res));
+        goto OnFsError;
+      }
     }
     if (enc1_delta)
     {
@@ -1401,8 +1406,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
       if (res != PhatState_OK)
       {
         ShowNotify(1000, "列出文件失败（%s）", Phat_StateToString(res));
-        QuitFileList();
-        break;
+        goto OnFsError;
       }
     }
     SetWordWrap(0);
@@ -1416,8 +1420,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
       if (res != PhatState_OK)
       {
         ShowNotify(1000, "列出文件失败（%s）", Phat_StateToString(res));
-        QuitFileList();
-        break;
+        goto OnFsError;
       }
       filetype = GetCurFileType();
       DrawFileIcon(0, y, filetype);
@@ -1443,8 +1446,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
           if (res != PhatState_OK)
           {
             ShowNotify(1000, "进入文件夹失败（%s）", Phat_StateToString(res));
-            QuitFileList();
-            break;
+            goto OnFsError;
           }
           GUIFirstFileIndex = 0;
           GUICurFileIndex = 0;
@@ -1483,7 +1485,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
         if (res != PhatState_OK)
         {
           ShowNotify(1000, "打开路径失败（%s）", Phat_StateToString(res));
-          QuitFileList();
+          goto OnFsError;
         }
         else
         {
@@ -1506,6 +1508,10 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
     ShowVolume(200);
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+  return;
+OnFsError:
+  Phat_DeInit(&phat);
+  FsMounted = 0;
 }
 ITCM_CODE
 void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
