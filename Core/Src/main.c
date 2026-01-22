@@ -126,7 +126,6 @@ volatile uint8_t* HWJPEG_src_pointer;
 volatile uint8_t* HWJPEG_dst_pointer;
 volatile int HWJPEG_got_info;
 size_t HWJPEG_src_size;
-uint8_t* HWJPEG_dst_buffer;
 volatile JPEG_ConfTypeDef HWJpeg_info;
 volatile uint32_t TickHigh;
 jmp_buf USBFailJmp;
