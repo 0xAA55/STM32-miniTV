@@ -314,6 +314,26 @@ void SwapFramebuffers()
     CurDrawFramebuffer = Framebuffer1;
 }
 ITCM_CODE
+void UnsaturateScreen()
+{
+  for (int y = 0; y < hlcd.yres; y++)
+  {
+    for (int x = 0; x < hlcd.xres; x++)
+    {
+      // The logic is equivalent to `if RGB == 255 then set to 254`
+      uint16_t color = CurDrawFramebuffer[y][x];
+      uint16_t new_color = 0;
+      if ((color & 0xF800)  == 0xF800) new_color |= 0xF000;
+      else new_color |= color & 0xF800;
+      if ((color & 0x07E0)  == 0x07E0) new_color |= 0x07C0;
+      else new_color |= color & 0x07E0;
+      if ((color & 0x001F)  == 0x001F) new_color |= 0x001E;
+      else new_color |= color & 0x001F;
+      CurDrawFramebuffer[y][x] = new_color;
+    }
+  }
+}
+ITCM_CODE
 void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
@@ -1481,26 +1501,6 @@ void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int e
     GUIIsUsingFile = 0;
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
-}
-ITCM_CODE
-void UnsaturateScreen()
-{
-  for (int y = 0; y < hlcd.yres; y++)
-  {
-    for (int x = 0; x < hlcd.xres; x++)
-    {
-      // The logic is equivalent to `if RGB == 255 then set to 254`
-      uint16_t color = CurDrawFramebuffer[y][x];
-      uint16_t new_color = 0;
-      if ((color & 0xF800)  == 0xF800) new_color |= 0xF000;
-      else new_color |= color & 0xF800;
-      if ((color & 0x07E0)  == 0x07E0) new_color |= 0x07C0;
-      else new_color |= color & 0x07E0;
-      if ((color & 0x001F)  == 0x001F) new_color |= 0x001E;
-      else new_color |= color & 0x001F;
-      CurDrawFramebuffer[y][x] = new_color;
-    }
-  }
 }
 ITCM_CODE
 void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
