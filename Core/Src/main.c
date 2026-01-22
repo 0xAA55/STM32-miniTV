@@ -833,19 +833,23 @@ ITCM_CODE
 HAL_StatusTypeDef DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t ImageWidth, uint16_t ImageHeight)
 {
   HAL_StatusTypeDef ret;
-  uint32_t xPos, yPos, destination;
+  uint32_t xPos, yPos;
+  uint8_t *destination;
 
   /*##-1- calculate the destination transfer address  ############*/
   xPos = (FramebufferWidth - HWJpeg_info.ImageWidth) / 2;
   yPos = (FramebufferHeight - HWJpeg_info.ImageHeight) / 2;
 
-  destination = (uint32_t)pDst + (yPos * FramebufferHeight + xPos) * 2;
+  destination = (uint8_t*)pDst + (yPos * FramebufferHeight + xPos) * 2;
 
   /* wait for the previous DMA2D transfer to ends */
   ret = HAL_DMA2D_PollForTransfer(&hdma2d, 33);
   if (ret != HAL_OK) return ret;
+
   /* copy the new decoded frame to the LCD Frame buffer*/
-  return HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, destination, ImageWidth, ImageHeight);
+  ret = HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, (uint32_t)destination, ImageWidth, ImageHeight);
+  if (ret != HAL_OK) return ret;
+  return HAL_OK;
 }
 ITCM_CODE
 static void QuitVideoFile()
@@ -898,10 +902,65 @@ ITCM_CODE
 void HAL_JPEG_InfoReadyCallback(JPEG_HandleTypeDef *hjpeg, JPEG_ConfTypeDef *pInfo)
 {
   HWJpeg_info = *pInfo;
-  if (DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ChromaSubsampling) == HAL_OK)
+  if (HWJpeg_info.ImageWidth > FramebufferWidth || HWJpeg_info.ImageHeight > FramebufferHeight)
   {
-    HWJPEG_got_info = 1;
+    ShowNotify(1000, "视频画面尺寸超过了 %dx%d，不被支持", FramebufferWidth, FramebufferHeight);
+    goto FailExit;
   }
+  switch(HWJpeg_info.ColorSpace)
+  {
+  case JPEG_GRAYSCALE_COLORSPACE:
+    if (HWJpeg_info.ImageWidth & 3)
+    {
+      ShowNotify(1000, "灰度格式视频画面宽度 %lu 不是 4 的倍数，不被支持", HWJpeg_info.ImageWidth);
+      goto FailExit;
+    }
+    break;
+  case JPEG_YCBCR_COLORSPACE:
+    switch(HWJpeg_info.ChromaSubsampling)
+    {
+    case JPEG_444_SUBSAMPLING:
+      if (HWJpeg_info.ImageWidth & 7)
+      {
+        ShowNotify(1000, "YUV444 格式视频画面宽度 %lu 不是 8 的倍数，不被支持", HWJpeg_info.ImageWidth);
+        goto FailExit;
+      }
+      break;
+    case JPEG_422_SUBSAMPLING:
+      if (HWJpeg_info.ImageWidth & 15)
+      {
+        ShowNotify(1000, "YUV422 格式视频画面宽度 %lu 不是 16 的倍数，不被支持", HWJpeg_info.ImageWidth);
+        goto FailExit;
+      }
+      break;
+    case JPEG_420_SUBSAMPLING:
+      if (HWJpeg_info.ImageWidth & 15)
+      {
+        ShowNotify(1000, "YUV420 格式视频画面宽度 %lu 不是 16 的倍数，不被支持", HWJpeg_info.ImageWidth);
+        goto FailExit;
+      }
+      break;
+    default:
+      ShowNotify(1000, "YUV未知采样格式视频不被支持");
+      goto FailExit;
+    }
+    break;
+  case JPEG_CMYK_COLORSPACE:
+    ShowNotify(1000, "视频画面颜色格式不被支持：CMYK");
+    goto FailExit;
+  default:
+    ShowNotify(1000, "视频画面未知颜色格式不被支持");
+    goto FailExit;
+  }
+  HWJPEG_got_info = 1;
+  if (DMA2D_Init(HWJpeg_info.ImageWidth, HWJpeg_info.ImageHeight, HWJpeg_info.ColorSpace, HWJpeg_info.ChromaSubsampling) != HAL_OK)
+  {
+    ShowNotify(1000, "像素格式转码器初始化失败");
+    goto FailExit;
+  }
+  return;
+FailExit:
+  QuitVideoFile();
 }
 ITCM_CODE
 int JPEG_Wait_Decode(uint32_t timeout)
