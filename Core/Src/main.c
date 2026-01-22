@@ -762,10 +762,10 @@ static void PrepareTextFile()
   if (GUITextFileMaxReadPosL > OneScreenLinesL) GUITextFileMaxReadPosL -= OneScreenLinesL; else GUITextFileMaxReadPosL = 0;
 }
 /**
-  * @brief  Init the DMA2D for YCbCr to ARGB8888 Conversion .
+  * @brief  Init the DMA2D for YCbCr to RGB565 Conversion .
   * @param  xsize: Image width
   * @param  ysize: Image Height
-  * @param  ChromaSampling: YCbCr CHroma sampling : 4:2:0, 4:2:2 or 4:4:4
+  * @param  ChromaSampling: YCbCr Chroma sampling : 4:2:0, 4:2:2 or 4:4:4
   * @retval None
   */
 ITCM_CODE
