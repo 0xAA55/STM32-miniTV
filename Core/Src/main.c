@@ -96,6 +96,7 @@ Phat_DirInfo_t GUICurDir;
 Phat_FileInfo_t CurFileStream1;
 Phat_FileInfo_t CurFileStream2;
 Phat_FileInfo_t CurFileStream3;
+Phat_FileInfo_t CurFileStream4;
 volatile int GUIIsUsingFile;
 int GUITextFileSize;
 int GUITextFileTextSize;
@@ -131,6 +132,12 @@ volatile uint32_t TickHigh;
 jmp_buf USBFailJmp;
 jmp_buf SysErrorJmp;
 int BugFileAgreed;
+int SubtitlePrepped;
+WChar_t CurSubtitle[256];
+srt_t SubtitleParser;
+srt_slot_p CurSubtitleSlot;
+int CurSubtitleX;
+int CurSubtitleY;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1208,6 +1215,55 @@ void OnUSBFail()
   longjmp(USBFailJmp, 1);
 }
 ITCM_CODE
+int SubtitleSeek(uint32_t offset, void *userdata)
+{
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  PhatState res = Phat_SeekFile(stream, offset);
+  return res == PhatState_OK;
+}
+ITCM_CODE
+int SubtitleTell(uint32_t *offset, void *userdata)
+{
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  FileSize_t fp;
+  Phat_GetFilePointer(stream, &fp);
+  *offset = fp;
+  return 1;
+}
+ITCM_CODE
+size_t SubtitleRead(void *buffer, size_t size, void *userdata)
+{
+  Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
+  size_t read = 0;
+  Phat_ReadFile(stream, buffer, size, &read);
+  return read;
+}
+ITCM_CODE
+static void PrepareSubtitleFile()
+{
+  PhatState res;
+  static WChar_t SubtitleFilename[MAX_FILE_NAMELEN];
+  WChar_t *dot = SubtitleFilename;
+  strncpyW(SubtitleFilename, GUIFileName, MAX_FILE_NAMELEN);
+  while(*dot) dot ++;
+  while (dot > SubtitleFilename && *dot != u'.') dot --;
+  if (dot == SubtitleFilename)
+  {
+    SubtitlePrepped = 0;
+    return;
+  }
+  strcpyW(dot, u".srt");
+  res = Phat_OpenFile(&GUICurDir, SubtitleFilename, 1, &CurFileStream4);
+  if (res != PhatState_OK)
+  {
+    SubtitlePrepped = 0;
+    return;
+  }
+  srt_init(&SubtitleParser, SubtitleSeek, SubtitleTell, SubtitleRead, &CurFileStream4);
+  SubtitlePrepped = 1;
+  CurSubtitleSlot = NULL;
+}
+ITCM_CODE
 static void PrepareVideoFile()
 {
   PhatState res;
@@ -1243,6 +1299,7 @@ static void PrepareVideoFile()
   if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto BadAudioFormat;
   if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto BadAudioFormat;
   i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
+  PrepareSubtitleFile();
   AVIPaused = 0;
   DrawStandByScreen();
   GUIIsUsingFile = 1;
@@ -1673,6 +1730,53 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
     if (CurVolume < 0) CurVolume = 0;
     if (CurVolume > 100) CurVolume = 100;
     ShowVolume(200);
+  }
+
+  if (SubtitlePrepped)
+  {
+    srt_slot_p cur_slot = srt_get_subtitle(&SubtitleParser, time);
+    if (!cur_slot)
+      CurSubtitleSlot = NULL;
+    else if (time > cur_slot->time_end_ms)
+      CurSubtitleSlot = NULL;
+    if (cur_slot && cur_slot != CurSubtitleSlot)
+    {
+      size_t read;
+      size_t supposed_to_read = cur_slot->length;
+      if (supposed_to_read > (sizeof FormatBuf) - 1) supposed_to_read = (sizeof FormatBuf) - 1;
+      FormatBuf[supposed_to_read] = 0;
+      Phat_SeekFile(&CurFileStream4, cur_slot->offset_in_file);
+      Phat_ReadFile(&CurFileStream4, FormatBuf, supposed_to_read, &read);
+      if (read == cur_slot->length)
+      {
+        char *ptr = FormatBuf;
+        WChar_t *uptr = CurSubtitle;
+        while(*ptr)
+        {
+          ptr += FLASH_MAP->CP936_to_Unicode(ptr, uptr++, u'?');
+        }
+        *uptr-- = 0;
+        while (uptr > CurSubtitle && (*uptr == '\r' || *uptr == '\n')) *uptr-- = 0;
+      }
+      else
+        cur_slot = NULL;
+      CurSubtitleSlot = cur_slot;
+      if (CurSubtitleSlot)
+      {
+        uint32_t w, h;
+        UseSmallFont();
+        GetTextSizeW(CurSubtitle, FramebufferWidth, FramebufferHeight, &w, &h);
+        CurSubtitleX = FramebufferWidth / 2 - w / 2;
+        CurSubtitleY = FramebufferHeight - h;
+        UseLargeFont();
+      }
+    }
+    if (CurSubtitleSlot && time <= CurSubtitleSlot->time_end_ms)
+    {
+      UseSmallFont();
+      DrawTextOpaqueW(CurSubtitleX, CurSubtitleY, FramebufferWidth - CurSubtitleX, FramebufferHeight - CurSubtitleY, CurSubtitle, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+      UseLargeFont();
+    }
   }
 
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);

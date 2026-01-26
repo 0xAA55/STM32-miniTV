@@ -58,6 +58,7 @@ extern "C" {
 #include "fastmath.h"
 #include "qspixip.h"
 #include "i2saudio.h"
+#include "srt.h"
 #include "../../FlashROM/flashmap.h"
 #include "../../Phat/Phat/phat.h"
 #include "../../avi_read/avi_read/avi_reader.h"
@@ -207,6 +208,7 @@ extern Phat_DirInfo_t GUICurDir;
 extern Phat_FileInfo_t CurFileStream1;
 extern Phat_FileInfo_t CurFileStream2;
 extern Phat_FileInfo_t CurFileStream3;
+extern Phat_FileInfo_t CurFileStream4;
 extern i2saudio_t i2saudio;
 DTCM_BSS extern int GUINotifyShow;
 DTCM_BSS extern uint64_t GUINotifyTimeUntil;
@@ -228,6 +230,12 @@ DTCM_BSS extern volatile uint8_t* HWJPEG_src_pointer;
 DTCM_BSS extern volatile uint8_t* HWJPEG_dst_pointer;
 DTCM_BSS extern size_t HWJPEG_src_size;
 DTCM_BSS extern volatile JPEG_ConfTypeDef HWJpeg_info;
+DTCM_BSS extern int SubtitlePrepped;
+DTCM_BSS extern WChar_t CurSubtitle[256];
+DTCM_BSS extern srt_t SubtitleParser;
+DTCM_BSS extern srt_slot_p CurSubtitleSlot;
+DTCM_BSS extern int CurSubtitleX;
+DTCM_BSS extern int CurSubtitleY;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
