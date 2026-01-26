@@ -2,7 +2,7 @@ CROSS_COMPILE=arm-none-eabi-
 CC=$(CROSS_COMPILE)gcc
 LD=$(CROSS_COMPILE)gcc
 OBJCOPY=$(CROSS_COMPILE)objcopy
-CFLAGS=-mcpu=cortex-m7 -std=gnu11 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -O3 -flto=auto
+CFLAGS=-mcpu=cortex-m7 -std=gnu11 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -O3 -flto=auto -mno-unaligned-access
 LDFLAGS=-mcpu=cortex-m7 -T"FLASHROM.ld" --specs=nosys.specs -Wl,--gc-sections -static -flto=auto --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -Wl,--end-group
 LDLIBS=-lc -lm
 
