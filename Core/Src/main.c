@@ -1789,6 +1789,9 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
   PhatState pres;
   uint32_t program_address = 0;
   FileSize_t filesize;
+  int *some_8kb_buffer = (int *)JPEG_buffer;
+  uint32_t num_blocks;
+  uint32_t block;
 
   ClearScreen(MakePixel565(0, 0, 0));
   if (!BugFileAgreed)
@@ -1799,7 +1802,6 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
     {
       BugFileAgreed = 1;
       UseDefaultFont();
-      QSPI_ExitMemoryMapMode();
     }
     if (enc2_click)
     {
@@ -1809,7 +1811,7 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
   }
 
   ClearScreen(MakePixel565(0, 0, 0));
-  DrawText(40, 100, 240, 140, "PROGRAMMING", MakePixel565(255, 255, 255));
+  DrawText(40, 100, 240, 140, "VERIFYING", MakePixel565(255, 255, 255));
   SwapFramebuffers();
 
   pres = Phat_SeekFile(&CurFileStream1, 0);
@@ -1821,50 +1823,96 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
 
   Phat_GetFileSize(&CurFileStream1, &filesize);
 
+  num_blocks = (filesize - 1) / 4096 + 1;
+  for(block = 0; block < num_blocks; block++)
+  {
+    size_t bytes_to_read = 4096;
+    size_t bytes_read;
+    int percentage = program_address * 100 / filesize;
+    if (program_address + bytes_to_read > filesize) bytes_to_read = filesize - program_address;
+
+    pres = Phat_ReadFile(&CurFileStream1, FILE_buffer, bytes_to_read, &bytes_read);
+    if (bytes_to_read != bytes_read)
+    {
+      snprintf(FormatBuf, sizeof FormatBuf, "VERIFY FAILED: IO ERROR (%s)", Phat_StateToString(pres));
+      goto FailExit;
+    }
+
+    ClearScreen(MakePixel565(0, 0, 0));
+    snprintf(FormatBuf, sizeof FormatBuf, "VERIFYING (%d %%)", percentage);
+    DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+    FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+    FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+    SwapFramebuffers();
+
+    some_8kb_buffer[block] = memcmp(FILE_buffer, (void *)(0x90000000 + program_address), bytes_to_read);
+
+    program_address += bytes_to_read;
+  }
+
+  QSPI_ExitMemoryMapMode();
+
+  ClearScreen(MakePixel565(0, 0, 0));
+  DrawText(40, 100, 240, 140, "PROGRAMMING", MakePixel565(255, 255, 255));
+  SwapFramebuffers();
+
+  program_address = 0;
+  pres = Phat_SeekFile(&CurFileStream1, 0);
+  if (pres != PhatState_OK)
+  {
+    snprintf(FormatBuf, sizeof FormatBuf, "SEEK FILE FAILED");
+    goto FailExit;
+  }
+
+  block = 0;
   while(program_address < filesize)
   {
     size_t bytes_to_read;
     size_t bytes_read;
     int percentage = program_address * 100 / filesize;
 
-    if (program_address % 4096 == 0)
+    block = program_address / 4096;
+    if (some_8kb_buffer[block])
     {
+      if (program_address % 4096 == 0)
+      {
+        ClearScreen(MakePixel565(0, 0, 0));
+        snprintf(FormatBuf, sizeof FormatBuf, "ERASING (%d %%)", percentage);
+        DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+        FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+        FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+        SwapFramebuffers();
+
+        hres = QSPI_SectorErase(program_address);
+        if (hres != HAL_OK)
+        {
+          snprintf(FormatBuf, sizeof FormatBuf, "ERASE SECTOR FAILED: QSPI PERIPHERAL ERROR");
+          goto FailExit;
+        }
+      }
+
       ClearScreen(MakePixel565(0, 0, 0));
-      snprintf(FormatBuf, sizeof FormatBuf, "ERASING (%d %%)", percentage);
+      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING (%d %%)", percentage);
       DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
       FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
-      FillRect(40, 120, percentage * 240 / 100, 2, MakePixel565(255, 255, 255));
+      FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
       SwapFramebuffers();
 
-      hres = QSPI_SectorErase(program_address);
-      if (hres != HAL_OK)
+      bytes_to_read = filesize - program_address;
+      if (bytes_to_read > 256) bytes_to_read = 256;
+      memset(FILE_buffer, 0xFF, 256);
+      pres = Phat_ReadFile(&CurFileStream1, FILE_buffer, bytes_to_read, &bytes_read);
+      if (bytes_to_read != bytes_read)
       {
-        snprintf(FormatBuf, sizeof FormatBuf, "ERASE SECTOR FAILED: QSPI PERIPHERAL ERROR");
+        snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING FAILED: IO ERROR (%s)", Phat_StateToString(pres));
         goto FailExit;
       }
-    }
-
-    ClearScreen(MakePixel565(0, 0, 0));
-    snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING (%d %%)", percentage);
-    DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
-    FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
-    FillRect(40, 120, percentage * 240 / 100, 2, MakePixel565(255, 255, 255));
-    SwapFramebuffers();
-
-    bytes_to_read = filesize - program_address;
-    if (bytes_to_read > 256) bytes_to_read = 256;
-    memset(FILE_buffer, 0xFF, 256);
-    pres = Phat_ReadFile(&CurFileStream1, FILE_buffer, bytes_to_read, &bytes_read);
-    if (bytes_to_read != bytes_read)
-    {
-      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING FAILED: IO ERROR (%s)", Phat_StateToString(pres));
-      goto FailExit;
-    }
-    hres = QSPI_PageProgram(program_address, FILE_buffer);
-    if (hres != HAL_OK)
-    {
-      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING FAILED: QSPI PERIPHERAL ERROR");
-      goto FailExit;
+      hres = QSPI_PageProgram(program_address, FILE_buffer);
+      if (hres != HAL_OK)
+      {
+        snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING FAILED: QSPI PERIPHERAL ERROR");
+        goto FailExit;
+      }
     }
     program_address += 256;
   }
@@ -1873,6 +1921,7 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
   QSPI_EnterMemoryMapMode();
   UseLargeFont();
   GUIIsUsingFile = 0;
+  ShowNotify(2000, "ROM 更新成功");
   return;
 FailExit:
   ClearScreen(MakePixel565(0, 0, 0));
