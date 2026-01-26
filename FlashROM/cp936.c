@@ -43593,31 +43593,29 @@ const uint16_t CP936PairsUnicodeToGBK[][2] =
 
 static const size_t NumCP936Pairs = sizeof CP936PairsGBKToUnicode / sizeof CP936PairsGBKToUnicode[0];
 
-size_t CP936_to_Unicode(char **pp_cp936_char, uint16_t *utf_16, uint16_t char_for_fail)
+size_t CP936_to_Unicode(char *cp936_char, uint16_t *utf_16, uint16_t char_for_fail)
 {
+	uint8_t *char_ptr = (uint8_t *)cp936_char;
 	size_t min_index, max_index;
-	uint8_t *char_ptr = (uint8_t*)*pp_cp936_char;
 	uint16_t mbchar;
 	size_t index;
 	if (*char_ptr < 0x7F)
 	{
-		(*pp_cp936_char)++;
 		*utf_16 = (uint16_t)*char_ptr;
-		return 1;
+		if (*char_ptr) return 1;
+		else return 0;
 	}
 	if (*char_ptr == 0x80)
 	{
-		(*pp_cp936_char)++;
 		*utf_16 = 0x20AC;
 		return 1;
 	}
-	mbchar = *(uint16_t*)char_ptr;
+	mbchar = ((uint16_t)char_ptr[0] << 8) | char_ptr[1];
 	*utf_16 = char_for_fail;
-	(*pp_cp936_char)+= 2;
 	min_index = 0;
 	max_index = NumCP936Pairs - 1;
-	if (mbchar == CP936PairsGBKToUnicode[min_index][0]) {*utf_16 = CP936PairsGBKToUnicode[min_index][1]; return 2;}
-	if (mbchar == CP936PairsGBKToUnicode[max_index][0]) {*utf_16 = CP936PairsGBKToUnicode[max_index][1]; return 2;}
+	if (mbchar == CP936PairsGBKToUnicode[min_index][0]) { *utf_16 = CP936PairsGBKToUnicode[min_index][1]; return 2; }
+	if (mbchar == CP936PairsGBKToUnicode[max_index][0]) { *utf_16 = CP936PairsGBKToUnicode[max_index][1]; return 2; }
 	index = (min_index + max_index) >> 1;
 	for (;;)
 	{
@@ -43634,40 +43632,39 @@ size_t CP936_to_Unicode(char **pp_cp936_char, uint16_t *utf_16, uint16_t char_fo
 		if (max_index - 1 == min_index) break;
 		index = (min_index + max_index) >> 1;
 	}
-	return 0;
+	return 2;
 }
 
-size_t Unicode_to_CP936(uint32_t unicode, char **pp_cp936_char, uint16_t char_for_fail)
+size_t Unicode_to_CP936(uint32_t unicode, char *cp936_char, uint16_t char_for_fail)
 {
+	uint8_t *char_ptr = (uint8_t *)cp936_char;
+	uint16_t *mbchar_ptr = (uint16_t *)char_ptr;
 	size_t min_index, max_index;
-	uint8_t *char_ptr = (uint8_t*)*pp_cp936_char;
-	uint16_t *mbchar_ptr = (uint16_t*)char_ptr;
 	size_t index;
 	if (unicode <= 0x7F)
 	{
-		(*pp_cp936_char)++;
 		*char_ptr = (uint8_t)unicode;
-		return 1;
+		if (unicode) return 1;
+		else return 0;
 	}
 	if (unicode == 0x20AC)
 	{
-		(*pp_cp936_char)++;
 		*char_ptr = 0x80;
 		return 1;
 	}
 	*mbchar_ptr = char_for_fail;
-	(*pp_cp936_char)+= 2;
 	min_index = 0;
 	max_index = NumCP936Pairs - 1;
-	if (unicode == CP936PairsUnicodeToGBK[min_index][0]) {*mbchar_ptr = CP936PairsUnicodeToGBK[min_index][1]; return 2;}
-	if (unicode == CP936PairsUnicodeToGBK[max_index][0]) {*mbchar_ptr = CP936PairsUnicodeToGBK[max_index][1]; return 2;}
+	if (unicode == CP936PairsUnicodeToGBK[min_index][0]) { *mbchar_ptr = CP936PairsUnicodeToGBK[min_index][1]; return 2; }
+	if (unicode == CP936PairsUnicodeToGBK[max_index][0]) { *mbchar_ptr = CP936PairsUnicodeToGBK[max_index][1]; return 2; }
 	index = (min_index + max_index) >> 1;
 	for (;;)
 	{
 		uint16_t cur_code = CP936PairsUnicodeToGBK[index][0];
 		if (cur_code == unicode)
 		{
-			*mbchar_ptr = CP936PairsUnicodeToGBK[index][1];
+			uint16_t mbchar = CP936PairsUnicodeToGBK[index][1];
+			*mbchar_ptr = (mbchar >> 8) | ((mbchar & 0xFF) << 8);
 			return 2;
 		}
 		if (cur_code < unicode)
@@ -43677,5 +43674,5 @@ size_t Unicode_to_CP936(uint32_t unicode, char **pp_cp936_char, uint16_t char_fo
 		if (max_index - 1 == min_index) break;
 		index = (min_index + max_index) >> 1;
 	}
-	return 0;
+	return 2;
 }
