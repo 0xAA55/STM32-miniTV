@@ -104,6 +104,7 @@ int GUITextFileReadPos;
 int GUITextFileMaxReadPosS;
 int GUITextFileMaxReadPosM;
 int GUITextFileMaxReadPosL;
+int GUICurOptionIndex;
 uint64_t AVIStartPlayTime;
 uint64_t AVIPausePlayTime;
 int AVIPaused;
@@ -1914,10 +1915,14 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
 {
   ClearScreen(MakePixel565(0, 0, 0));
 
+  FillRect(0, 0, 320, 20, MakePixel565(255, 255, 255));
+  DrawText(140, 0, 180, 20, "设置", MakePixel565(0, 0, 0));
+  DrawText(0, 20, 320, 240, "设置字幕字体大小\n设置快进、快退步长\n设置待机时间\n管理文件\n本机信息", MakePixel565(255, 255, 255));
 
-
-
-
+  GUICurOptionIndex += enc1_delta;
+  if (GUICurOptionIndex < 0) GUICurOptionIndex = 0;
+  if (GUICurOptionIndex > 4) GUICurOptionIndex = 4;
+  InvertRect(0, 20 + GUICurOptionIndex * 17, 320, 17, 1);
 
   if (enc2_click) GUICurMenuLevel = 0;
   if (enc2_delta)
