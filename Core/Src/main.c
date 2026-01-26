@@ -2072,6 +2072,7 @@ int main(void)
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
   UseLargeFont();
   UpdatePowerRead();
+  HAL_GPIO_EXTI_Callback(ENC1_SW_Pin);
   /* USER CODE END 2 */
 
   /* Infinite loop */
