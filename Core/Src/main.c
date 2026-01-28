@@ -18,11 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usb_device.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -2028,7 +2027,7 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  #define MX_USB_DEVICE_Init(x)
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -2042,10 +2041,8 @@ int main(void)
   MX_QUADSPI_Init();
   MX_ADC1_Init();
   MX_DMA2D_Init();
-  MX_USB_DEVICE_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-  #undef MX_USB_DEVICE_Init
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
   const LCD_GPIO lcd_gpio = {
