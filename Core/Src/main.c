@@ -469,7 +469,6 @@ void Unsuicide()
 }
 ITCM_CODE
 void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
-ITCM_CODE
 void OnException()
 {
   PhatState res;
@@ -867,7 +866,6 @@ HAL_StatusTypeDef DMA2D_CopyBuffer(uint32_t *pSrc, uint32_t *pDst, uint16_t Imag
   if (ret != HAL_OK) return ret;
   return HAL_OK;
 }
-ITCM_CODE
 static void QuitVideoFile()
 {
   GUIIsUsingFile = 0;
@@ -1573,7 +1571,7 @@ OnFsError:
   Phat_DeInit(&phat);
   FsMounted = 0;
 }
-ITCM_CODE
+
 void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   const int scroll_bar_y = 10;
@@ -1935,7 +1933,7 @@ FailExit:
     __WFI();
   }
 }
-ITCM_CODE
+
 void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   if (!FsMounted)
@@ -1961,7 +1959,7 @@ void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_
       break;
   }
 }
-ITCM_CODE
+
 void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   ClearScreen(MakePixel565(0, 0, 0));
@@ -2174,7 +2172,6 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
-ITCM_CODE
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -2237,7 +2234,6 @@ void SystemClock_Config(void)
   * @brief Peripherals Common Clock Configuration
   * @retval None
   */
-ITCM_CODE
 void PeriphCommonClock_Config(void)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
@@ -2279,7 +2275,6 @@ void PeriphCommonClock_Config(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_ADC1_Init(void)
 {
 
@@ -2352,7 +2347,6 @@ static void MX_ADC1_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_CRC_Init(void)
 {
 
@@ -2384,7 +2378,6 @@ static void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_DMA2D_Init(void)
 {
 
@@ -2425,7 +2418,6 @@ static void MX_DMA2D_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_I2S2_Init(void)
 {
 
@@ -2462,7 +2454,6 @@ static void MX_I2S2_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_JPEG_Init(void)
 {
 
@@ -2489,7 +2480,6 @@ static void MX_JPEG_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_QUADSPI_Init(void)
 {
 
@@ -2525,7 +2515,6 @@ static void MX_QUADSPI_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_SDMMC1_SD_Init(void)
 {
 
@@ -2558,7 +2547,6 @@ static void MX_SDMMC1_SD_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_SPI1_Init(void)
 {
 
@@ -2605,7 +2593,6 @@ static void MX_SPI1_Init(void)
 /**
   * Enable DMA controller clock
   */
-ITCM_CODE
 static void MX_DMA_Init(void)
 {
 
@@ -2628,7 +2615,6 @@ static void MX_DMA_Init(void)
 /**
   * Enable MDMA controller clock
   */
-ITCM_CODE
 static void MX_MDMA_Init(void)
 {
 
@@ -2648,7 +2634,6 @@ static void MX_MDMA_Init(void)
   * @param None
   * @retval None
   */
-ITCM_CODE
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -2777,7 +2762,6 @@ static void MX_GPIO_Init(void)
 
  /* MPU Configuration */
 
-ITCM_CODE
 void MPU_Config(void)
 {
   MPU_Region_InitTypeDef MPU_InitStruct = {0};
