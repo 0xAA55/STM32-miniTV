@@ -236,6 +236,7 @@ DTCM_BSS extern srt_t SubtitleParser;
 DTCM_BSS extern srt_slot_p CurSubtitleSlot;
 DTCM_BSS extern int CurSubtitleX;
 DTCM_BSS extern int CurSubtitleY;
+DTCM_BSS extern uint64_t LastOperateTime;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -139,6 +139,7 @@ srt_t SubtitleParser;
 srt_slot_p CurSubtitleSlot;
 int CurSubtitleX;
 int CurSubtitleY;
+uint64_t LastOperateTime;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -454,6 +455,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       enc2_sw_is_up = 1;
       break;
   }
+
+  LastOperateTime = HAL_GetTick64();
 }
 ITCM_CODE
 void Suicide()
