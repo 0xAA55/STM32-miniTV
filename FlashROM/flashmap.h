@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define FLASH_VERSION 0x00010100
+#define FLASH_VERSION 0x00010101
 
 typedef struct FlashMap_s
 {
