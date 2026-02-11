@@ -102,6 +102,7 @@ HAL_StatusTypeDef LCD_Init
 
 LCD_FUNC HAL_StatusTypeDef LCD_Config(LCD *hlcd);
 LCD_FUNC void LCD_WaitToIdle(LCD *hlcd);
+LCD_FUNC int LCD_IsBusy(LCD *hlcd);
 LCD_FUNC HAL_StatusTypeDef LCD_SWReset(LCD *hlcd);
 LCD_FUNC HAL_StatusTypeDef LCD_GetDispID(LCD *hlcd, uint8_t *manufacturer_id, uint8_t *driver_version_id, uint8_t *driver_id);
 LCD_FUNC HAL_StatusTypeDef LCD_GetScanLine(LCD *hlcd, uint16_t *scanline);

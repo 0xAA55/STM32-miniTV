@@ -1838,12 +1838,15 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
       goto FailExit;
     }
 
-    ClearScreen(MakePixel565(0, 0, 0));
-    snprintf(FormatBuf, sizeof FormatBuf, "VERIFYING (%d %%)", percentage);
-    DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
-    FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
-    FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
-    SwapFramebuffers();
+    if (!LCD_IsBusy(&hlcd))
+    {
+      ClearScreen(MakePixel565(0, 0, 0));
+      snprintf(FormatBuf, sizeof FormatBuf, "VERIFYING (%d %%)", percentage);
+      DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+      FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+      FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+      SwapFramebuffers();
+    }
 
     some_8kb_buffer[block] = memcmp(FILE_buffer, (void *)(0x90000000 + program_address), bytes_to_read);
 
@@ -1871,17 +1874,19 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
     size_t bytes_read;
     int percentage = program_address * 100 / filesize;
 
-    block = program_address / 4096;
-    if (some_8kb_buffer[block])
+    if (some_8kb_buffer[block] != 0)
     {
       if (program_address % 4096 == 0)
       {
-        ClearScreen(MakePixel565(0, 0, 0));
-        snprintf(FormatBuf, sizeof FormatBuf, "ERASING (%d %%)", percentage);
-        DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
-        FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
-        FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
-        SwapFramebuffers();
+        if (!LCD_IsBusy(&hlcd))
+        {
+          ClearScreen(MakePixel565(0, 0, 0));
+          snprintf(FormatBuf, sizeof FormatBuf, "ERASING (%d %%)", percentage);
+          DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+          FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+          FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+          SwapFramebuffers();
+        }
 
         hres = QSPI_SectorErase(program_address);
         if (hres != HAL_OK)
@@ -1891,12 +1896,15 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
         }
       }
 
-      ClearScreen(MakePixel565(0, 0, 0));
-      snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING (%d %%)", percentage);
-      DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
-      FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
-      FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
-      SwapFramebuffers();
+      if (!LCD_IsBusy(&hlcd))
+      {
+        ClearScreen(MakePixel565(0, 0, 0));
+        snprintf(FormatBuf, sizeof FormatBuf, "PROGRAMMING (%d %%)", percentage);
+        DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+        FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+        FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+        SwapFramebuffers();
+      }
 
       bytes_to_read = filesize - program_address;
       if (bytes_to_read > 256) bytes_to_read = 256;
@@ -1914,7 +1922,20 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
         goto FailExit;
       }
     }
+    else
+    {
+      if (!LCD_IsBusy(&hlcd))
+      {
+        ClearScreen(MakePixel565(0, 0, 0));
+        snprintf(FormatBuf, sizeof FormatBuf, "SKIPPING (%d %%)", percentage);
+        DrawText(40, 100, 240, 140, FormatBuf, MakePixel565(255, 255, 255));
+        FillRect(40, 120, 240, 2, MakePixel565(127, 127, 127));
+        FillRect(40, 120, program_address * 240 / filesize, 2, MakePixel565(255, 255, 255));
+        SwapFramebuffers();
+      }
+    }
     program_address += 256;
+    if (program_address % 4096 == 0) block ++;
   }
 
   QSPI_InitFlash();
