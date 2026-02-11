@@ -20,6 +20,10 @@
 #define LCD_FUNC
 #endif
 
+#ifndef LCD_STATIC_FUNC
+#define LCD_STATIC_FUNC static
+#endif
+
 typedef enum LCD_Color_Mode_e
 {
   LCD_RGB565 = 0x55,
