@@ -11,11 +11,27 @@
 #include "font.h"
 #include "../../FlashROM/flashmap.h"
 
+typedef struct cs ComposeStatus_t, *ComposeStatus_p;
+
 typedef void(*fn_on_draw)(void *userdata, int x, int y, size_t char_index);
+
+struct cs
+{
+  int x, y, r, b;
+  int cur_x;
+  int cur_y;
+  int cur_line_width;
+  int prev_line_width;
+  fn_on_draw on_draw;
+  int is_on_newline;
+  int goto_next_char;
+  void *userdata;
+};
 typedef int ssize_t;
 
 font_t CurrentFont = DefaultFont;
 int WordWrap = 1;
+int Justify;
 
 typedef struct dtts
 {
@@ -472,32 +488,28 @@ static int SampleFont(int x, int y)
   return (CurrentFont.bitmap[y * CurrentFont.bitmap_pitch + x / 8] & (0x80 >> (x & 7))) != 0;
 }
 
-typedef struct cs
-{
-  int x, y, r, b;
-  int cur_x;
-  int cur_y;
-  fn_on_draw on_draw;
-  void *userdata;
-}ComposeStatus_t;
-
 static ComposeStatus_t CreateCompose(int x, int y, int r, int b, fn_on_draw on_draw, void *userdata)
 {
   ComposeStatus_t ret =
   {
     x, y, r, b,
     x, y,
+    0, 0,
     on_draw,
+    0,
+    1,
     userdata
   };
   return ret;
 }
 
-static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
+static int ComposeCode(ComposeStatus_p cs, uint32_t code)
 {
   size_t char_index;
   int char_width;
   if (!code) return 0;
+  cs->is_on_newline = 0;
+  cs->goto_next_char = 1;
   if (code == '\r')
   {
     cs->cur_x = cs->x;
@@ -505,56 +517,185 @@ static int ComposeCode(ComposeStatus_t *cs, uint32_t code)
   }
   if (code == '\n')
   {
+    cs->is_on_newline = 1;
+    cs->prev_line_width = cs->cur_line_width;
     cs->cur_x = cs->x;
     cs->cur_y += CurrentFont.bitmap_height;
+    cs->cur_line_width = 0;
     return 1;
   }
   if (code == '\t')
   {
-    cs->cur_x += ((cs->cur_x - cs->x) / CurrentFont.tab_size + 1) * CurrentFont.tab_size;
+    int cur_tab_size = ((cs->cur_x - cs->x) / CurrentFont.tab_size + 1) * CurrentFont.tab_size;
+    cs->cur_x += cur_tab_size;
+    cs->cur_line_width += cur_tab_size;
     return 1;
   }
   char_index = GetCharIndexMust(code);
   char_width = CurrentFont.width_table[char_index];
   if (WordWrap && cs->cur_x + char_width > cs->r)
   {
-      cs->cur_x = cs->x;
-      cs->cur_y += CurrentFont.bitmap_height;
+    cs->is_on_newline = 1;
+    cs->prev_line_width = cs->cur_line_width;
+    cs->cur_x = cs->x;
+    cs->cur_y += CurrentFont.bitmap_height;
+    cs->cur_line_width = 0;
+    cs->goto_next_char = 0;
+    return 1;
   }
   if (cs->cur_y + (int)CurrentFont.bitmap_height > cs->b) return 0;
-  cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
+  if (cs->on_draw) cs->on_draw(cs->userdata, cs->cur_x, cs->cur_y, char_index);
   cs->cur_x += char_width;
+  cs->cur_line_width += char_width;
   return 1;
+}
+
+static int GetNextLineWidth(UTF8Parser *parser, int w, int h)
+{
+  ComposeStatus_t cs = CreateCompose(0, 0, w, h, NULL, NULL);
+  while(!cs.is_on_newline)
+  {
+    if (!ComposeCode(&cs, utf8_to_utf32(parser, '?'))) break;
+  }
+  return cs.cur_line_width ? cs.cur_line_width : cs.prev_line_width;
+}
+
+static int GetNextLineWidthW(UTF16Parser *parser, int w, int h)
+{
+  ComposeStatus_t cs = CreateCompose(0, 0, w, h, NULL, NULL);
+  while(!cs.is_on_newline)
+  {
+    if (!ComposeCode(&cs, utf16_to_utf32(parser, '?'))) break;
+  }
+  return cs.cur_line_width ? cs.cur_line_width : cs.prev_line_width;
+}
+
+static int GetNextLineWidthU(uint32_t **pp, int w, int h)
+{
+  ComposeStatus_t cs = CreateCompose(0, 0, w, h, NULL, NULL);
+  while(!cs.is_on_newline)
+  {
+    uint32_t ch = pp[0][0]; pp[0] ++;
+    if (!ComposeCode(&cs, ch)) break;
+  }
+  return cs.cur_line_width ? cs.cur_line_width : cs.prev_line_width;
 }
 
 static void Compose(int x, int y, int w, int h, const char* text, fn_on_draw on_draw, void *userdata)
 {
   UTF8Parser parser = utf8_start_parse(text);
+  UTF8Parser pre_parser = utf8_dup_parse(&parser);
   ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
-  while(1)
+  uint32_t prev_ch = '?';
+  int ended = 0;
+  while(!ended)
   {
-    if (!ComposeCode(&cs, utf8_to_utf32(&parser, '?'))) break;
+    int lx;
+    int lw = GetNextLineWidth(&pre_parser, w, h);
+    switch(Justify)
+    {
+    default:
+      lx = x;
+      break;
+    case 1:
+      lx = x + (w - lw) / 2;
+      break;
+    case 2:
+      lx = x + w - lw;
+      break;
+    }
+    cs.cur_x = lx;
+    while(!cs.is_on_newline)
+    {
+      uint32_t ch = cs.goto_next_char ? utf8_to_utf32(&parser, '?') : prev_ch;
+      prev_ch = ch;
+      if (!ComposeCode(&cs, ch))
+      {
+        ended = 1;
+        break;
+      }
+    }
+    cs.is_on_newline = 0;
   }
+  utf8_end_parse(&pre_parser);
   utf8_end_parse(&parser);
 }
 
 static void ComposeW(int x, int y, int w, int h, const uint16_t* text, fn_on_draw on_draw, void *userdata)
 {
   UTF16Parser parser = utf16_start_parse(text);
+  UTF16Parser pre_parser = utf16_dup_parse(&parser);
   ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
-  while(1)
+  uint32_t prev_ch = '?';
+  int ended = 0;
+  while(!ended)
   {
-    if (!ComposeCode(&cs, utf16_to_utf32(&parser, '?'))) break;
+    int lx;
+    int lw = GetNextLineWidthW(&pre_parser, w, h);
+    switch(Justify)
+    {
+    default:
+      lx = x;
+      break;
+    case 1:
+      lx = x + (w - lw) / 2;
+      break;
+    case 2:
+      lx = x + w - lw;
+      break;
+    }
+    cs.cur_x = lx;
+    while(!cs.is_on_newline)
+    {
+      uint32_t ch = cs.goto_next_char ? utf16_to_utf32(&parser, '?') : prev_ch;
+      prev_ch = ch;
+      if (!ComposeCode(&cs, ch))
+      {
+        ended = 1;
+        break;
+      }
+    }
+    cs.is_on_newline = 0;
   }
+  utf16_end_parse(&pre_parser);
   utf16_end_parse(&parser);
 }
 
 static void ComposeU(int x, int y, int w, int h, const uint32_t* text, fn_on_draw on_draw, void *userdata)
 {
+  uint32_t *chptr = (uint32_t *)text;
+  uint32_t * pre_chptr = chptr;
   ComposeStatus_t cs = CreateCompose(x, y, x + w, y + h, on_draw, userdata);
-  while(1)
+  uint32_t prev_ch = '?';
+  int ended = 0;
+  while(!ended)
   {
-    if (!ComposeCode(&cs, *text++)) break;
+    int lx;
+    int lw = GetNextLineWidthU(&pre_chptr, w, h);
+    switch(Justify)
+    {
+    default:
+      lx = x;
+      break;
+    case 1:
+      lx = x + (w - lw) / 2;
+      break;
+    case 2:
+      lx = x + w - lw;
+      break;
+    }
+    cs.cur_x = lx;
+    while(!cs.is_on_newline)
+    {
+      uint32_t ch = cs.goto_next_char ? *chptr++ : prev_ch;
+      prev_ch = ch;
+      if (!ComposeCode(&cs, ch))
+      {
+        ended = 1;
+        break;
+      }
+    }
+    cs.is_on_newline = 0;
   }
 }
 
@@ -653,6 +794,11 @@ void UseLargeFont()
 void SetWordWrap(int wrap)
 {
   WordWrap = wrap;
+}
+
+void SetJustify(int j)
+{
+  Justify = j;
 }
 
 __attribute__((optimize("O3")))

@@ -46,6 +46,7 @@ void UseSmallFont();
 void UseMediumFont();
 void UseLargeFont();
 void SetWordWrap(int wrap);
+void SetJustify(int j); // 0=left 1=mid 2=right
 void DrawText(int x, int y, int w, int h, const char* text, Pixel565 TextColor);
 void DrawTextOpaque(int x, int y, int w, int h, const char* text, Pixel565 TextColor, Pixel565 BgColor);
 void GetTextSize(const char* text, int w, int h, uint32_t *width, uint32_t *height);
