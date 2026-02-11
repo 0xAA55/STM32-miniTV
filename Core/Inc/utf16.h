@@ -23,6 +23,7 @@ uint16_t *strncpyW(uint16_t *destination, const uint16_t *source, size_t maxlen)
 int strcmpW(const uint16_t *str1, const uint16_t *str2);
 uint16_t *strcatW(uint16_t *destination, const uint16_t *source);
 UTF16Parser utf16_start_parse(const uint16_t *utf16);
+UTF16Parser utf16_dup_parse(UTF16Parser *parse);
 uint32_t utf16_to_utf32(UTF16Parser *p, uint32_t bad_char_code);
 void utf16_end_parse(UTF16Parser *p);
 uint16_t *utf32_to_utf16(uint32_t code, uint16_t *utf16);

@@ -20,6 +20,11 @@ UTF8Parser utf8_start_parse(const char *utf8)
   return ret;
 }
 
+UTF8Parser utf8_dup_parse(UTF8Parser *parse)
+{
+  return *parse;
+}
+
 uint32_t utf8_to_utf32(UTF8Parser *p, uint32_t bad_char_code)
 {
   const char *utf8s = p->ptr;

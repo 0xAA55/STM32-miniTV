@@ -68,6 +68,11 @@ UTF16Parser utf16_start_parse(const uint16_t *utf16)
   return ret;
 }
 
+UTF16Parser utf16_dup_parse(UTF16Parser *parse)
+{
+  return *parse;
+}
+
 static uint32_t process_surrogate(uint16_t c1, uint16_t c2)
 {
   uint32_t h = c1 & 0x3FF;
