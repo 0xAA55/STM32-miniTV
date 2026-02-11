@@ -346,26 +346,22 @@ void UnsaturateScreen()
     }
   }
 }
-ITCM_CODE
 void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
 }
-ITCM_CODE
 int IsEnc1Click()
 {
   int ret = Enc1Click;
   Enc1Click = 0;
   return ret;
 }
-ITCM_CODE
 int IsEnc2Click()
 {
   int ret = Enc2Click;
   Enc2Click = 0;
   return ret;
 }
-ITCM_CODE
 int GetEnc1Delta()
 {
   DTCM_BSS static int last_enc1;
@@ -374,7 +370,6 @@ int GetEnc1Delta()
   last_enc1 = enc1_val;
   return ret;
 }
-ITCM_CODE
 int GetEnc2Delta()
 {
   DTCM_BSS static int last_enc2;
@@ -456,17 +451,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
   LastOperateTime = HAL_GetTick64();
 }
-ITCM_CODE
 void Suicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_RESET);
 }
-ITCM_CODE
 void Unsuicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
 }
-ITCM_CODE
 void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
 void OnException()
 {
@@ -498,7 +490,6 @@ Fail:
     __WFI();
   }
 }
-ITCM_CODE
 void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
 {
   char *from;
@@ -536,7 +527,6 @@ void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
   if (new_time_until > GUINotifyTimeUntil) GUINotifyTimeUntil = new_time_until;
   GUINotifyShow = 1;
 }
-ITCM_CODE
 void ShowNotify(uint32_t duration, const char *format, ...)
 {
   va_list ap;
@@ -544,13 +534,11 @@ void ShowNotify(uint32_t duration, const char *format, ...)
   ShowNotifyV(duration, format, ap);
   va_end(ap);
 }
-ITCM_CODE
 void ShowVolume(uint32_t duration)
 {
   GUIVolumeShowTimeUntil = HAL_GetTick64() + duration;
   GUIVolumeShow = 1;
 }
-ITCM_CODE
 uint8_t GetCurFileType()
 {
   uint8_t ret;
@@ -573,7 +561,6 @@ uint8_t GetCurFileType()
   }
   return ret;
 }
-ITCM_CODE
 void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   int target_menu;
@@ -693,7 +680,6 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
     }
   }
 }
-ITCM_CODE
 static void PrepareTextFile()
 {
   PhatState res;
@@ -1123,7 +1109,6 @@ static void AVIPrintf(void *userdata, const char *fmt, ...)
   va_end(ap);
   UNUSED(userdata);
 }
-ITCM_CODE
 static void OnVideoCompressed(fsize_t offset, fsize_t length, void *userdata)
 {
   size_t bytes_read;
@@ -1209,19 +1194,16 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
     }
   }
 }
-ITCM_CODE
 void OnUSBFail()
 {
   longjmp(USBFailJmp, 1);
 }
-ITCM_CODE
 int SubtitleSeek(uint32_t offset, void *userdata)
 {
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
   PhatState res = Phat_SeekFile(stream, offset);
   return res == PhatState_OK;
 }
-ITCM_CODE
 int SubtitleTell(uint32_t *offset, void *userdata)
 {
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
@@ -1230,7 +1212,6 @@ int SubtitleTell(uint32_t *offset, void *userdata)
   *offset = fp;
   return 1;
 }
-ITCM_CODE
 size_t SubtitleRead(void *buffer, size_t size, void *userdata)
 {
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
@@ -1238,7 +1219,6 @@ size_t SubtitleRead(void *buffer, size_t size, void *userdata)
   Phat_ReadFile(stream, buffer, size, &read);
   return read;
 }
-ITCM_CODE
 static void PrepareSubtitleFile()
 {
   PhatState res;
@@ -1263,7 +1243,6 @@ static void PrepareSubtitleFile()
   SubtitlePrepped = 1;
   CurSubtitleSlot = NULL;
 }
-ITCM_CODE
 static void PrepareVideoFile()
 {
   PhatState res;
@@ -1314,13 +1293,11 @@ BadAudioFormat:
 FailExit:
   QuitVideoFile();
 }
-ITCM_CODE
 static void QuitBugFile()
 {
   GUIIsUsingFile = 0;
   Phat_CloseFile(&CurFileStream1);
 }
-ITCM_CODE
 static void PrepareBugFile()
 {
   PhatState res;
@@ -1364,7 +1341,6 @@ static void PrepareBugFile()
 FailExit:
   QuitBugFile();
 }
-ITCM_CODE
 static void QuitFileList()
 {
   if (FsMounted)
@@ -1374,7 +1350,6 @@ static void QuitFileList()
   }
   GUICurMenuLevel = 0;
 }
-ITCM_CODE
 static void UpdateLastFileIndex()
 {
   PhatState res;
@@ -1393,7 +1368,6 @@ static void UpdateLastFileIndex()
     }
   }
 }
-ITCM_CODE
 void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   PhatState res;
@@ -1570,7 +1544,6 @@ OnFsError:
   Phat_DeInit(&phat);
   FsMounted = 0;
 }
-
 void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   const int scroll_bar_y = 10;
@@ -1624,7 +1597,6 @@ void OnUsingTextFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int e
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
-ITCM_CODE
 void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   uint64_t time = AVIGetTime();
@@ -1784,7 +1756,6 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
 
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
-ITCM_CODE
 void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   HAL_StatusTypeDef hres;
