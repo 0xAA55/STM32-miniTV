@@ -136,7 +136,6 @@ int SubtitlePrepped;
 WChar_t CurSubtitle[256];
 srt_t SubtitleParser;
 srt_slot_p CurSubtitleSlot;
-int CurSubtitleX;
 int CurSubtitleY;
 uint64_t LastOperateTime;
 /* USER CODE END PV */
@@ -1766,8 +1765,9 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
       {
         uint32_t w, h;
         UseSmallFont();
+        SetJustify(1);
         GetTextSizeW(CurSubtitle, FramebufferWidth, FramebufferHeight, &w, &h);
-        CurSubtitleX = FramebufferWidth / 2 - w / 2;
+        SetJustify(0);
         CurSubtitleY = FramebufferHeight - h;
         UseLargeFont();
       }
@@ -1775,7 +1775,9 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
     if (CurSubtitleSlot && time <= CurSubtitleSlot->time_end_ms)
     {
       UseSmallFont();
-      DrawTextOpaqueW(CurSubtitleX, CurSubtitleY, FramebufferWidth - CurSubtitleX, FramebufferHeight - CurSubtitleY, CurSubtitle, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+      SetJustify(1);
+      DrawTextOpaqueW(0, CurSubtitleY, FramebufferWidth, FramebufferHeight - CurSubtitleY, CurSubtitle, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
+      SetJustify(0);
       UseLargeFont();
     }
   }
