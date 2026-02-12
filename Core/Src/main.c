@@ -33,7 +33,6 @@
 /* USER CODE BEGIN PD */
 #define SAVE_SETTINGS_ADDRESS (8 * 1024 * 1024 - 4096)
 #define SAVED_SETTINGS ((CurSettings_p)(0x90000000 + SAVE_SETTINGS_ADDRESS))
-#define FASTFORWARD_TIME 5000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -1684,10 +1683,10 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   {
     if (enc1_delta < 0)
     {
-      if (time > FASTFORWARD_TIME)
+      if (time > CurSettings.CurFastForwardTime)
       {
-        time -= FASTFORWARD_TIME;
-        ShowNotify(100, "快退%d秒", FASTFORWARD_TIME / 1000);
+        time -= CurSettings.CurFastForwardTime;
+        ShowNotify(100, "快退%d秒", CurSettings.CurFastForwardTime / 1000);
       }
       else
       {
@@ -1699,8 +1698,8 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
     {
       if ((have_video && !avi_video_stream.is_no_more_packets) || (have_audio && !avi_audio_stream.is_no_more_packets))
       {
-        time += FASTFORWARD_TIME;
-        ShowNotify(100, "快进%d秒", FASTFORWARD_TIME / 1000);
+        time += CurSettings.CurFastForwardTime;
+        ShowNotify(100, "快进%d秒", CurSettings.CurFastForwardTime / 1000);
       }
       else
       {
