@@ -81,7 +81,6 @@ avi_stream_reader avi_video_stream;
 avi_stream_reader avi_audio_stream;
 i2saudio_t i2saudio;
 int FsMounted;
-int CurVolume = 100;
 int GUICurMenu;
 int GUICurMenuLevel;
 int GUIMenuAnim;
@@ -608,9 +607,9 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
 
   if (enc2_delta)
   {
-    CurVolume += enc2_delta * 5;
-    if (CurVolume < 0) CurVolume = 0;
-    if (CurVolume > 100) CurVolume = 100;
+    CurSettings.CurVolume += enc2_delta * 5;
+    if (CurSettings.CurVolume < 0) CurSettings.CurVolume = 0;
+    if (CurSettings.CurVolume > 100) CurSettings.CurVolume = 100;
     ShowVolume(200);
   }
 
@@ -1143,7 +1142,7 @@ static void OnAudio(fsize_t offset, fsize_t length, void *userdata)
   Phat_FileInfo_p stream = (Phat_FileInfo_p)userdata;
   uint16_t channels = avi_audio_stream.stream_info->audio_format.nChannels;
 
-  i2saudio_set_volume(&i2saudio, CurVolume);
+  i2saudio_set_volume(&i2saudio, CurSettings.CurVolume);
   Phat_SeekFile(stream, offset);
   while (length)
   {
@@ -1282,7 +1281,7 @@ static void PrepareVideoFile()
   if (avi_audio_format->wBitsPerSample != 16) goto BadAudioFormat;
   if (avi_audio_format->nChannels != 1 && avi_audio_format->nChannels != 2) goto BadAudioFormat;
   if (avi_audio_format->nBlockAlign != 2 * avi_audio_format->nChannels) goto BadAudioFormat;
-  i2saudio_init(&i2saudio, &hi2s2, CurVolume, avi_audio_format->nSamplesPerSec);
+  i2saudio_init(&i2saudio, &hi2s2, CurSettings.CurVolume, avi_audio_format->nSamplesPerSec);
   PrepareSubtitleFile();
   AVIPaused = 0;
   DrawStandByScreen();
@@ -1538,9 +1537,9 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
   }
   if (enc2_delta)
   {
-    CurVolume += enc2_delta * 5;
-    if (CurVolume < 0) CurVolume = 0;
-    if (CurVolume > 100) CurVolume = 100;
+    CurSettings.CurVolume += enc2_delta * 5;
+    if (CurSettings.CurVolume < 0) CurSettings.CurVolume = 0;
+    if (CurSettings.CurVolume > 100) CurSettings.CurVolume = 100;
     ShowVolume(200);
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
@@ -1703,9 +1702,9 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   }
   if (enc2_delta)
   {
-    CurVolume += enc2_delta * 5;
-    if (CurVolume < 0) CurVolume = 0;
-    if (CurVolume > 100) CurVolume = 100;
+    CurSettings.CurVolume += enc2_delta * 5;
+    if (CurSettings.CurVolume < 0) CurSettings.CurVolume = 0;
+    if (CurSettings.CurVolume > 100) CurSettings.CurVolume = 100;
     ShowVolume(200);
   }
 
@@ -1975,9 +1974,9 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
   if (enc2_click) GUICurMenuLevel = 0;
   if (enc2_delta)
   {
-    CurVolume += enc2_delta * 5;
-    if (CurVolume < 0) CurVolume = 0;
-    if (CurVolume > 100) CurVolume = 100;
+    CurSettings.CurVolume += enc2_delta * 5;
+    if (CurSettings.CurVolume < 0) CurSettings.CurVolume = 0;
+    if (CurSettings.CurVolume > 100) CurSettings.CurVolume = 100;
     ShowVolume(200);
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
@@ -2137,9 +2136,12 @@ int main(void)
     if (GUIVolumeShow)
     {
       if (cur_tick <= GUIVolumeShowTimeUntil)
-        DrawVolume(CurVolume);
+        DrawVolume(CurSettings.CurVolume);
       else
+      {
+        SaveSettings();
         GUIVolumeShow = 0;
+      }
     }
 
     if (GUINotifyShow)
