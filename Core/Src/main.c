@@ -2091,6 +2091,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
+  LoadSettings();
   const LCD_GPIO lcd_gpio = {
     LCD_MakePin(LCD_RST_GPIO_Port, LCD_RST_Pin),
     LCD_MakePin(LCD_CS_GPIO_Port, LCD_CS_Pin),
