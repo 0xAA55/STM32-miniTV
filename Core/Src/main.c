@@ -390,18 +390,21 @@ void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
 }
+ITCM_CODE
 int IsEnc1Click()
 {
   int ret = Enc1Click;
   Enc1Click = 0;
   return ret;
 }
+ITCM_CODE
 int IsEnc2Click()
 {
   int ret = Enc2Click;
   Enc2Click = 0;
   return ret;
 }
+ITCM_CODE
 int GetEnc1Delta()
 {
   DTCM_BSS static int last_enc1;
@@ -410,6 +413,7 @@ int GetEnc1Delta()
   last_enc1 = enc1_val;
   return ret;
 }
+ITCM_CODE
 int GetEnc2Delta()
 {
   DTCM_BSS static int last_enc2;
@@ -499,6 +503,7 @@ void Unsuicide()
 {
   HAL_GPIO_WritePin(PWCTRL_GPIO_Port, PWCTRL_Pin, GPIO_PIN_SET);
 }
+ITCM_CODE
 void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click);
 void OnException()
 {
@@ -530,6 +535,7 @@ Fail:
     __WFI();
   }
 }
+ITCM_CODE
 void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
 {
   char *from;
@@ -567,6 +573,7 @@ void ShowNotifyV(uint32_t duration, const char *format, va_list ap)
   if (new_time_until > GUINotifyTimeUntil) GUINotifyTimeUntil = new_time_until;
   GUINotifyShow = 1;
 }
+ITCM_CODE
 void ShowNotify(uint32_t duration, const char *format, ...)
 {
   va_list ap;
@@ -574,11 +581,13 @@ void ShowNotify(uint32_t duration, const char *format, ...)
   ShowNotifyV(duration, format, ap);
   va_end(ap);
 }
+ITCM_CODE
 void ShowVolume(uint32_t duration)
 {
   GUIVolumeShowTimeUntil = HAL_GetTick64() + duration;
   GUIVolumeShow = 1;
 }
+ITCM_CODE
 uint8_t GetCurFileType()
 {
   uint8_t ret;
@@ -604,6 +613,7 @@ uint8_t GetCurFileType()
   }
   return ret;
 }
+ITCM_CODE
 void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
   int target_menu;
@@ -723,6 +733,7 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
     }
   }
 }
+ITCM_CODE
 static void PrepareTextFile()
 {
   PhatState res;
