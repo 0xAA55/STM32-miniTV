@@ -90,7 +90,7 @@ int GUIMenuReady;
 int GUICurFileIndex;
 int GUIFirstFileIndex;
 int GUILastFileIndex;
-uint32_t GUIRefreshTime;
+uint32_t GUIFileListRefreshTime;
 WChar_t GUIFileName[MAX_FILE_NAMELEN];
 uint8_t GUIFileType;
 Phat_DirInfo_t GUICurDir;
@@ -1409,7 +1409,7 @@ void OnFileListGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_c
   }
   if (FsMounted)
   {
-    if (cur_tick - GUIRefreshTime > 1000)
+    if (cur_tick - GUIFileListRefreshTime > 1000)
     {
       res = Phat_FlushCache(&phat, 1);
       if (res != PhatState_OK)
