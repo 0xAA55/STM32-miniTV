@@ -62,6 +62,7 @@ DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 
 /* USER CODE BEGIN PV */
+CurSettings_t CurSettings;
 const int FramebufferWidth = 320;
 const int FramebufferHeight = 240;
 const int GUITextAreaWidth = FramebufferWidth - 3;
@@ -104,6 +105,7 @@ int GUITextFileMaxReadPosS;
 int GUITextFileMaxReadPosM;
 int GUITextFileMaxReadPosL;
 int GUICurOptionIndex;
+int GUICurOptionSelected;
 uint64_t AVIStartPlayTime;
 uint64_t AVIPausePlayTime;
 int AVIPaused;

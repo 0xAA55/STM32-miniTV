@@ -66,7 +66,14 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef struct CurSettings_s
+{
+  uint32_t Signature;
+  uint32_t CurFastForwardTime;
+  int CurVolume;
+  int SubtitleFontSize;
+  uint64_t StandByTime;
+}CurSettings_t, *CurSettings_p;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -237,6 +244,7 @@ DTCM_BSS extern srt_t SubtitleParser;
 DTCM_BSS extern srt_slot_p CurSubtitleSlot;
 DTCM_BSS extern int CurSubtitleY;
 DTCM_BSS extern uint64_t LastOperateTime;
+DTCM_BSS extern CurSettings_t CurSettings;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
