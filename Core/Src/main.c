@@ -1789,7 +1789,18 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
       if (CurSubtitleSlot)
       {
         uint32_t w, h;
-        UseSmallFont();
+        switch(CurSettings.SubtitleFontSize)
+        {
+        case 17:
+          UseLargeFont();
+          break;
+        case 14:
+          UseMediumFont();
+          break;
+        default:
+          UseSmallFont();
+          break;
+        }
         SetJustify(1);
         GetTextSizeW(CurSubtitle, FramebufferWidth, FramebufferHeight, &w, &h);
         SetJustify(0);
@@ -1799,7 +1810,18 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
     }
     if (CurSubtitleSlot && time <= CurSubtitleSlot->time_end_ms)
     {
-      UseSmallFont();
+      switch(CurSettings.SubtitleFontSize)
+      {
+      case 17:
+        UseLargeFont();
+        break;
+      case 14:
+        UseMediumFont();
+        break;
+      default:
+        UseSmallFont();
+        break;
+      }
       SetJustify(1);
       DrawTextOpaqueW(0, CurSubtitleY, FramebufferWidth, FramebufferHeight - CurSubtitleY, CurSubtitle, MakePixel565(255, 255, 255), MakePixel565(0, 0, 0));
       SetJustify(0);
