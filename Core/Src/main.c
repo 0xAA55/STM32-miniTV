@@ -31,6 +31,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SAVE_SETTINGS_ADDRESS (8 * 1024 * 1024 - 4096)
+#define SAVED_SETTINGS ((CurSettings_p)(0x90000000 + SAVE_SETTINGS_ADDRESS))
 #define FASTFORWARD_TIME 5000
 /* USER CODE END PD */
 
