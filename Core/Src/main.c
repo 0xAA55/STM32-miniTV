@@ -1380,7 +1380,7 @@ static void PrepareBugFile()
     ShowNotify(1000, "加载文件失败");
     goto FailExit;
   }
-  if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFF000000) && size <= 8 * 1024 * 1024)
+  if (ptr->Signature == 0xAA55 && !(ptr->Version & 0xFF000000) && size <= 8 * 1024 * 1024 - 4096)
   {
     if (!(FLASH_MAP->Version & 0xFF000000) && ptr->Version < FLASH_MAP->Version)
     {
