@@ -192,6 +192,7 @@ DTCM_BSS extern int GUITextFileMaxReadPosS;
 DTCM_BSS extern int GUITextFileMaxReadPosM;
 DTCM_BSS extern int GUITextFileMaxReadPosL;
 DTCM_BSS extern int GUICurOptionIndex;
+DTCM_BSS extern int GUICurOptionSelected;
 DTCM_BSS extern uint64_t AVIStartPlayTime;
 DTCM_BSS extern uint64_t AVIPausePlayTime;
 DTCM_BSS extern int AVIPaused;
