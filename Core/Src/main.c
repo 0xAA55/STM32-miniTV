@@ -2031,18 +2031,152 @@ void OnUsingFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_
 
 void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_click, int enc2_delta, int enc2_click)
 {
+  int selection = 0;
   ClearScreen(MakePixel565(0, 0, 0));
 
   FillRect(0, 0, 320, 18, MakePixel565(102, 204, 255));
   DrawText(140, 0, 180, 20, "设置", MakePixel565(0, 0, 0));
-  DrawText(0, 20, 320, 240, "设置字幕字体大小\n设置快进、快退步长\n设置待机时间\n管理文件\n本机信息", MakePixel565(255, 255, 255));
+  DrawText(0, 20, 320, 240, "设置字幕字体大小\n设置快进、快退步长\n设置自动关机时间\n本机信息", MakePixel565(255, 255, 255));
 
-  GUICurOptionIndex += enc1_delta;
-  if (GUICurOptionIndex < 0) GUICurOptionIndex = 0;
-  if (GUICurOptionIndex > 4) GUICurOptionIndex = 4;
-  InvertRect(0, 20 + GUICurOptionIndex * 17, 320, 17, 1);
+  if (!GUICurOptionSelected)
+  {
+    GUICurOptionIndex += enc1_delta;
+    if (GUICurOptionIndex < 0) GUICurOptionIndex = 0;
+    if (GUICurOptionIndex > 3) GUICurOptionIndex = 3;
+    InvertRect(0, 20 + GUICurOptionIndex * 17, 320, 17, 1);
+    if (enc1_click) GUICurOptionSelected = 1;
+    if (enc2_click) GUICurMenuLevel = 0;
+  }
+  else
+  {
+    switch (GUICurOptionIndex)
+    {
+    case 0:
+      FillRect(160 - 30, 120 - 30, 60, 60, MakePixel565(0, 0, 0));
+      DrawRect(160 - 29, 120 - 29, 58, 58, MakePixel565(255, 255, 255));
+      SetJustify(1);
+      DrawText(160 - 28, 120 - 28, 56, 20, "小", MakePixel565(255, 255, 255));
+      DrawText(160 - 28, 120 -  8, 56, 20, "中", MakePixel565(255, 255, 255));
+      DrawText(160 - 28, 120 + 12, 56, 20, "大", MakePixel565(255, 255, 255));
+      SetJustify(0);
+      switch (CurSettings.SubtitleFontSize)
+      {
+      default: selection = 0; break;
+      case 14: selection = 1; break;
+      case 17: selection = 2; break;
+      }
+      selection += enc1_delta;
+      if (selection > 2) selection = 0;
+      if (selection < 0) selection = 2;
+      InvertRect(160 - 28, 120 - 28 + selection * 20, 58, 20, 1);
+      switch(selection)
+      {
+      default: CurSettings.SubtitleFontSize = 12; break;
+      case 1: CurSettings.SubtitleFontSize = 14; break;
+      case 2: CurSettings.SubtitleFontSize = 17; break;
+      }
+      if (enc1_click)
+      {
+        ShowNotify(1000, "字幕字体大小设置成功");
+        GUICurOptionSelected = 0;
+        SaveSettings();
+      }
+      break;
+    case 1:
+      FillRect(160 - 30, 120 - 78, 60, 156, MakePixel565(0, 0, 0));
+      DrawRect(160 - 29, 120 - 77, 58, 154, MakePixel565(255, 255, 255));
+      SetJustify(1);
+      DrawText(160 - 28, 120 - 76, 56, 153, "1秒\n2秒\n5秒\n10秒\n30秒\n1分钟\n2分钟\n5分钟\n10分钟", MakePixel565(255, 255, 255));
+      SetJustify(0);
+      switch(CurSettings.CurFastForwardTime)
+      {
+      default: selection = 2; break;
+      case 1000: selection = 0; break;
+      case 2000: selection = 1; break;
+      case 5000: selection = 2; break;
+      case 10000: selection = 3; break;
+      case 30000: selection = 4; break;
+      case 60000: selection = 5; break;
+      case 120000: selection = 6; break;
+      case 300000: selection = 7; break;
+      case 600000: selection = 8; break;
+      }
+      selection += enc1_delta;
+      if (selection > 8) selection = 0;
+      if (selection < 0) selection = 8;
+      InvertRect(160 - 28, 120 - 76 + selection * 17, 56, 17, 1);
+      switch(selection)
+      {
+      default: CurSettings.CurFastForwardTime = 5000; break;
+      case 0: CurSettings.CurFastForwardTime = 1000; break;
+      case 1: CurSettings.CurFastForwardTime = 2000; break;
+      case 2: CurSettings.CurFastForwardTime = 5000; break;
+      case 3: CurSettings.CurFastForwardTime = 10000; break;
+      case 4: CurSettings.CurFastForwardTime = 30000; break;
+      case 5: CurSettings.CurFastForwardTime = 60000; break;
+      case 6: CurSettings.CurFastForwardTime = 120000; break;
+      case 7: CurSettings.CurFastForwardTime = 300000; break;
+      case 8: CurSettings.CurFastForwardTime = 600000; break;
+      }
+      if (enc1_click)
+      {
+        ShowNotify(1000, "快进步长设置成功");
+        GUICurOptionSelected = 0;
+        SaveSettings();
+      }
+      break;
+    case 2:
+      FillRect(160 - 30, 120 - 78, 60, 156, MakePixel565(0, 0, 0));
+      DrawRect(160 - 29, 120 - 77, 58, 154, MakePixel565(255, 255, 255));
+      SetJustify(1);
+      DrawText(160 - 28, 120 - 76, 56, 153, "永不\n1分钟\n2分钟\n5分钟\n10分钟\n30分钟\n1小时\n2小时\n5小时", MakePixel565(255, 255, 255));
+      SetJustify(0);
+      switch(CurSettings.StandByTime)
+      {
+      default:
+      case 0: selection = 0; break;
+      case 60000: selection = 1; break;
+      case 120000: selection = 2; break;
+      case 300000: selection = 3; break;
+      case 600000: selection = 4; break;
+      case 1800000: selection = 5; break;
+      case 3600000: selection = 6; break;
+      case 7200000: selection = 7; break;
+      case 18000000: selection = 8; break;
+      }
+      selection += enc1_delta;
+      if (selection > 8) selection = 0;
+      if (selection < 0) selection = 8;
+      InvertRect(160 - 28, 120 - 76 + selection * 17, 56, 17, 1);
+      switch(selection)
+      {
+      default:
+      case 0: CurSettings.StandByTime = 0; break;
+      case 1: CurSettings.StandByTime = 60000; break;
+      case 2: CurSettings.StandByTime = 120000; break;
+      case 3: CurSettings.StandByTime = 300000; break;
+      case 4: CurSettings.StandByTime = 600000; break;
+      case 5: CurSettings.StandByTime = 1800000; break;
+      case 6: CurSettings.StandByTime = 3600000; break;
+      case 7: CurSettings.StandByTime = 7200000; break;
+      case 8: CurSettings.StandByTime = 18000000; break;
+      }
+      if (enc1_click)
+      {
+        ShowNotify(1000, "自动关机时间设置成功");
+        GUICurOptionSelected = 0;
+        SaveSettings();
+      }
+      break;
+    default:
+      if (enc1_click)
+      {
+        GUICurOptionSelected = 0;
+      }
+    }
+    if (enc2_click) GUICurOptionSelected = 0;
+  }
 
-  if (enc2_click) GUICurMenuLevel = 0;
   if (enc2_delta)
   {
     CurSettings.CurVolume += enc2_delta * 5;
