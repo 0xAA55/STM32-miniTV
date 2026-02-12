@@ -349,6 +349,43 @@ void UnsaturateScreen()
     }
   }
 }
+ITCM_CODE
+int SaveSettings()
+{
+  CurSettings.Signature = 0xAA55;
+  memset(FILE_buffer, 0, 4096);
+  memcpy(FILE_buffer, &CurSettings, sizeof CurSettings);
+  if (QSPI_ExitMemoryMapMode() != HAL_OK) return 0;
+  if (QSPI_SectorErase(SAVE_SETTINGS_ADDRESS) != HAL_OK) return 0;
+  for(size_t i = 0; i < sizeof CurSettings; i += 256)
+  {
+    if (QSPI_PageProgram(SAVE_SETTINGS_ADDRESS + i, &FILE_buffer[i]) != HAL_OK) return 0;
+  }
+  if (QSPI_InitFlash() != HAL_OK) return 0;
+  if (QSPI_EnterMemoryMapMode() != HAL_OK) return 0;
+  return 1;
+}
+ITCM_CODE
+void LoadSettings()
+{
+  memcpy(&CurSettings, SAVED_SETTINGS, sizeof CurSettings);
+  if (CurSettings.Signature != 0xAA55)
+  {
+    CurSettings.Signature = 0xAA55;
+    CurSettings.CurFastForwardTime = 5000;
+    CurSettings.CurVolume = 100;
+    CurSettings.SubtitleFontSize = 12;
+    CurSettings.StandByTime = 5 * 60;
+  }
+  else
+  {
+    if (CurSettings.CurFastForwardTime == 0xFFFFFFFF) CurSettings.CurFastForwardTime = 5000;
+    if (CurSettings.CurVolume < 0) CurSettings.CurFastForwardTime = 0;
+    if (CurSettings.CurVolume > 100) CurSettings.CurFastForwardTime = 100;
+    if (CurSettings.SubtitleFontSize != 12 || CurSettings.SubtitleFontSize != 14 || CurSettings.SubtitleFontSize != 17) CurSettings.SubtitleFontSize = 12;
+    if (!CurSettings.StandByTime || CurSettings.StandByTime == 0xFFFFFFFF) CurSettings.StandByTime = 5 * 60;
+  }
+}
 void WaitForPresent()
 {
   LCD_WaitToIdle(&hlcd);
