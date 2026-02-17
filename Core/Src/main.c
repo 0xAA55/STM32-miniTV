@@ -1643,6 +1643,7 @@ void OnUsingVideoFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int 
   int have_video = (avi_video_stream.r != 0);
   int have_audio = (avi_audio_stream.r != 0);
 
+  LastOperateTime = HAL_GetTick64();
   if (!have_video && !have_audio)
   {
     QuitVideoFile();
@@ -1973,6 +1974,7 @@ void OnUsingBugFileGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int en
     if (program_address % 4096 == 0) block ++;
   }
 
+  LastOperateTime = HAL_GetTick64();
   QSPI_InitFlash();
   QSPI_EnterMemoryMapMode();
   UseLargeFont();
@@ -2173,8 +2175,6 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
   }
   DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
 }
-
-
 /* USER CODE END 0 */
 
 /**
@@ -2342,6 +2342,12 @@ int main(void)
         DrawNotifyInfo(280, MakePixel565(255, 255, 255), MakePixel565(255, 255, 255), MakePixel565(0, 0, 0), GUINotifyInfo);
       else
         GUINotifyShow = 0;
+    }
+
+    if (CurSettings.StandByTime)
+    {
+      if (cur_tick - LastOperateTime >= CurSettings.StandByTime >> 1) DarkenScreen();
+      if (cur_tick - LastOperateTime >= CurSettings.StandByTime) Suicide();
     }
 
     SwapFramebuffers();
