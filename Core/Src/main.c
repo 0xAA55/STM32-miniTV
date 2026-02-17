@@ -2052,6 +2052,10 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
     static const int opt3_window_h = 160;
     static const int opt3_window_hf_w = opt3_window_w / 2;
     static const int opt3_window_hf_h = opt3_window_h / 2;
+    static const int opt4_window_w = 160;
+    static const int opt4_window_h = 160;
+    static const int opt4_window_hf_w = opt4_window_w / 2;
+    static const int opt4_window_hf_h = opt4_window_h / 2;
     static const int sel_height = 17;
     int x, y, w, h;
     switch (GUICurOptionIndex)
@@ -2184,6 +2188,13 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       }
       break;
     default:
+      x = center_x - opt4_window_hf_w;
+      y = center_y - opt4_window_hf_h;
+      w = opt4_window_w;
+      h = opt4_window_h;
+      FillRect(x - 2, y - 2, w + 4, h + 4, MakePixel565(0, 0, 0));
+      DrawRect(x - 1, y - 1, w + 2, h + 2, MakePixel565(255, 255, 255));
+      DrawText(x, y, w, h, "程序作者：0xAA55\nQQ号: 838816058\n这是一款自由软件项目", MakePixel565(255, 255, 255));
       if (enc1_click)
       {
         GUICurOptionSelected = 0;
