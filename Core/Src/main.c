@@ -349,6 +349,19 @@ void UnsaturateScreen()
   }
 }
 ITCM_CODE
+void DarkenScreen()
+{
+  for (int y = 0; y < hlcd.yres; y++)
+  {
+    for (int x = 0; x < hlcd.xres; x++)
+    {
+      uint16_t color = CurDrawFramebuffer[y][x];
+      uint16_t new_color = (color & 0xF7DE) >> 1;
+      CurDrawFramebuffer[y][x] = new_color;
+    }
+  }
+}
+ITCM_CODE
 int SaveSettings()
 {
   CurSettings.Signature = 0xAA55;
