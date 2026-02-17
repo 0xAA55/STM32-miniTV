@@ -439,8 +439,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   DTCM_BSS static int enc1_last_bm;
   DTCM_BSS static int enc2_last_bm;
-  DTCM_BSS static int enc1_sw_is_up;
-  DTCM_BSS static int enc2_sw_is_up;
   DTCM_BSS static int enc1_a;
   DTCM_BSS static int enc1_b;
   DTCM_BSS static int enc2_a;
@@ -478,32 +476,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   }
   enc1_last_bm = enc1_bm;
   enc2_last_bm = enc2_bm;
-  switch(HAL_GPIO_ReadPin(ENC1_SW_GPIO_Port, ENC1_SW_Pin))
-  {
-    default:
-      if (enc1_sw_is_up)
-      {
-        enc1_sw_is_up = 0;
-        Enc1Click = 1;
-      }
-      break;
-    case GPIO_PIN_SET:
-      enc1_sw_is_up = 1;
-      break;
-  }
-  switch(HAL_GPIO_ReadPin(ENC2_SW_GPIO_Port, ENC2_SW_Pin))
-  {
-    default:
-      if (enc2_sw_is_up)
-      {
-        enc2_sw_is_up = 0;
-        Enc2Click = 1;
-      }
-      break;
-    case GPIO_PIN_SET:
-      enc2_sw_is_up = 1;
-      break;
-  }
+  if (HAL_GPIO_ReadPin(ENC1_SW_GPIO_Port, ENC1_SW_Pin) == GPIO_PIN_RESET) Enc1Click = 1;
+  if (HAL_GPIO_ReadPin(ENC2_SW_GPIO_Port, ENC2_SW_Pin) == GPIO_PIN_RESET) Enc2Click = 1;
 
   LastOperateTime = HAL_GetTick64();
 }
@@ -2287,7 +2261,6 @@ int main(void)
   HAL_GPIO_WritePin(LCD_PWCTRL_GPIO_Port, LCD_PWCTRL_Pin, GPIO_PIN_SET);
   UseLargeFont();
   UpdatePowerRead();
-  HAL_GPIO_EXTI_Callback(ENC1_SW_Pin);
   /* USER CODE END 2 */
 
   /* Infinite loop */
