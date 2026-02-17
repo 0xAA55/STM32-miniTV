@@ -2038,15 +2038,33 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
   }
   else
   {
+    static const int center_x = 160;
+    static const int center_y = 120;
+    static const int opt1_window_w = 60;
+    static const int opt1_window_h = 60;
+    static const int opt1_window_hf_w = opt1_window_w / 2;
+    static const int opt1_window_hf_h = opt1_window_h / 2;
+    static const int opt2_window_w = 80;
+    static const int opt2_window_h = 160;
+    static const int opt2_window_hf_w = opt2_window_w / 2;
+    static const int opt2_window_hf_h = opt2_window_h / 2;
+    static const int opt3_window_w = 80;
+    static const int opt3_window_h = 160;
+    static const int opt3_window_hf_w = opt3_window_w / 2;
+    static const int opt3_window_hf_h = opt3_window_h / 2;
+    static const int sel_height = 17;
+    int x, y, w, h;
     switch (GUICurOptionIndex)
     {
     case 0:
-      FillRect(160 - 30, 120 - 30, 60, 60, MakePixel565(0, 0, 0));
-      DrawRect(160 - 29, 120 - 29, 58, 58, MakePixel565(255, 255, 255));
+      x = center_x - opt1_window_hf_w;
+      y = center_y - opt1_window_hf_h;
+      w = opt1_window_w;
+      h = opt1_window_h;
+      FillRect(x - 2, y - 2, w + 4, h + 4, MakePixel565(0, 0, 0));
+      DrawRect(x - 1, y - 1, w + 2, h + 2, MakePixel565(255, 255, 255));
       SetJustify(1);
-      DrawText(160 - 28, 120 - 28, 56, 20, "小", MakePixel565(255, 255, 255));
-      DrawText(160 - 28, 120 -  8, 56, 20, "中", MakePixel565(255, 255, 255));
-      DrawText(160 - 28, 120 + 12, 56, 20, "大", MakePixel565(255, 255, 255));
+      DrawText(x, y, w, h, "小\n中\n大", MakePixel565(255, 255, 255));
       SetJustify(0);
       switch (CurSettings.SubtitleFontSize)
       {
@@ -2057,7 +2075,7 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       selection += enc1_delta;
       if (selection > 2) selection = 0;
       if (selection < 0) selection = 2;
-      InvertRect(160 - 28, 120 - 28 + selection * 20, 58, 20, 1);
+      InvertRect(x, y + selection * sel_height, w, sel_height, 1);
       switch(selection)
       {
       default: CurSettings.SubtitleFontSize = 12; break;
@@ -2072,10 +2090,14 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       }
       break;
     case 1:
-      FillRect(160 - 30, 120 - 78, 60, 156, MakePixel565(0, 0, 0));
-      DrawRect(160 - 29, 120 - 77, 58, 154, MakePixel565(255, 255, 255));
+      x = center_x - opt2_window_hf_w;
+      y = center_y - opt2_window_hf_h;
+      w = opt2_window_w;
+      h = opt2_window_h;
+      FillRect(x - 2, y - 2, w + 4, h + 4, MakePixel565(0, 0, 0));
+      DrawRect(x - 1, y - 1, w + 2, h + 2, MakePixel565(255, 255, 255));
       SetJustify(1);
-      DrawText(160 - 28, 120 - 76, 56, 153, "1秒\n2秒\n5秒\n10秒\n30秒\n1分钟\n2分钟\n5分钟\n10分钟", MakePixel565(255, 255, 255));
+      DrawText(x, y, w, h, "1秒\n2秒\n5秒\n10秒\n30秒\n1分钟\n2分钟\n5分钟\n10分钟", MakePixel565(255, 255, 255));
       SetJustify(0);
       switch(CurSettings.CurFastForwardTime)
       {
@@ -2093,7 +2115,7 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       selection += enc1_delta;
       if (selection > 8) selection = 0;
       if (selection < 0) selection = 8;
-      InvertRect(160 - 28, 120 - 76 + selection * 17, 56, 17, 1);
+      InvertRect(x, y + selection * sel_height, w, sel_height, 1);
       switch(selection)
       {
       default: CurSettings.CurFastForwardTime = 5000; break;
@@ -2115,10 +2137,14 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       }
       break;
     case 2:
-      FillRect(160 - 30, 120 - 78, 60, 156, MakePixel565(0, 0, 0));
-      DrawRect(160 - 29, 120 - 77, 58, 154, MakePixel565(255, 255, 255));
+      x = center_x - opt3_window_hf_w;
+      y = center_y - opt3_window_hf_h;
+      w = opt3_window_w;
+      h = opt3_window_h;
+      FillRect(x - 2, y - 2, w + 4, h + 4, MakePixel565(0, 0, 0));
+      DrawRect(x - 1, y - 1, w + 2, h + 2, MakePixel565(255, 255, 255));
       SetJustify(1);
-      DrawText(160 - 28, 120 - 76, 56, 153, "永不\n1分钟\n2分钟\n5分钟\n10分钟\n30分钟\n1小时\n2小时\n5小时", MakePixel565(255, 255, 255));
+      DrawText(x, y, w, h, "永不\n1分钟\n2分钟\n5分钟\n10分钟\n30分钟\n1小时\n2小时\n5小时", MakePixel565(255, 255, 255));
       SetJustify(0);
       switch(CurSettings.StandByTime)
       {
@@ -2136,7 +2162,7 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       selection += enc1_delta;
       if (selection > 8) selection = 0;
       if (selection < 0) selection = 8;
-      InvertRect(160 - 28, 120 - 76 + selection * 17, 56, 17, 1);
+      InvertRect(x, y + selection * sel_height, w, sel_height, 1);
       switch(selection)
       {
       default:
