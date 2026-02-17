@@ -387,7 +387,7 @@ void LoadSettings()
     CurSettings.CurFastForwardTime = 5000;
     CurSettings.CurVolume = 100;
     CurSettings.SubtitleFontSize = 12;
-    CurSettings.StandByTime = 5 * 60;
+    CurSettings.StandByTime = 5 * 60 * 1000;
   }
   else
   {
@@ -395,7 +395,7 @@ void LoadSettings()
     if (CurSettings.CurVolume < 0) CurSettings.CurFastForwardTime = 0;
     if (CurSettings.CurVolume > 100) CurSettings.CurFastForwardTime = 100;
     if (CurSettings.SubtitleFontSize != 12 || CurSettings.SubtitleFontSize != 14 || CurSettings.SubtitleFontSize != 17) CurSettings.SubtitleFontSize = 12;
-    if (!CurSettings.StandByTime || CurSettings.StandByTime == 0xFFFFFFFF) CurSettings.StandByTime = 5 * 60;
+    if (!CurSettings.StandByTime || CurSettings.StandByTime == 0xFFFFFFFF) CurSettings.StandByTime = 5 * 60 * 1000;
   }
 }
 void WaitForPresent()
