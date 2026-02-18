@@ -2195,7 +2195,8 @@ void OnOptionsGUI(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_cl
       h = opt4_window_h;
       FillRect(x - 2, y - 2, w + 4, h + 4, MakePixel565(0, 0, 0));
       DrawRect(x - 1, y - 1, w + 2, h + 2, MakePixel565(255, 255, 255));
-      DrawText(x, y, w, h, "程序作者：0xAA55\nQQ号: 838816058\n这是一款自由软件项目", MakePixel565(255, 255, 255));
+      sprintf(FormatBuf, "程序作者：0xAA55\nQQ号: 838816058\n这是一款自由软件项目\n电池电压读数：%d.%dV", BAT_Voltage / 1000, BAT_Voltage % 1000);
+      DrawText(x, y, w, h, FormatBuf, MakePixel565(255, 255, 255));
       if (enc1_click)
       {
         GUICurOptionSelected = 0;
