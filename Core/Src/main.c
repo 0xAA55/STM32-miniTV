@@ -2381,7 +2381,7 @@ int main(void)
         GUINotifyShow = 0;
     }
 
-    if (CurSettings.StandByTime)
+    if (CurSettings.StandByTime && cur_tick > LastOperateTime)
     {
       if (cur_tick - LastOperateTime >= CurSettings.StandByTime >> 1) DarkenScreen();
       if (cur_tick - LastOperateTime >= CurSettings.StandByTime) Suicide();
