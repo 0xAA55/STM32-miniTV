@@ -2342,6 +2342,7 @@ int main(void)
           case 1: // USB
             DrawUSBMSCScreen();
             DrawBattery(GetPowerPercentage(), BAT_IsCharging, BAT_IsFull);
+            LastOperateTime = HAL_GetTick64();
             if (enc2_click)
             {
               GUICurMenuLevel = 0;
