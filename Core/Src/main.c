@@ -140,6 +140,7 @@ srt_t SubtitleParser;
 srt_slot_p CurSubtitleSlot;
 int CurSubtitleY;
 uint64_t LastOperateTime;
+extern USBD_HandleTypeDef hUsbDeviceHS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -2345,6 +2346,8 @@ int main(void)
             LastOperateTime = HAL_GetTick64();
             if (enc2_click)
             {
+              USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev);
+              USBD_DeInit(&hUsbDeviceHS);
               GUICurMenuLevel = 0;
             }
             break;
