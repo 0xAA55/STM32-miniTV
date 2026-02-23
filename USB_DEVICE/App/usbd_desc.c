@@ -62,11 +62,11 @@
   * @{
   */
 
-#define USBD_VID     43605
+#define USBD_VID     0xAA55
 #define USBD_LANGID_STRING     1033
 #define USBD_MANUFACTURER_STRING     "0xAA55 Industry"
-#define USBD_PID_HS     4
-#define USBD_PRODUCT_STRING_HS     "0xAA55 Card Reader"
+#define USBD_PID_HS     5
+#define USBD_PRODUCT_STRING_HS     "retro-tv card reader"
 #define USBD_CONFIGURATION_STRING_HS     "MSC Config"
 #define USBD_INTERFACE_STRING_HS     "MSC Interface"
 
