@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -701,14 +702,14 @@ void OnMainMenu(uint64_t cur_tick, int delta_tick, int enc1_delta, int enc1_clic
           switch (setjmp(USBFailJmp))
           {
           case 0:
-            MX_USB_DEVICE_Init();
+            // MX_USB_DEVICE_Init();
             break;
           case 1:
             GUICurMenuLevel = 0;
-            ShowNotify(1000, "请确保插入存储卡，连接电脑USB后，再进入此功能。");
+            ShowNotify(2000, "请确保插入存储卡，连接电脑USB后，再进入此功能。");
           default:
             GUICurMenuLevel = 0;
-            ShowNotify(1000, "系统错误。");
+            ShowNotify(2000, "系统错误。");
             break;
           }
           break;
@@ -2268,6 +2269,7 @@ int main(void)
   MX_QUADSPI_Init();
   MX_ADC1_Init();
   MX_DMA2D_Init();
+  MX_USB_DEVICE_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   QSPI_InitFlash();
@@ -2347,8 +2349,8 @@ int main(void)
             LastOperateTime = HAL_GetTick64();
             if (enc2_click)
             {
-              USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev);
-              USBD_DeInit(&hUsbDeviceHS);
+              // USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev);
+              // USBD_DeInit(&hUsbDeviceHS);
               GUICurMenuLevel = 0;
             }
             break;
