@@ -98,6 +98,7 @@ void Error_Handler(void);
 void OnUSBFail(void);
 ITCM_CODE int DenoisedPinRead(uint8_t *buffer, size_t buffer_size, GPIO_TypeDef* GPIO, uint32_t Pin);
 ITCM_CODE uint64_t HAL_GetTick64();
+ITCM_CODE void ShowNotify(uint32_t duration, const char *format, ...);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
